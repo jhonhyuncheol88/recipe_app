@@ -1,0 +1,29 @@
+Flutter 기반 레시피 원가 계산 앱 기술 설계 문서1. 개요본 문서는 레시피 원가 계산 애플리케이션의 기술적 설계 및 구현 방안을 정의합니다. 사용자의 핵심 요구사항인 직관적인 사용성, 재료 입력 자동화, 정확한 원가 계산을 충족시키기 위해 Flutter 프레임워크를 기반으로 MVC 아키텍처, BLoC(Cubit) 상태 관리, google_ml_kit을 활용한 OCR, 그리고 로컬 데이터 저장을 위한 sqlite3를 채택합니다. '슈빵' 앱의 친근하고 귀여운 UI/UX 감성을 디자인 전반에 적용하여 사용자 경험을 극대화하는 것을 목표로 합니다.12. 시스템 아키텍처: MVC (Model-View-Controller)안정적이고 확장 가능한 구조를 위해 MVC 패턴을 적용합니다. 각 컴포넌트의 역할은 다음과 같습니다.Model: 애플리케이션의 데이터와 비즈니스 로직을 담당합니다. sqlite3와 상호작용하는 데이터 클래스들이 여기에 해당됩니다.View: 사용자에게 보여지는 UI 파트입니다. Flutter의 Widget으로 구성되며, 사용자의 입력을 받아 Controller로 전달합니다.Controller: Model과 View 사이의 중재자 역할을 합니다. flutter_bloc의 Cubit을 사용하여 상태를 관리하고, 사용자의 요청에 따라 Model의 데이터를 업데이트하거나 View를 갱신합니다. <--> [ Controller (Cubits) ] <-->
+
+| |
+      +-------------------- User Input ------------------------+
+
+| |
+      +---------------------- State Updates -------------------+
+|
+                                                               V
+                                                     
+3. 핵심 기능 상세 설계3.1 데이터 모델 및 영속성 (Model & sqlite3)로컬 데이터베이스는 sqlite3 패키지를 사용하여 구현하며, 앱의 모든 핵심 데이터를 기기 내에 안전하게 저장합니다.데이터베이스 스키마 (Tables)Ingredients (재료)id: TEXT (Primary Key, UUID)name: TEXT (재료명)purchase_price: REAL (구매 가격)purchase_amount: REAL (구매 수량)purchase_unit_id: INTEGER (구매 단위, Units 테이블 외래키)expiry_date: TEXT (유통기한, ISO 8601 형식)created_at: TEXT (생성일)Units (단위)id: TEXT (Primary Key, UUID)name: TEXT (단위명, e.g., "g", "kg", "ml", "L", "개")type: TEXT (단위 종류, e.g., "weight", "volume", "count")base_unit_id: INTEGER (기준 단위 ID, e.g., 'kg'의 기준 단위는 'g')conversion_factor: REAL (기준 단위로의 변환 계수, e.g., 'kg' -> 'g' 변환 계수는 1000)Recipes (레시피)id: TEXT (Primary Key, UUID)name: TEXT (레시피명)description: TEXT (설명)output_amount: REAL (총 생산량)output_unit: TEXT (생산 단위, e.g., "인분", "개")total_cost: REAL (계산된 총원가)image_path: TEXT (레시피 사진 경로)RecipeIngredients (레시피 구성 재료 - 중간 테이블)id: TEXT (Primary Key, UUID)recipe_id: INTEGER (Recipes 테이블 외래키)ingredient_id: INTEGER (Ingredients 테이블 외래키)amount: REAL (사용량)unit_id: INTEGER (Units 테이블 외래키)3.2 상태 관리 (Controller & flutter_bloc)flutter_bloc 패키지의 Cubit을 사용하여 각 화면의 상태를 효율적으로 관리합니다. Cubit은 비즈니스 로직을 처리하고 UI에 필요한 상태(State)를 제공합니다.IngredientCubit: 재료 목록 조회, 추가, 수정, 삭제 로직을 담당합니다.RecipeListCubit: 전체 레시피 목록을 관리합니다.RecipeFormCubit: 단일 레시피의 생성 및 수정을 담당합니다. 레시피에 재료를 추가/삭제하고, 수량을 변경할 때마다 총원가를 실시간으로 재계산하여 상태를 업데이트합니다.OcrScannerCubit: google_ml_kit을 사용하여 영수증을 스캔하고, 텍스트를 추출하여 재료 데이터로 변환하는 과정을 관리합니다.ExpiryNotificationCubit: 유통기한 알림 기능을 관리합니다. 유통기한이 임박한 재료들을 추적하고 푸시 알림을 제공합니다.3.3 재료 입력 자동화 (OCR with google_ml_kit)사용자의 가장 큰 고충인 "고된 재료 입력 작업"을 해결하기 위한 핵심 기능입니다.스캔 흐름:사용자가 '영수증 스캔' 버튼을 탭하면 카메라 화면이 열립니다.camera 패키지를 이용해 사진을 촬영합니다.google_ml_kit_text_recognition 패키지의 TextRecognizer를 사용하여 이미지에서 텍스트 블록을 추출합니다.데이터 파싱 및 수정 UI:OCR은 100% 완벽하지 않으므로, 사용자 수정 과정의 편의성이 기능의 성패를 좌우합니다.추출된 텍스트를 기반으로 품목명과 가격을 휴리스틱하게(예: 숫자와 원화(₩) 기호 패턴 분석) 파싱합니다.수정 화면(Correction UI): 화면을 좌우로 분할하여 왼쪽에는 원본 영수증 이미지를, 오른쪽에는 파싱된 재료명과 가격을 수정 가능한 텍스트 필드로 목록화하여 보여줍니다.2 사용자는 이미지를 보며 잘못 인식된 부분을 직관적으로 수정할 수 있습니다.수정이 완료되면 '저장' 버튼을 눌러 여러 재료를 Ingredients 데이터베이스에 한 번에 추가합니다.3.4 단위 변환 및 원가 계산 로직요청하신 대로, 재료의 구매 단위와 레시피 사용 단위가 달라도 정확하게 원가가 계산되도록 설계합니다.단위 변환 서비스 (UnitConversionService):Units 테이블의 conversion_factor를 이용하여 모든 단위를 무게는 'g', 부피는 'ml'과 같은 기본 단위로 변환하는 로직을 구현합니다.예: convert(1, 'kg', 'g') -> 1000.0 반환원가 계산 로직:1단계: 재료의 기본 단위당 가격 계산기본 단위당 가격 = 구매 가격 / (구매 수량 * 해당 단위의 변환 계수)예: 밀가루 10kg을 15,000원에 구매 시, g당 가격은 15000 / (10 * 1000) = 1.5원/g 입니다.2단계: 레시피의 재료별 원가 계산재료 원가 = 기본 단위당 가격 * (레시피 사용량 * 해당 단위의 변환 계수)예: 위 밀가루를 레시피에 250g 사용 시, 원가는 1.5 * (250 * 1) = 375원 입니다.intl 패키지를 사용하여 계산된 최종 금액을 지역에 맞는 통화 형식(예: ₩375)으로 표시합니다.3.5 유통기한 관리 및 알림 시스템재료의 유통기한을 관리하고 사용자에게 적절한 알림을 제공하는 기능입니다.유통기한 데이터 관리:Ingredients 테이블의 expiry_date 필드에 ISO 8601 형식으로 유통기한을 저장합니다.예: "2024-12-31T23:59:59.000Z"유통기한 상태 분류:정상: 유통기한까지 7일 이상 남은 재료경고: 유통기한까지 3-7일 남은 재료위험: 유통기한까지 1-3일 남은 재료만료: 유통기한이 지난 재료유통기한 알림 시스템:ExpiryNotificationCubit이 백그라운드에서 유통기한을 모니터링합니다.flutter_local_notifications 패키지를 사용하여 푸시 알림을 제공합니다.알림 설정:경고 알림: 유통기한 3일 전 알림위험 알림: 유통기한 1일 전 알림만료 알림: 유통기한 당일 알림사용자는 설정에서 알림을 켜고 끌 수 있습니다.재료 목록 화면에서 유통기한 상태를 색상으로 구분하여 표시:정상: 초록색경고: 노란색위험: 주황색만료: 빨간색4. UI/UX 디자인: '슈빵' 스타일의 귀여운 감성'슈빵' 앱의 성공 요인인 친근하고 귀여운 디자인을 벤치마킹하여 사용자가 앱을 즐겁게 사용하도록 유도합니다.1Color Palette: 파스텔 톤의 부드러운 색상을 메인으로 사용하고, 행동 유도(CTA) 버튼에는 명확한 포인트 컬러를 사용합니다.Typography: 가독성이 좋고 둥근 느낌의 산세리프 폰트를 사용하여 친근한 느낌을 줍니다.Icons & Illustrations: 각 화면의 기능과 상태를 설명하는 귀여운 아이콘과 일러스트레이션을 적극적으로 활용합니다. (예: 빈 재료 목록 화면에 텅 빈 장바구니 일러스트 표시)Components: 전반적으로 둥근 모서리(Rounded Corners)를 가진 버튼, 카드, 입력 필드를 사용하여 부드러운 인상을 줍니다.편의 기능: 숫자 입력이 많은 점을 고려하여, '슈빵'의 보조 키패드처럼 숫자 전용 키패드를 제공하여 입력 편의성을 높입니다.15. 객체지향적 설계: 유지보수 및 확장성 확보요청하신 대로 텍스트, 테마, 언어 등 공통 요소를 중앙에서 관리하여 유지보수와 향후 기능 확장을 용이하게 합니다.lib/core/ 디렉토리 구조:theme/app_theme.dart: 앱의 모든 ColorScheme, TextStyle, Padding 값 등을 ThemeData로 정의합니다. 이를 통해 앱 전체의 디자인을 한 곳에서 변경할 수 있습니다.values/app_strings.dart: 앱 내 모든 텍스트를 static const 변수로 관리합니다. 향후 다국어 지원 시 이 파일을 기반으로 flutter_localizations와 .arb 파일을 도입하여 쉽게 확장할 수 있습니다.values/app_assets.dart: 이미지, 아이콘 등 에셋의 경로를 static const 변수로 관리하여 오타를 방지하고 에셋 관리를 중앙화합니다.클래스 구조 예시Dart// lib/core/theme/app_theme.dart
+class AppTheme {
+  static final ThemeData lightTheme = ThemeData(
+    primarySwatch: Colors.pink,
+    scaffoldBackgroundColor: Colors.white,
+    //... other theme properties
+  );
+}
+
+// lib/core/values/app_strings.dart
+class AppStrings {
+  static const String appTitle = '나의 귀여운 원가계산기';
+  static const String addIngredient = '재료 추가하기';
+  //... other strings
+}
+
+// 사용 예시
+// Text(AppStrings.addIngredient, style: Theme.of(context).textTheme.headline6)
+6. 결론본 설계 문서는 사용자의 요구사항을 모두 반영하여, MVC 아키텍처와 BLoC(Cubit) 패턴을 통해 안정성과 확장성을 확보하고, **google_ml_kit**으로 핵심적인 입력 자동화 문제를 해결하며, **sqlite3**로 데이터를 안전하게 관리하는 Flutter 앱 개발의 청사진을 제시합니다. 특히 단위 변환 로직과 객체지향적 공통 리소스 관리 방안을 구체화하였으며, '슈빵' 스타일의 UI/UX를 적용하여 기술적 완성도와 사용자 만족도를 모두 높일 수 있도록 설계되었습니다.
