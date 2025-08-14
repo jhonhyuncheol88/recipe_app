@@ -1,9 +1,12 @@
 import 'dart:developer' as developer;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/index.dart';
+import '../recipe/recipe_cubit.dart';
 import '../../model/index.dart';
 import '../../model/ocr_result.dart';
+import '../notification/expiry_notification_cubit.dart';
 
 import 'ingredient_state.dart';
 
@@ -11,12 +14,15 @@ class IngredientCubit extends Cubit<IngredientState> {
   final IngredientRepository _ingredientRepository;
   final TagRepository _tagRepository;
   final Uuid _uuid = const Uuid();
+  final ExpiryNotificationCubit? _expiryNotificationCubit;
 
   IngredientCubit({
     required IngredientRepository ingredientRepository,
     required TagRepository tagRepository,
+    ExpiryNotificationCubit? expiryNotificationCubit,
   }) : _ingredientRepository = ingredientRepository,
        _tagRepository = tagRepository,
+       _expiryNotificationCubit = expiryNotificationCubit,
        super(const IngredientInitial());
 
   // 재료 목록 로드
@@ -96,6 +102,20 @@ class IngredientCubit extends Cubit<IngredientState> {
       );
 
       emit(IngredientLoaded(ingredients: ingredients));
+      // 재료 추가 후 알림 스케줄 갱신 (유통기한이 있는 항목 대상)
+      try {
+        if (ingredient.expiryDate != null &&
+            _expiryNotificationCubit?.notificationsEnabled == true) {
+          await _expiryNotificationCubit!.loadExpiryNotifications();
+        }
+      } catch (_) {}
+      // Analytics: 재료 추가 카운트 증가
+      try {
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'ingredient_add',
+          parameters: {'count': 1},
+        );
+      } catch (_) {}
       developer.log('재료 추가 완료', name: 'IngredientCubit');
     } catch (e) {
       developer.log('재료 추가 실패: $e', name: 'IngredientCubit');
@@ -111,7 +131,31 @@ class IngredientCubit extends Cubit<IngredientState> {
       await _ingredientRepository.updateIngredient(ingredient);
       final ingredients = await _ingredientRepository.getAllIngredients();
 
+      // 재료 변경이 소스/레시피 비용에 영향 → 관련 레시피들 재계산
+      try {
+        final recipeRepo = RecipeRepository();
+        final recipeCubit = RecipeCubit(
+          recipeRepository: recipeRepo,
+          ingredientRepository: _ingredientRepository,
+          unitRepository: UnitRepository(),
+          tagRepository: _tagRepository,
+        );
+        final affectedRecipes = await recipeRepo.getRecipesByIngredient(
+          ingredient.id,
+        );
+        for (final r in affectedRecipes) {
+          await recipeCubit.recalculateRecipeCost(r.id);
+        }
+      } catch (_) {}
+
       emit(IngredientLoaded(ingredients: ingredients));
+      // 재료 수정 후 알림 스케줄 갱신 (유통기한 변경 가능)
+      try {
+        if (ingredient.expiryDate != null &&
+            _expiryNotificationCubit?.notificationsEnabled == true) {
+          await _expiryNotificationCubit!.loadExpiryNotifications();
+        }
+      } catch (_) {}
     } catch (e) {
       emit(IngredientError('재료 수정에 실패했습니다: $e'));
     }
@@ -137,9 +181,31 @@ class IngredientCubit extends Cubit<IngredientState> {
       }
 
       await _ingredientRepository.deleteIngredient(id);
-      final ingredients = await _ingredientRepository.getAllIngredients();
 
+      // 관련 레시피에서 해당 재료 항목 제거 후 재계산
+      try {
+        final recipeRepo = RecipeRepository();
+        await recipeRepo.removeRecipeIngredientsByIngredientId(id);
+        final recipes = await recipeRepo.getAllRecipes();
+        final recipeCubit = RecipeCubit(
+          recipeRepository: recipeRepo,
+          ingredientRepository: _ingredientRepository,
+          unitRepository: UnitRepository(),
+          tagRepository: _tagRepository,
+        );
+        for (final r in recipes) {
+          await recipeCubit.recalculateRecipeCost(r.id);
+        }
+      } catch (_) {}
+
+      final ingredients = await _ingredientRepository.getAllIngredients();
       emit(IngredientLoaded(ingredients: ingredients));
+      // 재료 삭제 후 알림 스케줄 갱신
+      try {
+        if (_expiryNotificationCubit?.notificationsEnabled == true) {
+          await _expiryNotificationCubit!.loadExpiryNotifications();
+        }
+      } catch (_) {}
     } catch (e) {
       emit(IngredientError('재료 삭제에 실패했습니다: $e'));
     }

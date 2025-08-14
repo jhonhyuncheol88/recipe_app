@@ -166,6 +166,113 @@ class RecipeRepository {
     );
   }
 
+  // ===== 소스 연동: 레시피-소스 CRUD =====
+  Future<void> addSauceToRecipe(
+    String recipeId,
+    RecipeSauce recipeSauce,
+  ) async {
+    final db = await _databaseHelper.database;
+    await db.insert(
+      'recipe_sauces',
+      recipeSauce.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> removeSauceFromRecipe(String recipeId, String sauceId) async {
+    final db = await _databaseHelper.database;
+    await db.delete(
+      'recipe_sauces',
+      where: 'recipe_id = ? AND sauce_id = ?',
+      whereArgs: [recipeId, sauceId],
+    );
+  }
+
+  Future<void> updateRecipeSauceAmount(
+    String recipeId,
+    String sauceId,
+    double newAmount,
+  ) async {
+    final db = await _databaseHelper.database;
+    await db.update(
+      'recipe_sauces',
+      {'amount': newAmount},
+      where: 'recipe_id = ? AND sauce_id = ?',
+      whereArgs: [recipeId, sauceId],
+    );
+  }
+
+  Future<void> updateRecipeSauceUnit(
+    String recipeId,
+    String sauceId,
+    String newUnitId,
+  ) async {
+    final db = await _databaseHelper.database;
+    await db.update(
+      'recipe_sauces',
+      {'unit_id': newUnitId},
+      where: 'recipe_id = ? AND sauce_id = ?',
+      whereArgs: [recipeId, sauceId],
+    );
+  }
+
+  Future<void> updateRecipeIngredientUnit(
+    String recipeId,
+    String ingredientId,
+    String newUnitId,
+    double newCalculatedCost,
+  ) async {
+    final db = await _databaseHelper.database;
+    await db.update(
+      'recipe_ingredients',
+      {'unit_id': newUnitId, 'calculated_cost': newCalculatedCost},
+      where: 'recipe_id = ? AND ingredient_id = ?',
+      whereArgs: [recipeId, ingredientId],
+    );
+  }
+
+  Future<List<RecipeSauce>> getRecipeSauces(String recipeId) async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'recipe_sauces',
+      where: 'recipe_id = ?',
+      whereArgs: [recipeId],
+    );
+    return List.generate(maps.length, (i) => RecipeSauce.fromJson(maps[i]));
+  }
+
+  // 특정 소스를 사용하는 레시피 ID 목록 조회
+  Future<List<String>> getRecipeIdsBySauce(String sauceId) async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      'SELECT DISTINCT recipe_id FROM recipe_sauces WHERE sauce_id = ?',
+      [sauceId],
+    );
+    return maps.map((m) => m['recipe_id'] as String).toList();
+  }
+
+  // 모든 레시피에서 특정 재료 항목 제거
+  Future<void> removeRecipeIngredientsByIngredientId(
+    String ingredientId,
+  ) async {
+    final db = await _databaseHelper.database;
+    await db.delete(
+      'recipe_ingredients',
+      where: 'ingredient_id = ?',
+      whereArgs: [ingredientId],
+    );
+  }
+
+  // 모든 레시피에서 특정 소스 항목 제거
+  Future<void> removeRecipeSaucesBySauceId(String sauceId) async {
+    final db = await _databaseHelper.database;
+    await db.delete(
+      'recipe_sauces',
+      where: 'sauce_id = ?',
+      whereArgs: [sauceId],
+    );
+  }
+
   // 레시피 재료들 조회 (내부 메서드)
   Future<List<RecipeIngredient>> _getRecipeIngredients(String recipeId) async {
     final db = await _databaseHelper.database;
@@ -219,7 +326,6 @@ class RecipeRepository {
 
   // 레시피 통계 정보
   Future<Map<String, dynamic>> getRecipeStats() async {
-    final db = await _databaseHelper.database;
     final allRecipes = await getAllRecipes();
 
     if (allRecipes.isEmpty) {

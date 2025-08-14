@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "584875089226",
+    "project_id": "recipeapp-eec6c",
+    "storage_bucket": "recipeapp-eec6c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:584875089226:android:4acfc3bad55195d32e35b3",
+        "android_client_info": {
+          "package_name": "com.jalam.recipeapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFi8JV7QKQvnA2qT8zCpM-DnSvLbuf0no"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

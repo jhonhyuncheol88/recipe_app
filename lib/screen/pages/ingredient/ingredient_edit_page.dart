@@ -8,6 +8,7 @@ import '../../../util/app_locale.dart';
 import '../../../util/number_formatter.dart';
 import 'package:intl/intl.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
+import '../../../controller/setting/locale_cubit.dart';
 
 import '../../../model/ingredient.dart';
 import '../../../model/tag.dart';
@@ -30,9 +31,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   late final TextEditingController _priceController;
   late final TextEditingController _amountController;
 
-  // 포맷팅된 값 저장용
-  String _formattedPrice = '';
-  String _formattedAmount = '';
+  // 포맷팅된 값 저장용 (미사용 필드 제거)
 
   late String _selectedUnitId;
   DateTime? _expiryDate;
@@ -76,8 +75,9 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   void _loadTags() {
     // TODO: TagCubit에서 태그 목록 가져오기
+    final locale = context.read<LocaleCubit>().state;
     setState(() {
-      _availableTags = DefaultTags.ingredientTags;
+      _availableTags = DefaultTags.ingredientTagsFor(locale);
     });
   }
 
@@ -107,11 +107,12 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          AppStrings.getEditIngredient(AppLocale.korea),
+          AppStrings.getEditIngredient(currentLocale),
           style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
         ),
         backgroundColor: AppColors.surface,
@@ -121,10 +122,15 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
         ),
         actions: [
+          IconButton(
+            onPressed: _isLoading ? null : _confirmDeleteIngredient,
+            icon: const Icon(Icons.delete, color: AppColors.error),
+            tooltip: AppStrings.getDelete(currentLocale),
+          ),
           TextButton(
             onPressed: _isLoading ? null : _updateIngredient,
             child: Text(
-              AppStrings.getSave(AppLocale.korea),
+              AppStrings.getSave(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
                 color: _isLoading ? AppColors.textSecondary : AppColors.primary,
               ),
@@ -156,11 +162,12 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   }
 
   Widget _buildBasicInfoSection() {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppStrings.getBasicInformation(AppLocale.korea),
+          AppStrings.getBasicInformation(currentLocale),
           style: AppTextStyles.headline4.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
@@ -169,31 +176,31 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         const SizedBox(height: 16),
         AppInputField(
           controller: _nameController,
-          label: AppStrings.getIngredientName(AppLocale.korea),
-          hint: AppStrings.getEnterIngredientName(AppLocale.korea),
+          label: AppStrings.getIngredientName(currentLocale),
+          hint: AppStrings.getEnterIngredientName(currentLocale),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return AppStrings.getIngredientNameRequired(AppLocale.korea);
+              return AppStrings.getIngredientNameRequired(currentLocale);
             }
             return null;
           },
         ),
         const SizedBox(height: 16),
         CurrencyInputField(
-          label: AppStrings.getPurchasePrice(AppLocale.korea),
-          hint: AppStrings.getEnterPrice(AppLocale.korea),
+          label: AppStrings.getPurchasePrice(currentLocale),
+          hint: AppStrings.getEnterPrice(currentLocale),
           controller: _priceController,
-          locale: AppLocale.korea,
+          locale: currentLocale,
           onChanged: (price) {
             // 가격이 변경될 때 처리
           },
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return AppStrings.getPriceRequired(AppLocale.korea);
+              return AppStrings.getPriceRequired(currentLocale);
             }
             final price = _parseFormattedPrice(value);
             if (price == null || price <= 0) {
-              return AppStrings.getValidPriceRequired(AppLocale.korea);
+              return AppStrings.getValidPriceRequired(currentLocale);
             }
             return null;
           },
@@ -203,20 +210,20 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             NumberInputField(
-              label: AppStrings.getPurchaseAmount(AppLocale.korea),
-              hint: AppStrings.getEnterAmount(AppLocale.korea),
+              label: AppStrings.getPurchaseAmount(currentLocale),
+              hint: AppStrings.getEnterAmount(currentLocale),
               controller: _amountController,
               onChanged: (amount) {
                 // 수량이 변경될 때 처리
               },
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return AppStrings.getAmountRequired(AppLocale.korea);
+                  return AppStrings.getAmountRequired(currentLocale);
                 }
                 final cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
                 final amount = double.tryParse(cleanValue);
                 if (amount == null || amount <= 0) {
-                  return AppStrings.getValidAmountRequired(AppLocale.korea);
+                  return AppStrings.getValidAmountRequired(currentLocale);
                 }
                 return null;
               },
@@ -229,7 +236,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
                   ? _selectedUnitId
                   : null,
               decoration: InputDecoration(
-                labelText: AppStrings.getUnit(AppLocale.korea),
+                labelText: AppStrings.getUnit(currentLocale),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -248,7 +255,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return AppStrings.getUnitRequired(AppLocale.korea);
+                  return AppStrings.getUnitRequired(currentLocale);
                 }
                 return null;
               },
@@ -260,11 +267,12 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   }
 
   Widget _buildTagSelectionSection() {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppStrings.getTags(AppLocale.korea),
+          AppStrings.getTags(currentLocale),
           style: AppTextStyles.headline4.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
@@ -272,7 +280,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         ),
         const SizedBox(height: 8),
         Text(
-          AppStrings.getSelectTagsDescription(AppLocale.korea),
+          AppStrings.getSelectTagsDescription(currentLocale),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -310,11 +318,12 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   }
 
   Widget _buildExpiryDateSection() {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppStrings.getExpiryDate(AppLocale.korea),
+          AppStrings.getExpiryDate(currentLocale),
           style: AppTextStyles.headline4.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
@@ -322,7 +331,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         ),
         const SizedBox(height: 8),
         Text(
-          AppStrings.getExpiryDateDescription(AppLocale.korea),
+          AppStrings.getExpiryDateDescription(currentLocale),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -348,8 +357,8 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
                 Expanded(
                   child: Text(
                     _expiryDate != null
-                        ? AppStrings.formatDate(_expiryDate!, AppLocale.korea)
-                        : AppStrings.getSelectExpiryDate(AppLocale.korea),
+                        ? AppStrings.formatDate(_expiryDate!, currentLocale)
+                        : AppStrings.getSelectExpiryDate(currentLocale),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: _expiryDate != null
                           ? AppColors.textPrimary
@@ -376,10 +385,11 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   }
 
   Widget _buildUpdateButton() {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return SizedBox(
       width: double.infinity,
       child: AppButton(
-        text: AppStrings.getUpdateIngredient(AppLocale.korea),
+        text: AppStrings.getUpdateIngredient(currentLocale),
         type: AppButtonType.primary,
         size: AppButtonSize.large,
         onPressed: _updateIngredient,
@@ -428,6 +438,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   }
 
   void _updateIngredient() async {
+    final currentLocale = context.read<LocaleCubit>().state;
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -435,7 +446,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
     if (_selectedUnitId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppStrings.getUnitRequired(AppLocale.korea)),
+          content: Text(AppStrings.getUnitRequired(currentLocale)),
           backgroundColor: AppColors.error,
         ),
       );
@@ -463,7 +474,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppStrings.getIngredientUpdatedSuccessfully(AppLocale.korea),
+              AppStrings.getIngredientUpdatedSuccessfully(currentLocale),
             ),
             backgroundColor: AppColors.success,
           ),
@@ -473,9 +484,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              AppStrings.getIngredientUpdateFailed(AppLocale.korea),
-            ),
+            content: Text(AppStrings.getIngredientUpdateFailed(currentLocale)),
             backgroundColor: AppColors.error,
           ),
         );
@@ -486,6 +495,40 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _confirmDeleteIngredient() async {
+    final currentLocale = context.read<LocaleCubit>().state;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppStrings.getDelete(currentLocale)),
+        content: Text(
+          '${widget.ingredient.name} ${AppStrings.getDeleteRecipeConfirm(currentLocale)}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppStrings.getCancel(currentLocale)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: Text(AppStrings.getDelete(currentLocale)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await context.read<IngredientCubit>().deleteIngredient(
+        widget.ingredient.id,
+      );
+      if (!mounted) return;
+      context.pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.getIngredientDeleted(currentLocale))),
+      );
     }
   }
 }

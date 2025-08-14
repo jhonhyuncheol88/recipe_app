@@ -3,6 +3,8 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/app_strings.dart';
 import '../../util/app_locale.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../controller/setting/locale_cubit.dart';
 
 /// 앱에서 사용하는 빈 상태 위젯
 class AppEmptyState extends StatelessWidget {
@@ -99,13 +101,16 @@ class IngredientEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return AppEmptyState(
-      title: '재료가 없습니다',
-      subtitle: '첫 번째 재료를 추가해보세요!\n영수증 스캔으로 쉽게 추가할 수 있습니다.',
+      title: AppStrings.getNoIngredients(currentLocale),
+      subtitle: AppStrings.getNoIngredientsDescription(currentLocale),
       icon: Icons.inventory_2,
       iconColor: AppColors.accent,
       onActionPressed: onScanPressed ?? onAddPressed,
-      actionText: onScanPressed != null ? '영수증 스캔' : '재료 추가',
+      actionText: onScanPressed != null
+          ? AppStrings.getScanReceiptButton(currentLocale)
+          : AppStrings.getAddIngredientButton(currentLocale),
     );
   }
 }
@@ -119,9 +124,10 @@ class RecipeEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return AppEmptyState(
-      title: '레시피가 없습니다',
-      subtitle: '첫 번째 레시피를 만들어보세요!\n재료를 추가하고 원가를 계산해보세요.',
+      title: AppStrings.getNoRecipes(currentLocale),
+      subtitle: AppStrings.getNoRecipesDescription(currentLocale),
       icon: Icons.restaurant_menu,
       iconColor: AppColors.accent,
     );

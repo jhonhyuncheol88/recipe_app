@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../model/index.dart';
+import '../util/app_locale.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -26,7 +27,7 @@ class DatabaseHelper {
 
       final database = await openDatabase(
         path,
-        version: 3, // 버전 업데이트
+        version: 4, // 버전 업데이트 (소스 테이블 추가)
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       );
@@ -119,6 +120,58 @@ class DatabaseHelper {
         )
       ''');
 
+      // Sauces 테이블 생성
+      developer.log('Sauces 테이블 생성', name: 'DatabaseHelper');
+      await db.execute('''
+        CREATE TABLE sauces (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          description TEXT,
+          total_weight REAL NOT NULL,
+          total_cost REAL NOT NULL,
+          image_path TEXT,
+          created_at TEXT NOT NULL
+        )
+      ''');
+
+      // SauceIngredients 테이블 생성
+      developer.log('SauceIngredients 테이블 생성', name: 'DatabaseHelper');
+      await db.execute('''
+        CREATE TABLE sauce_ingredients (
+          id TEXT PRIMARY KEY,
+          sauce_id TEXT NOT NULL,
+          ingredient_id TEXT NOT NULL,
+          amount REAL NOT NULL,
+          unit_id TEXT NOT NULL,
+          FOREIGN KEY (sauce_id) REFERENCES sauces (id),
+          FOREIGN KEY (ingredient_id) REFERENCES ingredients (id),
+          FOREIGN KEY (unit_id) REFERENCES units (id)
+        )
+      ''');
+
+      // RecipeSauces 테이블 생성
+      developer.log('RecipeSauces 테이블 생성', name: 'DatabaseHelper');
+      await db.execute('''
+        CREATE TABLE recipe_sauces (
+          id TEXT PRIMARY KEY,
+          recipe_id TEXT NOT NULL,
+          sauce_id TEXT NOT NULL,
+          amount REAL NOT NULL,
+          unit_id TEXT NOT NULL,
+          FOREIGN KEY (recipe_id) REFERENCES recipes (id),
+          FOREIGN KEY (sauce_id) REFERENCES sauces (id),
+          FOREIGN KEY (unit_id) REFERENCES units (id)
+        )
+      ''');
+
+      // 인덱스 생성
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_sauce_ing_sauce_id ON sauce_ingredients(sauce_id)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_recipe_sauces_recipe_id ON recipe_sauces(recipe_id)',
+      );
+
       // 기본 단위 데이터 삽입
       developer.log('기본 단위 데이터 삽입', name: 'DatabaseHelper');
       await _insertDefaultUnits(db);
@@ -184,6 +237,58 @@ class DatabaseHelper {
         }
 
         developer.log('단위 ID 업데이트 완료', name: 'DatabaseHelper');
+      }
+
+      if (oldVersion < 4) {
+        // 버전 4: 소스 관련 테이블 추가
+        developer.log('소스 테이블 추가 시작', name: 'DatabaseHelper');
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS sauces (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            description TEXT,
+            total_weight REAL NOT NULL,
+            total_cost REAL NOT NULL,
+            image_path TEXT,
+            created_at TEXT NOT NULL
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS sauce_ingredients (
+            id TEXT PRIMARY KEY,
+            sauce_id TEXT NOT NULL,
+            ingredient_id TEXT NOT NULL,
+            amount REAL NOT NULL,
+            unit_id TEXT NOT NULL,
+            FOREIGN KEY (sauce_id) REFERENCES sauces (id),
+            FOREIGN KEY (ingredient_id) REFERENCES ingredients (id),
+            FOREIGN KEY (unit_id) REFERENCES units (id)
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS recipe_sauces (
+            id TEXT PRIMARY KEY,
+            recipe_id TEXT NOT NULL,
+            sauce_id TEXT NOT NULL,
+            amount REAL NOT NULL,
+            unit_id TEXT NOT NULL,
+            FOREIGN KEY (recipe_id) REFERENCES recipes (id),
+            FOREIGN KEY (sauce_id) REFERENCES sauces (id),
+            FOREIGN KEY (unit_id) REFERENCES units (id)
+          )
+        ''');
+
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_sauce_ing_sauce_id ON sauce_ingredients(sauce_id)',
+        );
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_recipe_sauces_recipe_id ON recipe_sauces(recipe_id)',
+        );
+
+        developer.log('소스 테이블 추가 완료', name: 'DatabaseHelper');
       }
     } catch (e) {
       developer.log('데이터베이스 업그레이드 실패: $e', name: 'DatabaseHelper');
@@ -290,20 +395,22 @@ class DatabaseHelper {
   }
 
   Future<void> _insertDefaultTags(Database db) async {
-    // 재료 기본 태그 삽입
-    for (final tag in DefaultTags.ingredientTags) {
+    // 재료 기본 태그 삽입 (기본 로케일 기준 저장)
+    for (final tag in DefaultTags.ingredientTagsFor(AppLocale.defaultLocale)) {
       await db.insert('tags', tag.toJson());
     }
 
-    // 레시피 기본 태그 삽입
-    for (final tag in DefaultTags.recipeTags) {
+    // 레시피 기본 태그 삽입 (기본 로케일 기준 저장)
+    for (final tag in DefaultTags.recipeTagsFor(AppLocale.defaultLocale)) {
       await db.insert('tags', tag.toJson());
     }
   }
 
   // 데이터베이스 연결 종료
   Future<void> close() async {
-    final db = await database;
-    await db.close();
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
   }
 }

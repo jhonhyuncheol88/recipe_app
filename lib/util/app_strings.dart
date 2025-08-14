@@ -28,9 +28,9 @@ class AppStrings {
       case AppLocale.china:
         return '添加材料';
       case AppLocale.usa:
-        return 'Add Ingredient';
+        return 'Add Ing';
       case AppLocale.euro:
-        return 'Add Ingredient';
+        return 'Add Ing';
     }
   }
 
@@ -153,6 +153,173 @@ class AppStrings {
         return 'Search Recipe';
       case AppLocale.euro:
         return 'Search Recipe';
+    }
+  }
+
+  /// 소스(Sauce) 관련
+  static String getSauceManagement(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '소스 관리';
+      default:
+        return 'Sauce Management';
+    }
+  }
+
+  static String getNoSauces(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '등록된 소스가 없습니다';
+      default:
+        return 'No sauces found';
+    }
+  }
+
+  static String getEnterSauceName(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '소스 이름 입력';
+      default:
+        return 'Enter sauce name';
+    }
+  }
+
+  static String getSauceNameExample(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '예: 데미글라스 소스';
+      default:
+        return 'e.g., Demi-glace sauce';
+    }
+  }
+
+  static String getCreate(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '생성';
+      default:
+        return 'Create';
+    }
+  }
+
+  static String getSauceComposition(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '구성 재료';
+      default:
+        return 'Composition';
+    }
+  }
+
+  static String getAddIngredientToSauce(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '소스에 재료 추가';
+      default:
+        return 'Add ingredient to sauce';
+    }
+  }
+
+  static String getNoSauceIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '구성 재료가 없습니다.';
+      default:
+        return 'No composition ingredients.';
+    }
+  }
+
+  static String getTotalWeight(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '총중량';
+      default:
+        return 'Total Weight';
+    }
+  }
+
+  static String getAdd(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '추가';
+      default:
+        return 'Add';
+    }
+  }
+
+  static String getSauces(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '소스';
+      default:
+        return 'Sauces';
+    }
+  }
+
+  /// 재료(탭 라벨용 복수형)
+  static String getIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료';
+      case AppLocale.japan:
+        return '材料';
+      case AppLocale.china:
+        return '材料';
+      case AppLocale.usa:
+        return 'Ingredients';
+      case AppLocale.euro:
+        return 'Ingredients';
+    }
+  }
+
+  static String getAddSauce(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '소스 추가';
+      default:
+        return 'Add Sauce';
+    }
+  }
+
+  static String getAddSauceButton(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '소스 추가';
+      case AppLocale.japan:
+        return 'ソースを追加';
+      case AppLocale.china:
+        return '添加酱汁';
+      case AppLocale.usa:
+        return 'Add Sauce';
+      case AppLocale.euro:
+        return 'Add Sauce';
+    }
+  }
+
+  static String getNoRecipeSauces(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '추가된 소스가 없습니다';
+      default:
+        return 'No sauces added';
+    }
+  }
+
+  static String getSelectSauce(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '소스 선택';
+      default:
+        return 'Select Sauce';
+    }
+  }
+
+  static String getEditSauceAmount(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '소스 수량 편집';
+      default:
+        return 'Edit Sauce Amount';
     }
   }
 
@@ -431,6 +598,21 @@ class AppStrings {
     }
   }
 
+  static String getNoRecipeIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '등록된 재료가 없습니다.';
+      case AppLocale.japan:
+        return '登録された材料がありません。';
+      case AppLocale.china:
+        return '没有已登记的材料。';
+      case AppLocale.usa:
+        return 'No ingredients registered.';
+      case AppLocale.euro:
+        return 'No ingredients registered.';
+    }
+  }
+
   static String getNoIngredientsSelected(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
@@ -443,6 +625,52 @@ class AppStrings {
         return 'No ingredients selected';
       case AppLocale.euro:
         return 'No ingredients selected';
+    }
+  }
+
+  /// 재료 목록 비어있을 때
+  static String getNoIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료가 없습니다';
+      case AppLocale.japan:
+        return '材料がありません';
+      case AppLocale.china:
+        return '没有材料';
+      case AppLocale.usa:
+        return 'No ingredients';
+      case AppLocale.euro:
+        return 'No ingredients';
+    }
+  }
+
+  static String getNoIngredientsDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '첫 번째 재료를 추가해보세요!';
+      case AppLocale.japan:
+        return '最初の材料を追加しましょう！';
+      case AppLocale.china:
+        return '试着添加第一种材料吧！';
+      case AppLocale.usa:
+        return 'Add your first ingredient!';
+      case AppLocale.euro:
+        return 'Add your first ingredient!';
+    }
+  }
+
+  static String getAddIngredientButton(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 추가';
+      case AppLocale.japan:
+        return '材料を追加';
+      case AppLocale.china:
+        return '添加材料';
+      case AppLocale.usa:
+        return 'Add Ingredient';
+      case AppLocale.euro:
+        return 'Add Ingredient';
     }
   }
 
@@ -890,6 +1118,52 @@ class AppStrings {
     }
   }
 
+  /// 공통 - 페이지 미발견 에러
+  static String getPageNotFoundTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '페이지를 찾을 수 없습니다';
+      case AppLocale.japan:
+        return 'ページが見つかりません';
+      case AppLocale.china:
+        return '无法找到页面';
+      case AppLocale.usa:
+        return 'Page not found';
+      case AppLocale.euro:
+        return 'Page not found';
+    }
+  }
+
+  static String getPageNotFoundSubtitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '요청하신 페이지가 존재하지 않거나 이동되었습니다.';
+      case AppLocale.japan:
+        return '要求されたページは存在しないか移動されました。';
+      case AppLocale.china:
+        return '请求的页面不存在或已被移动。';
+      case AppLocale.usa:
+        return 'The requested page does not exist or has moved.';
+      case AppLocale.euro:
+        return 'The requested page does not exist or has moved.';
+    }
+  }
+
+  static String getBackToHome(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '홈으로 돌아가기';
+      case AppLocale.japan:
+        return 'ホームに戻る';
+      case AppLocale.china:
+        return '返回首页';
+      case AppLocale.usa:
+        return 'Back to Home';
+      case AppLocale.euro:
+        return 'Back to Home';
+    }
+  }
+
   /// 페이지 제목
   static String getIngredientManagement(AppLocale locale) {
     switch (locale) {
@@ -918,6 +1192,22 @@ class AppStrings {
         return 'Recipe Management';
       case AppLocale.euro:
         return 'Recipe Management';
+    }
+  }
+
+  /// 레시피(탭/바텀탭 라벨용 복수형)
+  static String getRecipes(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피';
+      case AppLocale.japan:
+        return 'レシピ';
+      case AppLocale.china:
+        return '食谱';
+      case AppLocale.usa:
+        return 'Recipes';
+      case AppLocale.euro:
+        return 'Recipes';
     }
   }
 
@@ -1024,6 +1314,37 @@ class AppStrings {
         return 'Selected Ingredients';
       case AppLocale.euro:
         return 'Selected Ingredients';
+    }
+  }
+
+  /// 레시피 목록 비어있을 때
+  static String getNoRecipes(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피가 없습니다';
+      case AppLocale.japan:
+        return 'レシピがありません';
+      case AppLocale.china:
+        return '没有食谱';
+      case AppLocale.usa:
+        return 'No recipes';
+      case AppLocale.euro:
+        return 'No recipes';
+    }
+  }
+
+  static String getNoRecipesDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '첫 번째 레시피를 만들어보세요!\n재료를 추가하고 원가를 계산해보세요.';
+      case AppLocale.japan:
+        return '最初のレシピを作ってみましょう！\n材料を追加して原価を計算してみてください。';
+      case AppLocale.china:
+        return '创建第一个食谱吧！\n添加食材并计算成本。';
+      case AppLocale.usa:
+        return 'Create your first recipe!\nAdd ingredients and calculate the cost.';
+      case AppLocale.euro:
+        return 'Create your first recipe!\nAdd ingredients and calculate the cost.';
     }
   }
 
@@ -1673,6 +1994,219 @@ class AppStrings {
     }
   }
 
+  /// 기본 태그 이름 - 재료 태그
+  static String getIngredientTagFresh(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '냉장';
+      case AppLocale.japan:
+        return '冷蔵';
+      case AppLocale.china:
+        return '冷藏';
+      case AppLocale.usa:
+        return 'Refrigerated';
+      case AppLocale.euro:
+        return 'Refrigerated';
+    }
+  }
+
+  static String getIngredientTagFrozen(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '냉동';
+      case AppLocale.japan:
+        return '冷凍';
+      case AppLocale.china:
+        return '冷冻';
+      case AppLocale.usa:
+        return 'Frozen';
+      case AppLocale.euro:
+        return 'Frozen';
+    }
+  }
+
+  static String getIngredientTagIndoor(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '실온';
+      case AppLocale.japan:
+        return '常温';
+      case AppLocale.china:
+        return '常温';
+      case AppLocale.usa:
+        return 'Room Temp';
+      case AppLocale.euro:
+        return 'Room Temp';
+    }
+  }
+
+  /// 목록 필터 - 전체
+  static String getAll(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '전체';
+      case AppLocale.japan:
+        return 'すべて';
+      case AppLocale.china:
+        return '全部';
+      case AppLocale.usa:
+        return 'All';
+      case AppLocale.euro:
+        return 'All';
+    }
+  }
+
+  /// 기본 태그 이름 - 레시피 태그
+  static String getRecipeTagKorean(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '한식';
+      case AppLocale.japan:
+        return '韓国料理';
+      case AppLocale.china:
+        return '韩餐';
+      case AppLocale.usa:
+        return 'Korean';
+      case AppLocale.euro:
+        return 'Korean';
+    }
+  }
+
+  static String getRecipeTagChinese(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '중식';
+      case AppLocale.japan:
+        return '中華料理';
+      case AppLocale.china:
+        return '中餐';
+      case AppLocale.usa:
+        return 'Chinese';
+      case AppLocale.euro:
+        return 'Chinese';
+    }
+  }
+
+  static String getRecipeTagJapanese(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '일식';
+      case AppLocale.japan:
+        return '和食';
+      case AppLocale.china:
+        return '日餐';
+      case AppLocale.usa:
+        return 'Japanese';
+      case AppLocale.euro:
+        return 'Japanese';
+    }
+  }
+
+  static String getRecipeTagWestern(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '양식';
+      case AppLocale.japan:
+        return '洋食';
+      case AppLocale.china:
+        return '西餐';
+      case AppLocale.usa:
+        return 'Western';
+      case AppLocale.euro:
+        return 'Western';
+    }
+  }
+
+  static String getRecipeTagItalian(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이탈리안';
+      case AppLocale.japan:
+        return 'イタリアン';
+      case AppLocale.china:
+        return '意大利菜';
+      case AppLocale.usa:
+        return 'Italian';
+      case AppLocale.euro:
+        return 'Italian';
+    }
+  }
+
+  static String getRecipeTagMexican(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '멕시칸';
+      case AppLocale.japan:
+        return 'メキシカン';
+      case AppLocale.china:
+        return '墨西哥菜';
+      case AppLocale.usa:
+        return 'Mexican';
+      case AppLocale.euro:
+        return 'Mexican';
+    }
+  }
+
+  static String getRecipeTagThai(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '태국음식';
+      case AppLocale.japan:
+        return 'タイ料理';
+      case AppLocale.china:
+        return '泰国菜';
+      case AppLocale.usa:
+        return 'Thai';
+      case AppLocale.euro:
+        return 'Thai';
+    }
+  }
+
+  static String getRecipeTagIndian(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '인도음식';
+      case AppLocale.japan:
+        return 'インド料理';
+      case AppLocale.china:
+        return '印度菜';
+      case AppLocale.usa:
+        return 'Indian';
+      case AppLocale.euro:
+        return 'Indian';
+    }
+  }
+
+  static String getRecipeTagVietnamese(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '베트남음식';
+      case AppLocale.japan:
+        return 'ベトナム料理';
+      case AppLocale.china:
+        return '越南菜';
+      case AppLocale.usa:
+        return 'Vietnamese';
+      case AppLocale.euro:
+        return 'Vietnamese';
+    }
+  }
+
+  static String getRecipeTagFusion(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '퓨전';
+      case AppLocale.japan:
+        return 'フュージョン';
+      case AppLocale.china:
+        return '融合菜';
+      case AppLocale.usa:
+        return 'Fusion';
+      case AppLocale.euro:
+        return 'Fusion';
+    }
+  }
+
   static String getSelectTagsDescription(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
@@ -1706,6 +2240,52 @@ class AppStrings {
         return '재료 수정에 실패했습니다';
       default:
         return 'Failed to update ingredient';
+    }
+  }
+
+  static String getIngredientDeleted(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료를 삭제했습니다';
+      case AppLocale.japan:
+        return '材料を削除しました';
+      case AppLocale.china:
+        return '已删除材料';
+      case AppLocale.usa:
+        return 'Ingredient deleted';
+      case AppLocale.euro:
+        return 'Ingredient deleted';
+    }
+  }
+
+  /// 원가 섹션 레이블
+  static String getIngredientCostLabel(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 원가';
+      case AppLocale.japan:
+        return '材料原価';
+      case AppLocale.china:
+        return '材料成本';
+      case AppLocale.usa:
+        return 'Ingredient Cost';
+      case AppLocale.euro:
+        return 'Ingredient Cost';
+    }
+  }
+
+  static String getSauceCostLabel(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '소스 원가';
+      case AppLocale.japan:
+        return 'ソース原価';
+      case AppLocale.china:
+        return '酱汁成本';
+      case AppLocale.usa:
+        return 'Sauce Cost';
+      case AppLocale.euro:
+        return 'Sauce Cost';
     }
   }
 

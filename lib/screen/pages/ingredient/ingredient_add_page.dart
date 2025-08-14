@@ -5,7 +5,6 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
-import '../../../util/number_formatter.dart';
 import '../../../util/date_formatter.dart';
 
 import '../../../controller/ingredient/ingredient_cubit.dart';
@@ -14,6 +13,7 @@ import '../../../model/ingredient.dart';
 import '../../../model/tag.dart';
 import '../../../model/unit.dart';
 import '../../widget/index.dart';
+import '../../../controller/setting/locale_cubit.dart';
 
 /// 재료 추가 페이지
 class IngredientAddPage extends StatefulWidget {
@@ -29,9 +29,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
   final _priceController = TextEditingController();
   final _amountController = TextEditingController();
 
-  // 포맷팅된 값 저장용
-  String _formattedPrice = '';
-  String _formattedAmount = '';
+  // 포맷팅된 값 저장용 (미사용 필드 정리)
 
   String _selectedUnitId = '';
   DateTime? _expiryDate;
@@ -54,8 +52,9 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
 
   void _loadTags() {
     // TODO: TagCubit에서 태그 목록 가져오기
+    final locale = context.read<LocaleCubit>().state;
     setState(() {
-      _availableTags = DefaultTags.ingredientTags;
+      _availableTags = DefaultTags.ingredientTagsFor(locale);
     });
   }
 
@@ -88,11 +87,12 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          AppStrings.getAddIngredient(AppLocale.korea),
+          AppStrings.getAddIngredient(currentLocale),
           style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
         ),
         backgroundColor: AppColors.surface,
@@ -105,7 +105,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
           TextButton(
             onPressed: _isLoading ? null : _saveIngredient,
             child: Text(
-              AppStrings.getSave(AppLocale.korea),
+              AppStrings.getSave(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
                 color: _isLoading ? AppColors.textSecondary : AppColors.primary,
               ),
@@ -137,11 +137,12 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
   }
 
   Widget _buildBasicInfoSection() {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '기본 정보',
+          AppStrings.getBasicInformation(currentLocale),
           style: AppTextStyles.headline4.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
@@ -150,31 +151,31 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
         const SizedBox(height: 16),
         AppInputField(
           controller: _nameController,
-          label: AppStrings.getIngredientName(AppLocale.korea),
-          hint: '재료명을 입력하세요',
+          label: AppStrings.getIngredientName(currentLocale),
+          hint: AppStrings.getEnterIngredientName(currentLocale),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return '재료명을 입력해주세요';
+              return AppStrings.getIngredientNameRequired(currentLocale);
             }
             return null;
           },
         ),
         const SizedBox(height: 16),
         CurrencyInputField(
-          label: AppStrings.getPurchasePrice(AppLocale.korea),
-          hint: '가격을 입력하세요',
+          label: AppStrings.getPurchasePrice(currentLocale),
+          hint: AppStrings.getEnterPrice(currentLocale),
           controller: _priceController,
-          locale: AppLocale.korea,
+          locale: currentLocale,
           onChanged: (price) {
             // 가격이 변경될 때 처리
           },
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return '가격을 입력해주세요';
+              return AppStrings.getPriceRequired(currentLocale);
             }
             final price = _parseFormattedPrice(value);
             if (price == null || price <= 0) {
-              return '올바른 가격을 입력해주세요';
+              return AppStrings.getValidPriceRequired(currentLocale);
             }
             return null;
           },
@@ -184,20 +185,20 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             NumberInputField(
-              label: AppStrings.getPurchaseAmount(AppLocale.korea),
-              hint: '수량을 입력하세요',
+              label: AppStrings.getPurchaseAmount(currentLocale),
+              hint: AppStrings.getEnterAmount(currentLocale),
               controller: _amountController,
               onChanged: (amount) {
                 // 수량이 변경될 때 처리
               },
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '수량을 입력해주세요';
+                  return AppStrings.getAmountRequired(currentLocale);
                 }
                 final cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
                 final amount = double.tryParse(cleanValue);
                 if (amount == null || amount <= 0) {
-                  return '올바른 수량을 입력해주세요';
+                  return AppStrings.getValidAmountRequired(currentLocale);
                 }
                 return null;
               },
@@ -206,7 +207,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
             DropdownButtonFormField<String>(
               value: _selectedUnitId.isNotEmpty ? _selectedUnitId : null,
               decoration: InputDecoration(
-                labelText: AppStrings.getUnit(AppLocale.korea),
+                labelText: AppStrings.getUnit(currentLocale),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -225,7 +226,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return '단위를 선택해주세요';
+                  return AppStrings.getUnitRequired(currentLocale);
                 }
                 return null;
               },
@@ -237,11 +238,12 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
   }
 
   Widget _buildTagSelectionSection() {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '태그',
+          AppStrings.getTags(currentLocale),
           style: AppTextStyles.headline4.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
@@ -249,7 +251,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
         ),
         const SizedBox(height: 8),
         Text(
-          '재료를 분류할 태그를 선택하세요',
+          AppStrings.getSelectTagsDescription(currentLocale),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -287,11 +289,12 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
   }
 
   Widget _buildExpiryDateSection() {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppStrings.getExpiryDate(AppLocale.korea),
+          AppStrings.getExpiryDate(currentLocale),
           style: AppTextStyles.headline4.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
@@ -299,7 +302,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
         ),
         const SizedBox(height: 8),
         Text(
-          AppStrings.getExpiryDateDescription(AppLocale.korea),
+          AppStrings.getExpiryDateDescription(currentLocale),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -325,11 +328,8 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
                 Expanded(
                   child: Text(
                     _expiryDate != null
-                        ? DateFormatter.formatDate(
-                            _expiryDate!,
-                            AppLocale.korea,
-                          )
-                        : AppStrings.getSelectExpiryDate(AppLocale.korea),
+                        ? DateFormatter.formatDate(_expiryDate!, currentLocale)
+                        : AppStrings.getSelectExpiryDate(currentLocale),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: _expiryDate != null
                           ? AppColors.textPrimary
@@ -356,10 +356,11 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
   }
 
   Widget _buildSaveButton() {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return SizedBox(
       width: double.infinity,
       child: AppButton(
-        text: AppStrings.getSave(AppLocale.korea),
+        text: AppStrings.getSave(currentLocale),
         type: AppButtonType.primary,
         size: AppButtonSize.large,
         onPressed: _saveIngredient,
@@ -408,6 +409,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
   }
 
   void _saveIngredient() async {
+    final currentLocale = context.read<LocaleCubit>().state;
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -415,7 +417,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
     if (_selectedUnitId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppStrings.getUnitRequired(AppLocale.korea)),
+          content: Text(AppStrings.getUnitRequired(currentLocale)),
           backgroundColor: AppColors.error,
         ),
       );
@@ -457,7 +459,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
               children: [
                 Expanded(
                   child: Text(
-                    AppStrings.getIngredientAddedSuccessfully(AppLocale.korea),
+                    AppStrings.getIngredientAddedSuccessfully(currentLocale),
                   ),
                 ),
                 TextButton(
@@ -466,7 +468,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
                     context.push('/recipe/create');
                   },
                   child: Text(
-                    AppStrings.getCreateRecipeFromIngredients(AppLocale.korea),
+                    AppStrings.getCreateRecipeFromIngredients(currentLocale),
                     style: const TextStyle(
                       color: AppColors.accent,
                       fontWeight: FontWeight.w600,
@@ -484,7 +486,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppStrings.getIngredientAddFailed(AppLocale.korea)),
+            content: Text(AppStrings.getIngredientAddFailed(currentLocale)),
             backgroundColor: AppColors.error,
           ),
         );

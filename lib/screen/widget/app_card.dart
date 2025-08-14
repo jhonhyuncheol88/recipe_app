@@ -119,7 +119,7 @@ class IngredientCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                '₩${price.toStringAsFixed(0)}',
+                NumberFormatter.formatCurrency(price, AppLocale.korea),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.accent,
@@ -127,7 +127,7 @@ class IngredientCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                '${amount.toInt()} $unit',
+                '${NumberFormatter.formatNumber(amount.toInt(), AppLocale.korea)} $unit',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),

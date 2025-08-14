@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import '../util/app_locale.dart';
+import '../util/app_strings.dart';
 
 class Tag extends Equatable {
   final String id;
@@ -91,24 +93,24 @@ enum TagType {
 // 기본 태그들
 class DefaultTags {
   // 재료 기본 태그 생성 메서드
-  static List<Tag> get ingredientTags => [
+  static List<Tag> ingredientTagsFor(AppLocale locale) => [
     Tag(
       id: 'fresh',
-      name: '냉장',
+      name: AppStrings.getIngredientTagFresh(locale),
       color: '#4CAF50',
       type: TagType.ingredient,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'frozen',
-      name: '냉동',
+      name: AppStrings.getIngredientTagFrozen(locale),
       color: '#2196F3',
       type: TagType.ingredient,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'indoor',
-      name: '실온',
+      name: AppStrings.getIngredientTagIndoor(locale),
       color: '#FF9800',
       type: TagType.ingredient,
       createdAt: DateTime.now(),
@@ -116,73 +118,73 @@ class DefaultTags {
   ];
 
   // 레시피 기본 태그 생성 메서드
-  static List<Tag> get recipeTags => [
+  static List<Tag> recipeTagsFor(AppLocale locale) => [
     Tag(
       id: 'korean',
-      name: '한식',
+      name: AppStrings.getRecipeTagKorean(locale),
       color: '#FF5722',
       type: TagType.recipe,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'chinese',
-      name: '중식',
+      name: AppStrings.getRecipeTagChinese(locale),
       color: '#F44336',
       type: TagType.recipe,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'japanese',
-      name: '일식',
+      name: AppStrings.getRecipeTagJapanese(locale),
       color: '#E91E63',
       type: TagType.recipe,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'western',
-      name: '양식',
+      name: AppStrings.getRecipeTagWestern(locale),
       color: '#2196F3',
       type: TagType.recipe,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'italian',
-      name: '이탈리안',
+      name: AppStrings.getRecipeTagItalian(locale),
       color: '#4CAF50',
       type: TagType.recipe,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'mexican',
-      name: '멕시칸',
+      name: AppStrings.getRecipeTagMexican(locale),
       color: '#FF9800',
       type: TagType.recipe,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'thai',
-      name: '태국음식',
+      name: AppStrings.getRecipeTagThai(locale),
       color: '#795548',
       type: TagType.recipe,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'indian',
-      name: '인도음식',
+      name: AppStrings.getRecipeTagIndian(locale),
       color: '#607D8B',
       type: TagType.recipe,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'vietnamese',
-      name: '베트남음식',
+      name: AppStrings.getRecipeTagVietnamese(locale),
       color: '#8BC34A',
       type: TagType.recipe,
       createdAt: DateTime.now(),
     ),
     Tag(
       id: 'fusion',
-      name: '퓨전',
+      name: AppStrings.getRecipeTagFusion(locale),
       color: '#9C27B0',
       type: TagType.recipe,
       createdAt: DateTime.now(),

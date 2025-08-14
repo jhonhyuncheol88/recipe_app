@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Recipe App</string>
+	<string>원까</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,6 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>유통기한 알림을 제공하기 위해 알림 권한이 필요합니다.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>This app requires access to the motion sensors to provide shake detection for ingredient animations.</string>
 </dict>

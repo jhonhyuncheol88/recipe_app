@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 /// 단위 타입 정의
 enum UnitType {
   weight, // 무게
@@ -130,6 +128,52 @@ class UnitConverter {
     baseUnit: 'pcs',
   );
 
+  // 한글 개수 단위 동의어들 (pcs와 동일한 베이스)
+  static const Unit gae = Unit(
+    id: '개',
+    name: '개',
+    symbol: '개',
+    type: UnitType.count,
+    conversionFactor: 1.0,
+    baseUnit: 'pcs',
+  );
+
+  static const Unit inbun = Unit(
+    id: '인분',
+    name: '인분',
+    symbol: '인분',
+    type: UnitType.count,
+    conversionFactor: 1.0,
+    baseUnit: 'pcs',
+  );
+
+  static const Unit jogak = Unit(
+    id: '조각',
+    name: '조각',
+    symbol: '조각',
+    type: UnitType.count,
+    conversionFactor: 1.0,
+    baseUnit: 'pcs',
+  );
+
+  static const Unit mari = Unit(
+    id: '마리',
+    name: '마리',
+    symbol: '마리',
+    type: UnitType.count,
+    conversionFactor: 1.0,
+    baseUnit: 'pcs',
+  );
+
+  static const Unit jang = Unit(
+    id: '장',
+    name: '장',
+    symbol: '장',
+    type: UnitType.count,
+    conversionFactor: 1.0,
+    baseUnit: 'pcs',
+  );
+
   // 모든 단위 목록
   static final List<Unit> allUnits = [
     // 무게 단위
@@ -146,6 +190,11 @@ class UnitConverter {
     // 개수 단위
     piece,
     dozen,
+    gae,
+    inbun,
+    jogak,
+    mari,
+    jang,
   ];
 
   // 타입별 단위 목록

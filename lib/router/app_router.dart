@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:recipe_app/util/app_strings.dart';
 import '../screen/pages/ingredient/ingredient_main_page.dart';
 import '../screen/pages/ingredient/ingredient_add_page.dart';
 import '../screen/pages/ingredient/ingredient_edit_page.dart';
 import '../screen/pages/recipe/recipe_main_page.dart';
 import '../screen/pages/recipe/recipe_add_page.dart';
 import '../screen/pages/recipe/recipe_edit_page.dart';
+import '../screen/pages/sauce/sauce_main_page.dart';
+import '../screen/pages/sauce/sauce_edit_page.dart';
+import '../model/index.dart';
 import '../screen/pages/settings_page.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../util/app_locale.dart';
 import '../util/number_formatter.dart';
-import '../util/date_formatter.dart';
+
 import '../model/ingredient.dart';
 import '../model/recipe.dart';
 import '../screen/widget/index.dart';
@@ -31,6 +35,8 @@ class AppRouter {
   static const String ingredientDetail = '/ingredient/detail';
   static const String recipeDetail = '/recipe/detail';
   static const String scanReceipt = '/scan-receipt';
+  static const String sauces = '/sauces';
+  static const String sauceEdit = '/sauce/edit';
 
   /// GoRouter 인스턴스 생성
   static GoRouter get router => GoRouter(
@@ -55,18 +61,20 @@ class AppRouter {
           return IngredientEditPage(ingredient: ingredient!);
         },
       ),
-      GoRoute(
-        path: ingredientDetail,
-        builder: (context, state) {
-          final ingredient = state.extra as Ingredient?;
-          return IngredientDetailPage(ingredient: ingredient!);
-        },
-      ),
 
       // 레시피 관련 라우트
       GoRoute(
         path: recipes,
         builder: (context, state) => const RecipeMainPage(),
+      ),
+      // 소스 관련 라우트
+      GoRoute(path: sauces, builder: (context, state) => const SauceMainPage()),
+      GoRoute(
+        path: sauceEdit,
+        builder: (context, state) {
+          final sauce = state.extra as Sauce?;
+          return SauceEditPage(sauce: sauce!);
+        },
       ),
       GoRoute(
         path: recipeCreate,
@@ -75,6 +83,7 @@ class AppRouter {
           return RecipeAddPage(
             selectedIngredients:
                 args?['selectedIngredients'] as List<Ingredient>?,
+            selectedSauces: args?['selectedSauces'] as List<Sauce>?,
           );
         },
       ),
@@ -83,13 +92,6 @@ class AppRouter {
         builder: (context, state) {
           final recipe = state.extra as Recipe?;
           return RecipeEditPage(recipe: recipe!);
-        },
-      ),
-      GoRoute(
-        path: recipeDetail,
-        builder: (context, state) {
-          final recipe = state.extra as Recipe?;
-          return RecipeDetailPage(recipe: recipe!);
         },
       ),
 
@@ -110,7 +112,7 @@ class AppRouter {
     errorBuilder: (context, state) => Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('페이지를 찾을 수 없습니다'),
+        title: Text(AppStrings.getPageNotFoundTitle(AppLocale.korea)),
         backgroundColor: AppColors.surface,
         elevation: 0,
       ),
@@ -121,14 +123,14 @@ class AppRouter {
             Icon(Icons.error_outline, size: 64, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
-              '페이지를 찾을 수 없습니다',
+              AppStrings.getPageNotFoundTitle(AppLocale.korea),
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(color: AppColors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
-              '요청하신 페이지가 존재하지 않거나 이동되었습니다.',
+              AppStrings.getPageNotFoundSubtitle(AppLocale.korea),
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
@@ -144,7 +146,7 @@ class AppRouter {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('홈으로 돌아가기'),
+              child: Text(AppStrings.getBackToHome(AppLocale.korea)),
             ),
           ],
         ),
@@ -185,102 +187,18 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.accent,
         unselectedItemColor: AppColors.textSecondary,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: '재료'),
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_menu),
-            label: '레시피',
+            icon: const Icon(Icons.inventory_2),
+            label: AppStrings.getIngredients(AppLocale.korea),
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
-        ],
-      ),
-    );
-  }
-}
-
-/// 재료 상세 페이지 (임시)
-class IngredientDetailPage extends StatelessWidget {
-  final Ingredient ingredient;
-
-  const IngredientDetailPage({super.key, required this.ingredient});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(ingredient.name),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '재료 정보',
-                    style: AppTextStyles.headline4.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInfoRow('이름', ingredient.name),
-                  _buildInfoRow(
-                    '구매 가격',
-                    NumberFormatter.formatCurrency(
-                      ingredient.purchasePrice,
-                      AppLocale.korea,
-                    ),
-                  ),
-                  _buildInfoRow(
-                    '구매 수량',
-                    '${ingredient.purchaseAmount} ${ingredient.purchaseUnitId}',
-                  ),
-                  if (ingredient.expiryDate != null)
-                    _buildInfoRow(
-                      '유통기한',
-                      DateFormatter.formatDate(
-                        ingredient.expiryDate!,
-                        AppLocale.korea,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              label,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.restaurant_menu),
+            label: AppStrings.getRecipes(AppLocale.korea),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textPrimary,
-              ),
-            ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.settings),
+            label: AppStrings.getSettings(AppLocale.korea),
           ),
         ],
       ),
@@ -288,148 +206,32 @@ class IngredientDetailPage extends StatelessWidget {
   }
 }
 
-/// 레시피 상세 페이지 (임시)
-class RecipeDetailPage extends StatelessWidget {
-  final Recipe recipe;
-
-  const RecipeDetailPage({super.key, required this.recipe});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(recipe.name),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () => context.push(AppRouter.recipeEdit, extra: recipe),
-            icon: const Icon(Icons.edit, color: AppColors.textSecondary),
+Widget _buildInfoRow(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 80,
+          child: Text(
+            label,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '레시피 정보',
-                    style: AppTextStyles.headline4.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInfoRow('이름', recipe.name),
-                  _buildInfoRow('설명', recipe.description),
-                  _buildInfoRow(
-                    '생산량',
-                    '${recipe.outputAmount} ${recipe.outputUnit}',
-                  ),
-                  _buildInfoRow(
-                    '총 원가',
-                    NumberFormatter.formatCurrency(
-                      recipe.totalCost,
-                      AppLocale.korea,
-                    ),
-                  ),
-                  _buildInfoRow(
-                    '1인분당 원가',
-                    NumberFormatter.formatCurrency(
-                      recipe.costPerServing,
-                      AppLocale.korea,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '재료 목록',
-                    style: AppTextStyles.headline4.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (recipe.ingredients.isEmpty)
-                    Text(
-                      '등록된 재료가 없습니다.',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: recipe.ingredients.length,
-                      itemBuilder: (context, index) {
-                        final ingredient = recipe.ingredients[index];
-                        return ListTile(
-                          title: Text('재료 ID: ${ingredient.ingredientId}'),
-                          subtitle: Text(
-                            '${ingredient.amount} ${ingredient.unitId}',
-                          ),
-                          trailing: Text(
-                            NumberFormatter.formatCurrency(
-                              ingredient.calculatedCost,
-                              AppLocale.korea,
-                            ),
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.accent,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                ],
-              ),
-            ),
-          ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
+        Expanded(
+          child: Text(
+            value,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textPrimary,
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }
 
 /// 영수증 스캔 페이지 (임시)

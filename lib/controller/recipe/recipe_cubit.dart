@@ -1,16 +1,22 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import '../../data/index.dart';
 import '../../model/index.dart';
 import '../../model/recipe_ingredient.dart';
-import 'recipe_event.dart';
+import '../../service/recipe_cost_service.dart';
+import '../../service/sauce_cost_service.dart';
 import 'recipe_state.dart';
+import '../../util/unit_converter.dart' as uc;
 
 class RecipeCubit extends Cubit<RecipeState> {
   final RecipeRepository _recipeRepository;
   final IngredientRepository _ingredientRepository;
   final UnitRepository _unitRepository;
   final TagRepository _tagRepository;
+  final SauceRepository _sauceRepository = SauceRepository();
+  late final SauceCostService _sauceCostService;
+  late final RecipeCostService _recipeCostService;
   final Uuid _uuid = const Uuid();
 
   RecipeCubit({
@@ -22,7 +28,17 @@ class RecipeCubit extends Cubit<RecipeState> {
        _ingredientRepository = ingredientRepository,
        _unitRepository = unitRepository,
        _tagRepository = tagRepository,
-       super(const RecipeInitial());
+       super(const RecipeInitial()) {
+    _sauceCostService = SauceCostService(
+      sauceRepository: _sauceRepository,
+      ingredientRepository: _ingredientRepository,
+    );
+    _recipeCostService = RecipeCostService(
+      recipeRepository: _recipeRepository,
+      sauceRepository: _sauceRepository,
+      sauceCostService: _sauceCostService,
+    );
+  }
 
   // 레시피 목록 로드
   Future<void> loadRecipes() async {
@@ -50,25 +66,44 @@ class RecipeCubit extends Cubit<RecipeState> {
     String? imagePath,
     List<String> tagIds = const [],
     List<RecipeIngredient> ingredients = const [],
+    List<RecipeSauce> sauces = const [],
   }) async {
     try {
       emit(const RecipeLoading());
 
+      final String recipeId = _uuid.v4();
       final recipe = Recipe(
-        id: _uuid.v4(),
+        id: recipeId,
         name: name,
         description: description,
         outputAmount: outputAmount,
         outputUnit: outputUnit,
-        totalCost: ingredients.fold(0.0, (sum, ingredient) => sum + ingredient.calculatedCost),
+        totalCost: 0.0,
         imagePath: imagePath,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        ingredients: ingredients.map((ingredient) => ingredient.copyWith(recipeId: _uuid.v4())).toList(),
+        ingredients: ingredients
+            .map((ingredient) => ingredient.copyWith(recipeId: recipeId))
+            .toList(),
         tagIds: tagIds,
       );
 
       await _recipeRepository.insertRecipe(recipe);
+
+      // 소스 관계 추가
+      for (final s in sauces) {
+        final entry = RecipeSauce(
+          id: _uuid.v4(),
+          recipeId: recipeId,
+          sauceId: s.sauceId,
+          amount: s.amount,
+          unitId: s.unitId,
+        );
+        await _recipeRepository.addSauceToRecipe(recipeId, entry);
+      }
+
+      // 총원가 재계산 (재료 + 소스)
+      await _recalculateRecipeCost(recipeId);
 
       // 태그 사용 횟수 증가
       for (final tagId in tagIds) {
@@ -77,7 +112,19 @@ class RecipeCubit extends Cubit<RecipeState> {
 
       final recipes = await _recipeRepository.getAllRecipes();
 
-      emit(RecipeAdded(recipe: recipe, recipes: recipes));
+      final created = recipes.firstWhere(
+        (r) => r.id == recipeId,
+        orElse: () => recipe,
+      );
+      emit(RecipeAdded(recipe: created, recipes: recipes));
+
+      // Analytics: 레시피 추가 카운트 증가
+      try {
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'recipe_add',
+          parameters: {'count': 1},
+        );
+      } catch (_) {}
     } catch (e) {
       emit(RecipeError('레시피 추가에 실패했습니다: $e'));
     }
@@ -413,6 +460,147 @@ class RecipeCubit extends Cubit<RecipeState> {
     }
   }
 
+  // 레시피에 소스 추가
+  Future<void> addSauceToRecipe({
+    required String recipeId,
+    required String sauceId,
+    required double amount,
+    required String unitId,
+  }) async {
+    try {
+      emit(const RecipeLoading());
+      final recipeSauce = RecipeSauce(
+        id: _uuid.v4(),
+        recipeId: recipeId,
+        sauceId: sauceId,
+        amount: amount,
+        unitId: unitId,
+      );
+      await _recipeRepository.addSauceToRecipe(recipeId, recipeSauce);
+      await _recalculateRecipeCost(recipeId);
+
+      final recipes = await _recipeRepository.getAllRecipes();
+      final updatedRecipe = recipes.firstWhere((r) => r.id == recipeId);
+      emit(RecipeUpdated(recipe: updatedRecipe, recipes: recipes));
+    } catch (e) {
+      emit(RecipeError('레시피에 소스 추가에 실패했습니다: $e'));
+    }
+  }
+
+  // 레시피에서 소스 제거
+  Future<void> removeSauceFromRecipe({
+    required String recipeId,
+    required String sauceId,
+  }) async {
+    try {
+      emit(const RecipeLoading());
+      await _recipeRepository.removeSauceFromRecipe(recipeId, sauceId);
+      await _recalculateRecipeCost(recipeId);
+
+      final recipes = await _recipeRepository.getAllRecipes();
+      final updatedRecipe = recipes.firstWhere((r) => r.id == recipeId);
+      emit(RecipeUpdated(recipe: updatedRecipe, recipes: recipes));
+    } catch (e) {
+      emit(RecipeError('레시피에서 소스 제거에 실패했습니다: $e'));
+    }
+  }
+
+  // 레시피 소스 사용량 업데이트
+  Future<void> updateRecipeSauceAmount({
+    required String recipeId,
+    required String sauceId,
+    required double newAmount,
+  }) async {
+    try {
+      emit(const RecipeLoading());
+      await _recipeRepository.updateRecipeSauceAmount(
+        recipeId,
+        sauceId,
+        newAmount,
+      );
+      await _recalculateRecipeCost(recipeId);
+
+      final recipes = await _recipeRepository.getAllRecipes();
+      final updatedRecipe = recipes.firstWhere((r) => r.id == recipeId);
+      emit(RecipeUpdated(recipe: updatedRecipe, recipes: recipes));
+    } catch (e) {
+      emit(RecipeError('레시피 소스 수량 업데이트에 실패했습니다: $e'));
+    }
+  }
+
+  // 레시피 소스 단위 변경
+  Future<void> updateRecipeSauceUnit({
+    required String recipeId,
+    required String sauceId,
+    required String newUnitId,
+  }) async {
+    try {
+      emit(const RecipeLoading());
+      await _recipeRepository.updateRecipeSauceUnit(
+        recipeId,
+        sauceId,
+        newUnitId,
+      );
+      await _recalculateRecipeCost(recipeId);
+
+      final recipes = await _recipeRepository.getAllRecipes();
+      final updatedRecipe = recipes.firstWhere((r) => r.id == recipeId);
+      emit(RecipeUpdated(recipe: updatedRecipe, recipes: recipes));
+    } catch (e) {
+      emit(RecipeError('레시피 소스 단위 변경에 실패했습니다: $e'));
+    }
+  }
+
+  // 레시피 재료 단위/수량 업데이트 (단위 변경 반영)
+  Future<void> updateRecipeIngredientUnitAndAmount({
+    required String recipeId,
+    required String ingredientId,
+    required String newUnitId,
+    required double newAmount,
+  }) async {
+    try {
+      emit(const RecipeLoading());
+      // 재료 단가 계산을 위해 구매단위 기준 단가 계산
+      final ingredient = await _ingredientRepository.getIngredientById(
+        ingredientId,
+      );
+      if (ingredient == null) {
+        emit(const RecipeError('재료를 찾을 수 없습니다.'));
+        return;
+      }
+      // 구매단위 → 기본단위 단가
+      final purchaseBase = uc.UnitConverter.toBaseUnit(
+        ingredient.purchaseAmount,
+        ingredient.purchaseUnitId,
+      );
+      final unitPrice = ingredient.purchasePrice / purchaseBase;
+      final usageBase = uc.UnitConverter.toBaseUnit(newAmount, newUnitId);
+      final newCalculatedCost = unitPrice * usageBase;
+
+      // DB 반영: amount, unit, calculated_cost
+      await _recipeRepository.updateRecipeIngredientAmount(
+        recipeId,
+        ingredientId,
+        newAmount,
+        newCalculatedCost,
+      );
+      await _recipeRepository.updateRecipeIngredientUnit(
+        recipeId,
+        ingredientId,
+        newUnitId,
+        newCalculatedCost,
+      );
+
+      await _recalculateRecipeCost(recipeId);
+
+      final recipes = await _recipeRepository.getAllRecipes();
+      final updatedRecipe = recipes.firstWhere((r) => r.id == recipeId);
+      emit(RecipeUpdated(recipe: updatedRecipe, recipes: recipes));
+    } catch (e) {
+      emit(RecipeError('재료 단위/수량 업데이트에 실패했습니다: $e'));
+    }
+  }
+
   // 원가별 레시피 정렬
   Future<void> sortRecipesByCost({bool ascending = true}) async {
     try {
@@ -537,12 +725,7 @@ class RecipeCubit extends Cubit<RecipeState> {
   Future<void> _recalculateRecipeCost(String recipeId) async {
     final recipe = await _recipeRepository.getRecipeById(recipeId);
     if (recipe == null) return;
-
-    double totalCost = 0.0;
-    for (final ingredient in recipe.ingredients) {
-      totalCost += ingredient.calculatedCost;
-    }
-
+    final totalCost = await _recipeCostService.computeRecipeTotalCost(recipe);
     final updatedRecipe = recipe.copyWith(
       totalCost: totalCost,
       updatedAt: DateTime.now(),

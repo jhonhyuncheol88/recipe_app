@@ -4,12 +4,12 @@ import 'package:go_router/go_router.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
-import '../../../util/app_locale.dart';
-import '../../../util/number_formatter.dart';
 import '../../widget/index.dart';
 import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/recipe/recipe_state.dart';
 import '../../../model/recipe.dart';
+import '../../../model/tag.dart';
+import '../../../controller/setting/locale_cubit.dart';
 
 /// 레시피 메인 페이지
 class RecipeMainPage extends StatefulWidget {
@@ -25,8 +25,13 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   String _selectedFilter = '전체';
   final TextEditingController _searchController = TextEditingController();
 
-  // 필터 옵션
-  final List<String> _filterOptions = ['전체', '빵', '케이크', '쿠키', '기타'];
+  // 필터 옵션: 기본 태그(`tag.dart`) 기반으로 구성
+  List<String> get _filterOptions => [
+    '전체',
+    ...DefaultTags.recipeTagsFor(
+      context.read<LocaleCubit>().state,
+    ).map((t) => t.name),
+  ];
 
   @override
   void initState() {
@@ -44,54 +49,47 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   // 레시피의 재료 정보 계산
   Map<String, dynamic> _calculateRecipeInfo(Recipe recipe) {
     final ingredientCount = recipe.ingredients.length;
-    double totalWeight = 0.0;
-    String weightUnit = 'g';
+    double totalWeightG = 0.0;
 
-    // 모든 재료의 투입량을 g 단위로 변환
+    // 모든 재료의 투입량을 g 단위(기본 단위)로 환산해서 합산
     for (final ingredient in recipe.ingredients) {
-      // 단위별 변환 (간단한 예시)
       switch (ingredient.unitId) {
         case 'g':
-          totalWeight += ingredient.amount;
+          totalWeightG += ingredient.amount;
           break;
         case 'kg':
-          totalWeight += ingredient.amount * 1000;
+          totalWeightG += ingredient.amount * 1000;
           break;
         case 'ml':
-          totalWeight += ingredient.amount; // ml를 g으로 간주
+          totalWeightG += ingredient.amount; // ml ≈ g 가정
           break;
         case 'L':
-          totalWeight += ingredient.amount * 1000;
+          totalWeightG += ingredient.amount * 1000;
           break;
         case '개':
         case '조각':
-          totalWeight += ingredient.amount * 50; // 개당 50g으로 간주
+          totalWeightG += ingredient.amount * 50; // 개당 50g 가정
           break;
         default:
-          totalWeight += ingredient.amount;
+          totalWeightG += ingredient.amount;
       }
-    }
-
-    // 1kg 이상이면 kg 단위로 표시
-    if (totalWeight >= 1000) {
-      totalWeight = totalWeight / 1000;
-      weightUnit = 'kg';
     }
 
     return {
       'ingredientCount': ingredientCount,
-      'totalWeight': totalWeight,
-      'weightUnit': weightUnit,
+      'totalWeight': totalWeightG,
+      'weightUnit': 'g',
     };
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(
-          AppStrings.getRecipeManagement(AppLocale.korea),
+          AppStrings.getRecipeManagement(currentLocale),
           style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
         ),
         backgroundColor: AppColors.surface,
@@ -101,7 +99,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
             TextButton(
               onPressed: _cancelSelection,
               child: Text(
-                AppStrings.getCancelSelection(AppLocale.korea),
+                AppStrings.getCancelSelection(currentLocale),
                 style: AppTextStyles.buttonMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -138,8 +136,10 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       child: AppInputField(
-        label: AppStrings.getSearchRecipe(AppLocale.korea),
-        hint: AppStrings.getSearchRecipeHint(AppLocale.korea),
+        label: AppStrings.getSearchRecipe(context.watch<LocaleCubit>().state),
+        hint: AppStrings.getSearchRecipeHint(
+          context.watch<LocaleCubit>().state,
+        ),
         controller: _searchController,
         prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
         onChanged: (value) {
@@ -150,6 +150,10 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   }
 
   Widget _buildFilterSection() {
+    final currentLocale = context.watch<LocaleCubit>().state;
+    final Map<String, String> localized = {
+      '전체': AppStrings.getAll(currentLocale),
+    };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
@@ -160,7 +164,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
-                label: Text(filter),
+                label: Text(localized[filter] ?? filter),
                 selected: isSelected,
                 onSelected: (selected) {
                   setState(() {
@@ -185,6 +189,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   }
 
   Widget _buildSelectionHeader() {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Container(
       padding: const EdgeInsets.all(16),
       color: AppColors.primaryLight,
@@ -193,7 +198,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
           Icon(Icons.check_circle, color: AppColors.accent, size: 20),
           const SizedBox(width: 8),
           Text(
-            '${_selectedRecipes.length}개 선택됨',
+            AppStrings.getSelectedCount(currentLocale, _selectedRecipes.length),
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.accent,
               fontWeight: FontWeight.w600,
@@ -203,7 +208,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
           TextButton(
             onPressed: _deleteSelectedRecipes,
             child: Text(
-              AppStrings.getDeleteSelected(AppLocale.korea),
+              AppStrings.getDeleteSelected(context.watch<LocaleCubit>().state),
               style: AppTextStyles.buttonSmall.copyWith(color: AppColors.error),
             ),
           ),
@@ -237,7 +242,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
             ),
             const SizedBox(height: 16),
             AppButton(
-              text: AppStrings.getRetry(AppLocale.korea),
+              text: AppStrings.getRetry(context.watch<LocaleCubit>().state),
               type: AppButtonType.primary,
               onPressed: () {
                 context.read<RecipeCubit>().loadRecipes();
@@ -256,6 +261,20 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     } else if (state is RecipeFilteredByTag) {
       recipes = state.recipes;
     } else if (state is RecipeFilteredByTags) {
+      recipes = state.recipes;
+    } else if (state is RecipeAdded) {
+      recipes = state.recipes;
+    } else if (state is RecipeUpdated) {
+      recipes = state.recipes;
+    } else if (state is RecipeDeleted) {
+      recipes = state.recipes;
+    } else if (state is RecipesSortedByCost) {
+      recipes = state.recipes;
+    } else if (state is RecentRecipesLoaded) {
+      recipes = state.recipes;
+    } else if (state is RecipesByIngredientLoaded) {
+      recipes = state.recipes;
+    } else if (state is RecipeCostRecalculated) {
       recipes = state.recipes;
     }
 
@@ -281,7 +300,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
             totalWeight: recipeInfo['totalWeight'],
             weightUnit: recipeInfo['weightUnit'],
             isSelected: isSelected,
-            onTap: () => _viewRecipe(recipe),
+            onTap: () => _editRecipe(recipe),
             onEdit: () => _editRecipe(recipe),
             onDelete: () => _deleteRecipe(recipe),
             onLongPress: () => _toggleRecipeSelection(recipe.id),
@@ -292,6 +311,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   }
 
   Widget _buildFloatingActionButton() {
+    final currentLocale = context.watch<LocaleCubit>().state;
     if (_isSelectionMode) {
       return FloatingActionButton(
         heroTag: 'recipe_delete_button',
@@ -309,7 +329,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       foregroundColor: AppColors.buttonText,
       icon: const Icon(Icons.add),
       label: Text(
-        AppStrings.getAddRecipeButton(AppLocale.korea),
+        AppStrings.getAddRecipeButton(currentLocale),
         style: AppTextStyles.buttonMedium,
       ),
     );
@@ -319,8 +339,21 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     if (filter == '전체') {
       context.read<RecipeCubit>().loadRecipes();
     } else {
-      // TODO: 태그 기반 필터링 구현
-      // context.read<RecipeCubit>().filterRecipesByTag(filter);
+      // 기본 태그 목록에서 이름으로 id 찾기 후 Cubit에 위임
+      final tag = DefaultTags.recipeTagsFor(context.read<LocaleCubit>().state)
+          .firstWhere(
+            (t) => t.name == filter,
+            orElse: () => Tag(
+              id: '',
+              name: '',
+              color: '#000000',
+              type: TagType.recipe,
+              createdAt: DateTime.now(),
+            ),
+          );
+      if (tag.id.isNotEmpty) {
+        context.read<RecipeCubit>().filterRecipesByTag(tag.id);
+      }
     }
   }
 
@@ -363,17 +396,18 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   }
 
   void _deleteRecipe(Recipe recipe) {
+    final currentLocale = context.read<LocaleCubit>().state;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.getDeleteRecipe(AppLocale.korea)),
+        title: Text(AppStrings.getDeleteRecipe(currentLocale)),
         content: Text(
-          '${recipe.name} ${AppStrings.getDeleteRecipeConfirm(AppLocale.korea)}',
+          '${recipe.name} ${AppStrings.getDeleteRecipeConfirm(currentLocale)}',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppStrings.getCancel(AppLocale.korea)),
+            child: Text(AppStrings.getCancel(currentLocale)),
           ),
           TextButton(
             onPressed: () async {
@@ -392,7 +426,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
               }
             },
             child: Text(
-              AppStrings.getDelete(AppLocale.korea),
+              AppStrings.getDelete(currentLocale),
               style: const TextStyle(color: AppColors.error),
             ),
           ),
@@ -402,17 +436,18 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   }
 
   void _deleteSelectedRecipes() {
+    final currentLocale = context.read<LocaleCubit>().state;
     if (_selectedRecipes.isEmpty) return;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.getDeleteSelectedRecipes(AppLocale.korea)),
+        title: Text(AppStrings.getDeleteSelectedRecipes(currentLocale)),
         content: Text('${_selectedRecipes.length}개의 레시피를 삭제하시겠습니까?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppStrings.getCancel(AppLocale.korea)),
+            child: Text(AppStrings.getCancel(currentLocale)),
           ),
           TextButton(
             onPressed: () async {
@@ -434,7 +469,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
               }
             },
             child: Text(
-              AppStrings.getDelete(AppLocale.korea),
+              AppStrings.getDelete(currentLocale),
               style: const TextStyle(color: AppColors.error),
             ),
           ),
@@ -443,7 +478,5 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     );
   }
 
-  void _scanReceipt() {
-    context.push('/scan-receipt');
-  }
+  // 삭제 예정 함수 제거 (미사용)
 }

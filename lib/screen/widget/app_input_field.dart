@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/app_locale.dart';
@@ -135,6 +134,7 @@ class NumberInputField extends StatelessWidget {
   final String? Function(String?)? validator;
   final void Function(double)? onChanged;
   final bool allowDecimal;
+  final AppLocale locale;
 
   const NumberInputField({
     super.key,
@@ -146,6 +146,7 @@ class NumberInputField extends StatelessWidget {
     this.validator,
     this.onChanged,
     this.allowDecimal = true,
+    this.locale = AppLocale.korea,
   });
 
   @override
@@ -173,7 +174,7 @@ class NumberInputField extends StatelessWidget {
       enabled: enabled,
       validator: validator,
       onChanged: (value) {
-        if (onChanged != null && value != null && value.isNotEmpty) {
+        if (onChanged != null && value.isNotEmpty) {
           // 포맷팅된 값에서 숫자만 추출
           final cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
           final number = double.tryParse(cleanValue);
@@ -184,7 +185,7 @@ class NumberInputField extends StatelessWidget {
       },
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[\d,]')),
-        _NumberInputFormatter(),
+        _NumberInputFormatter(locale),
       ],
       prefixIcon: const Icon(Icons.scale, color: AppColors.textSecondary),
     );
@@ -192,7 +193,8 @@ class NumberInputField extends StatelessWidget {
 
   // 숫자 포맷팅 (천 단위 구분자, 정수만)
   String _formatNumber(double number) {
-    return NumberFormat('#,##0', 'en_US').format(number);
+    final asInt = number.round();
+    return NumberFormatter.formatNumber(asInt, locale);
   }
 }
 
@@ -283,6 +285,10 @@ class DateInputField extends StatelessWidget {
 
 /// 숫자 입력 포맷터
 class _NumberInputFormatter extends TextInputFormatter {
+  final AppLocale locale;
+
+  _NumberInputFormatter(this.locale);
+
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
@@ -301,7 +307,7 @@ class _NumberInputFormatter extends TextInputFormatter {
     }
 
     // 포맷팅된 값 생성 (천 단위 구분자, 정수만)
-    final formatted = NumberFormat('#,##0', 'en_US').format(number);
+    final formatted = NumberFormatter.formatNumber(number.round(), locale);
 
     return TextEditingValue(
       text: formatted,
@@ -361,7 +367,7 @@ class CurrencyInputField extends StatelessWidget {
       enabled: enabled,
       validator: validator,
       onChanged: (value) {
-        if (onChanged != null && value != null && value.isNotEmpty) {
+        if (onChanged != null && value.isNotEmpty) {
           // 포맷팅된 값에서 숫자만 추출
           final cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
           final number = double.tryParse(cleanValue);

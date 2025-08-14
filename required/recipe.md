@@ -27,3 +27,121 @@ class AppStrings {
 // 사용 예시
 // Text(AppStrings.addIngredient, style: Theme.of(context).textTheme.headline6)
 6. 결론본 설계 문서는 사용자의 요구사항을 모두 반영하여, MVC 아키텍처와 BLoC(Cubit) 패턴을 통해 안정성과 확장성을 확보하고, **google_ml_kit**으로 핵심적인 입력 자동화 문제를 해결하며, **sqlite3**로 데이터를 안전하게 관리하는 Flutter 앱 개발의 청사진을 제시합니다. 특히 단위 변환 로직과 객체지향적 공통 리소스 관리 방안을 구체화하였으며, '슈빵' 스타일의 UI/UX를 적용하여 기술적 완성도와 사용자 만족도를 모두 높일 수 있도록 설계되었습니다.
+
+
+### 7. 소스(Sauce) 모듈 추가 ― 기능·데이터·로직 통합 설계
+
+> **목표**: 여러 재료(Ingredients)를 조합해 **소스(Sauce)** 단위를 만들고, 이후 레시피(Recipes)에 ‘재료 + 소스’ 혼합 형태로 원가를 계산·관리할 수 있도록 확장합니다.
+
+---
+
+#### 7.1 데이터베이스 스키마 확장
+
+| 테이블                  | 주요 컬럼                                                                                                                       | 설명                                          |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| **Sauces**           | `id TEXT PK`, `name TEXT`, `description TEXT`, `total_weight REAL`, `total_cost REAL`, `created_at TEXT`, `image_path TEXT` | 소스 메타데이터 · 집계 정보                            |
+| **SauceIngredients** | `id TEXT PK`, `sauce_id TEXT FK`, `ingredient_id TEXT FK`, `amount REAL`, `unit_id TEXT FK`                                 | 소스를 구성하는 ‘재료’ 목록                            |
+| **RecipeSauces**     | `id TEXT PK`, `recipe_id TEXT FK`, `sauce_id TEXT FK`, `amount REAL`, `unit_id TEXT FK`                                     | 레시피에 투입되는 ‘소스’ 목록<br>(레시피가 소스를 **재료처럼** 소비) |
+
+> *기존 Ingredients·Recipes 테이블은 수정 없음 – 새로운 관계 테이블 두 개만 추가하여 참조 무결성 유지.*
+
+---
+
+#### 7.2 BLoC (Cubit) 구조 추가
+
+| Cubit                      | 책임(Responsibility)                                                                            |
+| -------------------------- | --------------------------------------------------------------------------------------------- |
+| **SauceListCubit**         | 전체 소스 목록 CRUD, 검색·정렬                                                                          |
+| **SauceFormCubit**         | 소스 생성/수정 UI 상태 관리<br> • 재료 추가·삭제·수량 변경<br> • 실시간 총중량·총원가 재계산                                  |
+| **RecipeFormCubit** *(기존)* | • 재료 탭 + **소스 탭** 2개의 하위 Cubit(IngredientPicker, SaucePicker) 통합<br> • 레시피 원가 = 재료 원가 + 소스 원가 |
+
+> 두 Cubit 모두 **UnitConversionService**를 호출해 g/ml 기본 단위로 변환 후 집계값을 계산합니다.
+
+---
+
+#### 7.3 원가·중량 계산 알고리즘 (공통 로직 계층 Service)
+
+1. **소스 집계**
+
+   ```text
+   기본단위_가격(재료 i) = purchase_price_i / (purchase_amount_i × factor(unit_i))
+   원가_i = 기본단위_가격 × (amount_i × factor(unit_i))
+   총원가(소스)   = Σ 원가_i  
+   총중량(소스)   = Σ (amount_i × factor(unit_i))
+   g당(또는 ml당) 가격 = 총원가 / 총중량
+   ```
+2. **레시피 원가**
+
+   * 재료: 기존 로직 동일
+   * 소스: `g당 가격 × (레시피 사용량 × factor(unit_sauce))`
+   * **최종 원가 = 재료 원가 Σ + 소스 원가 Σ**
+
+> 집계 결과는 `intl` 로 현지 통화 형식, 소수점 반올림 규칙을 통일합니다.
+
+---
+
+#### 7.4 UI/UX 흐름 업데이트
+
+| 화면          | 주요 변경 사항                                                                                     |
+| ----------- | -------------------------------------------------------------------------------------------- |
+| **소스 목록**   | - 플로팅 버튼: ‘소스 추가’<br>- 카드: 소스 이미지·이름·총원가·g당가격                                                |
+| **소스 편집**   | - 왼쪽: 선택된 재료 리스트(드래그 정렬)<br>- 오른쪽: 재료 검색 + 추가<br>- 하단: **실시간** 총중량·총원가 표시 (AnimatedCounter)  |
+| **레시피 편집**  | 탭 구조<br> 1) 재료 2) 소스 3) 요약 원가<br>- ‘추가’ FAB 클릭 시 각각 IngredientPicker 또는 SaucePicker 다이얼로그 호출 |
+| **색상·일러스트** | 소스 전용 아이콘(예: 작은 국자) 및 파스텔 ‘오렌지’ 계열 포인트 컬러로 차별화                                               |
+
+---
+
+#### 7.5 도메인 서비스·협력 클래스
+
+```plaintext
+┌─ UnitConversionService ─┐
+│  convert(value, from, to)│
+└─────────────────────────┘
+         ▲        ▲
+         │        │
+┌────────┴───┐  ┌─┴────────┐
+│ SauceCostService ││ RecipeCostService │
+│ • calcTotalCost() ││ • calcTotalCost() │
+└───────────────────┘└──────────────────┘
+```
+
+* **재사용성** 관점: `RecipeCostService`는 내부적으로 `SauceCostService`를 호출해 소스를 **가상 재료**로 취급 → 단일 책임 유지.
+
+---
+
+#### 7.6 만료·알림 연동
+
+* 소스 자체는 유통기한을 **직접 가지지 않음**.
+* **소스 만료 임계값 = 가장 짧은 구성 재료의 만료일**로 계산하여 `ExpiryNotificationCubit`에 **가상 재료**로 등록 → 동일한 만료 색상·푸시 로직 활용.
+
+---
+
+#### 7.7 코드 스니펫(요약) ― 새 엔티티 예시
+
+```dart
+// lib/data/models/sauce.dart
+@JsonSerializable()
+class Sauce {
+  final String id;
+  final String name;
+  final String description;
+  final double totalWeight; // g or ml
+  final double totalCost;   // ₩
+  final String imagePath;
+  Sauce({required this.id, required this.name, required this.description,
+         required this.totalWeight, required this.totalCost, this.imagePath = ''});
+  factory Sauce.fromJson(Map<String, dynamic> json) => _$SauceFromJson(json);
+  Map<String, dynamic> toJson() => _$SauceToJson(this);
+}
+```
+
+---
+
+### ✅ 요약 및 다음 단계
+
+1. **DB 마이그레이션**: `Sauces`, `SauceIngredients`, `RecipeSauces` 테이블 생성
+2. **Cubit·Service 코드**: `SauceListCubit`, `SauceFormCubit`, `SauceCostService` 작성
+3. **UI 반영**: 소스 전용 목록·편집·피커 화면 추가, 레시피 편집 레이아웃 갱신
+4. **테스트**: 단위 테스트(원가·중량 계산), UI 테스트(Flow), 마이그레이션 스크립트 검증
+
+위 설계를 기반으로 소스 기능이 자연스럽게 기존 **재료 → 레시피** 흐름에 접목되며, 모든 원가·알림 로직이 일관되게 동작합니다. 필요한 추가 세부 구현이나 코드 예제가 있으면 언제든 말씀해 주세요!

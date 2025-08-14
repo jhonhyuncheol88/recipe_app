@@ -6,8 +6,8 @@ import '../../data/recipe_repository.dart';
 import '../../model/tag.dart';
 import '../../model/ingredient.dart';
 import '../../model/recipe.dart';
-import 'tag_event.dart';
 import 'tag_state.dart';
+import '../../util/app_locale.dart';
 
 class TagCubit extends Cubit<TagState> {
   final TagRepository _tagRepository;
@@ -229,14 +229,16 @@ class TagCubit extends Cubit<TagState> {
 
       final defaultTags = <Tag>[];
 
-      // 재료 기본 태그 추가
-      for (final tag in DefaultTags.ingredientTags) {
+      // 재료 기본 태그 추가 (기본 로케일 기준)
+      for (final tag in DefaultTags.ingredientTagsFor(
+        AppLocale.defaultLocale,
+      )) {
         await _tagRepository.insertTag(tag);
         defaultTags.add(tag);
       }
 
-      // 레시피 기본 태그 추가
-      for (final tag in DefaultTags.recipeTags) {
+      // 레시피 기본 태그 추가 (기본 로케일 기준)
+      for (final tag in DefaultTags.recipeTagsFor(AppLocale.defaultLocale)) {
         await _tagRepository.insertTag(tag);
         defaultTags.add(tag);
       }

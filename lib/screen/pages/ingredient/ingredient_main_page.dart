@@ -4,11 +4,15 @@ import 'package:go_router/go_router.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
-import '../../../util/app_locale.dart';
 import '../../widget/index.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/ingredient/ingredient_state.dart';
+import '../../../controller/sauce/sauce_cubit.dart';
+import '../../../controller/sauce/sauce_state.dart';
 import '../../../model/ingredient.dart';
+import '../../../model/index.dart';
+import '../../../util/number_formatter.dart';
+import '../../../controller/setting/locale_cubit.dart';
 
 /// 재료 메인 페이지
 class IngredientMainPage extends StatefulWidget {
@@ -18,10 +22,10 @@ class IngredientMainPage extends StatefulWidget {
   State<IngredientMainPage> createState() => _IngredientMainPageState();
 }
 
-class _IngredientMainPageState extends State<IngredientMainPage> {
-  bool _isSelectionMode = false;
-  final Set<String> _selectedIngredients = {};
+class _IngredientMainPageState extends State<IngredientMainPage>
+    with SingleTickerProviderStateMixin {
   String _selectedFilter = '전체';
+  late final TabController _tabController;
 
   // 필터 옵션
   final List<String> _filterOptions = ['전체', '냉장', '냉동', '실온'];
@@ -31,57 +35,67 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
     super.initState();
     // 페이지 로드 시 재료 목록 가져오기
     context.read<IngredientCubit>().loadIngredients();
+    // 소스 목록도 초기 로드
+    context.read<SauceCubit>().loadSauces();
+    _tabController = TabController(length: 2, vsync: this)
+      ..addListener(() {
+        setState(() {});
+      });
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentLocale = context.watch<LocaleCubit>().state;
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(
-          AppStrings.getIngredientManagement(AppLocale.korea),
+          AppStrings.getIngredientManagement(currentLocale),
           style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
         ),
         backgroundColor: AppColors.surface,
         elevation: 0,
-        actions: [
-          if (_isSelectionMode) ...[
-            TextButton(
-              onPressed: _cancelSelection,
-              child: Text(
-                AppStrings.getCancelSelection(AppLocale.korea),
-                style: AppTextStyles.buttonMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-          ] else ...[
-            IconButton(
-              onPressed: _toggleSelectionMode,
-              icon: const Icon(
-                Icons.select_all,
-                color: AppColors.textSecondary,
-              ),
-            ),
+        actions: const [],
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: AppColors.accent,
+          unselectedLabelColor: AppColors.textSecondary,
+          tabs: [
+            Tab(text: AppStrings.getIngredients(currentLocale)),
+            Tab(text: AppStrings.getSauces(currentLocale)),
           ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          BlocBuilder<IngredientCubit, IngredientState>(
+            builder: (context, ingredientState) {
+              return Column(
+                children: [
+                  _buildFilterSection(),
+                  Expanded(child: _buildIngredientList(ingredientState)),
+                ],
+              );
+            },
+          ),
+          _buildSauceTab(),
         ],
       ),
-      body: BlocBuilder<IngredientCubit, IngredientState>(
-        builder: (context, ingredientState) {
-          return Column(
-            children: [
-              if (_isSelectionMode) _buildSelectionHeader(),
-              _buildFilterSection(),
-              Expanded(child: _buildIngredientList(ingredientState)),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton: _tabController.index == 0
+          ? _buildFloatingActionButton()
+          : _buildSauceFab(),
     );
   }
 
   Widget _buildFilterSection() {
+    final currentLocale = context.watch<LocaleCubit>().state;
+    final Map<String, String> localized = {
+      '전체': AppStrings.getAll(currentLocale),
+      '냉장': AppStrings.getIngredientTagFresh(currentLocale),
+      '냉동': AppStrings.getIngredientTagFrozen(currentLocale),
+      '실온': AppStrings.getIngredientTagIndoor(currentLocale),
+    };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
@@ -92,7 +106,7 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
-                label: Text(filter),
+                label: Text(localized[filter] ?? filter),
                 selected: isSelected,
                 onSelected: (selected) {
                   setState(() {
@@ -116,34 +130,103 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
     );
   }
 
-  Widget _buildSelectionHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: AppColors.primaryLight,
-      child: Row(
-        children: [
-          Text(
-            AppStrings.getSelectedCount(
-              AppLocale.korea,
-              _selectedIngredients.length,
+  Widget _buildSauceTab() {
+    return BlocBuilder<SauceCubit, SauceState>(
+      builder: (context, state) {
+        final currentLocale = context.watch<LocaleCubit>().state;
+        if (state is SauceLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state is SauceEmpty) {
+          return Center(
+            child: Text(
+              AppStrings.getNoSauces(currentLocale),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+          );
+        }
+        if (state is SauceError) {
+          return Center(child: Text(state.message));
+        }
+        if (state is SauceLoaded) {
+          final sauces = state.sauces;
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: sauces.length,
+            itemBuilder: (context, index) {
+              final sauce = sauces[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  title: Text(sauce.name, style: AppTextStyles.bodyMedium),
+                  subtitle: Text(
+                    '${AppStrings.getTotalWeight(currentLocale)}: ${NumberFormatter.formatNumber(sauce.totalWeight.toInt(), currentLocale)} | ${AppStrings.getTotalCost(currentLocale)}: ${NumberFormatter.formatCurrency(sauce.totalCost, currentLocale)}',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/sauce/edit', extra: sauce),
+                ),
+              );
+            },
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildSauceFab() {
+    final currentLocale = context.watch<LocaleCubit>().state;
+    return FloatingActionButton.extended(
+      heroTag: 'sauce_add_button',
+      onPressed: _createSauce,
+      backgroundColor: AppColors.buttonPrimary,
+      foregroundColor: AppColors.buttonText,
+      icon: const Icon(Icons.add),
+      label: Text(AppStrings.getAddSauceButton(currentLocale)),
+    );
+  }
+
+  void _createSauce() async {
+    final currentLocale = context.read<LocaleCubit>().state;
+    final controller = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppStrings.getEnterSauceName(currentLocale)),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: AppStrings.getSauceNameExample(currentLocale),
           ),
-          const Spacer(),
-          if (_selectedIngredients.isNotEmpty)
-            AppButton(
-              text: AppStrings.getCreateRecipeFromIngredients(AppLocale.korea),
-              type: AppButtonType.success,
-              size: AppButtonSize.small,
-              onPressed: _createRecipeFromIngredients,
-            ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppStrings.getCancel(currentLocale)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: Text(AppStrings.getCreate(currentLocale)),
+          ),
         ],
       ),
     );
+    if (name != null && name.isNotEmpty) {
+      await context.read<SauceCubit>().addSauce(name: name);
+      if (!mounted) return;
+      final state = context.read<SauceCubit>().state;
+      if (state is SauceAdded) {
+        context.push('/sauce/edit', extra: state.sauce);
+      }
+    }
   }
+
+  // 선택 모드 제거됨
 
   Widget _buildIngredientList(IngredientState state) {
     if (state is IngredientLoading) {
@@ -151,13 +234,11 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
     }
 
     if (state is IngredientEmpty) {
-      return IngredientEmptyState(
-        // onScanPressed: _scanReceipt,
-        onAddPressed: _addIngredient,
-      );
+      return const IngredientEmptyState();
     }
 
     if (state is IngredientError) {
+      final currentLocale = context.watch<LocaleCubit>().state;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -165,7 +246,7 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
             Icon(Icons.error_outline, size: 64, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
-              '오류가 발생했습니다',
+              AppStrings.getErrorOccurred(currentLocale),
               style: AppTextStyles.headline4.copyWith(
                 color: AppColors.textPrimary,
               ),
@@ -180,7 +261,7 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
             ),
             const SizedBox(height: 16),
             AppButton(
-              text: '다시 시도',
+              text: AppStrings.getRetry(currentLocale),
               type: AppButtonType.primary,
               onPressed: () {
                 context.read<IngredientCubit>().loadIngredients();
@@ -195,10 +276,7 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
       final ingredients = state.ingredients;
 
       if (ingredients.isEmpty) {
-        return IngredientEmptyState(
-          // onScanPressed: _scanReceipt,
-          onAddPressed: _addIngredient,
-        );
+        return const IngredientEmptyState();
       }
 
       return ListView.builder(
@@ -207,18 +285,10 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
         itemBuilder: (context, index) {
           final ingredient = ingredients[index];
 
-          if (_isSelectionMode) {
-            final isSelected = _selectedIngredients.contains(ingredient.id);
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _buildSelectableIngredientCard(ingredient, isSelected),
-            );
-          } else {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _buildIngredientCard(ingredient),
-            );
-          }
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _buildIngredientCard(ingredient),
+          );
         },
       );
     }
@@ -239,72 +309,10 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
     );
   }
 
-  Widget _buildSelectableIngredientCard(
-    Ingredient ingredient,
-    bool isSelected,
-  ) {
-    return GestureDetector(
-      onTap: () => _toggleIngredientSelection(ingredient.id),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryLight : AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: isSelected
-              ? Border.all(color: AppColors.accent, width: 2)
-              : null,
-        ),
-        child: Stack(
-          children: [
-            IngredientCard(
-              name: ingredient.name,
-              price: ingredient.purchasePrice,
-              amount: ingredient.purchaseAmount,
-              unit: ingredient.purchaseUnitId,
-            ),
-            if (isSelected)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check,
-                    size: 16,
-                    color: AppColors.buttonText,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+  // 선택 모드 제거됨
 
   Widget _buildFloatingActionButton() {
-    if (_isSelectionMode) {
-      if (_selectedIngredients.isEmpty) {
-        return const SizedBox.shrink();
-      }
-
-      return FloatingActionButton.extended(
-        heroTag: 'ingredient_create_recipe_button',
-        onPressed: _createRecipeFromIngredients,
-        backgroundColor: AppColors.accent,
-        foregroundColor: AppColors.buttonText,
-        icon: const Icon(Icons.restaurant_menu),
-        label: Text(
-          AppStrings.getCreateRecipeFromIngredients(AppLocale.korea),
-          style: AppTextStyles.buttonMedium,
-        ),
-      );
-    }
-
+    final currentLocale = context.watch<LocaleCubit>().state;
     return FloatingActionButton.extended(
       heroTag: 'ingredient_add_button',
       onPressed: _addIngredient,
@@ -312,66 +320,23 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
       foregroundColor: AppColors.buttonText,
       icon: const Icon(Icons.add),
       label: Text(
-        AppStrings.getAddIngredient(AppLocale.korea),
+        AppStrings.getAddIngredient(currentLocale),
         style: AppTextStyles.buttonMedium,
       ),
     );
   }
 
-  void _toggleSelectionMode() {
-    setState(() {
-      _isSelectionMode = !_isSelectionMode;
-      if (!_isSelectionMode) {
-        _selectedIngredients.clear();
-      }
-    });
-  }
+  // 선택 모드 제거됨: 토글/취소/선택 메서드 삭제
 
-  void _cancelSelection() {
-    setState(() {
-      _isSelectionMode = false;
-      _selectedIngredients.clear();
-    });
-  }
+  // 선택 모드 제거됨: 레시피 만들기 관련 선택 동작 삭제
 
-  void _toggleIngredientSelection(String ingredientId) {
-    setState(() {
-      if (_selectedIngredients.contains(ingredientId)) {
-        _selectedIngredients.remove(ingredientId);
-      } else {
-        _selectedIngredients.add(ingredientId);
-      }
-    });
-  }
+  // 사용 안 함: 인라인 피커로 대체됨
 
-  void _createRecipeFromIngredients() {
-    if (_selectedIngredients.isEmpty) return;
+  // 선택 모드 제거됨: 인라인 소스 피커 삭제
 
-    // 선택된 재료들의 실제 데이터를 가져오기
-    final currentState = context.read<IngredientCubit>().state;
-    if (currentState is IngredientLoaded) {
-      final selectedIngredientsData = currentState.ingredients
-          .where((ingredient) => _selectedIngredients.contains(ingredient.id))
-          .toList();
+  // 선택 모드 제거됨: 선택 재료를 소스에 추가하는 보조 함수 삭제
 
-      // 선택 모드 종료
-      _cancelSelection();
-
-      // 레시피 생성 페이지로 이동
-      context.push(
-        '/recipe/create',
-        extra: {
-          'selectedIngredients': selectedIngredientsData,
-          'animateFromIngredients': true,
-        },
-      );
-    }
-  }
-
-  void _scanReceipt() {
-    // TODO: OCR 스캔 기능 구현
-    context.push('/scan-receipt');
-  }
+  // void _scanReceipt() {}
 
   void _addIngredient() {
     context.push('/ingredient/add');
@@ -394,14 +359,9 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
     }
   }
 
-  /// 재료 추가 후 애니메이션 시작 (향후 구현 예정)
-  void _startIngredientAnimation(Ingredient ingredient) {
-    // TODO: 애니메이션 기능 구현
-  }
+  // void _startIngredientAnimation(Ingredient ingredient) {}
 
-  void _viewIngredient(Ingredient ingredient) {
-    _editIngredient(ingredient);
-  }
+  // void _viewIngredient(Ingredient ingredient) {}
 
   void _showIngredientDetailBottomSheet(Ingredient ingredient) {
     showModalBottomSheet(
@@ -652,25 +612,9 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
     );
   }
 
-  /// 재료 볼 터치 처리 (향후 구현 예정)
-  void _onIngredientBallTapped(
-    String ingredientId,
-    List<Ingredient> ingredients,
-  ) {
-    final ingredient = ingredients.firstWhere((i) => i.id == ingredientId);
-    _editIngredient(ingredient);
-  }
+  // void _onIngredientBallTapped(String ingredientId, List<Ingredient> ingredients) {}
 
-  /// 재료 볼 길게 누름 처리 (향후 구현 예정)
-  void _onIngredientBallLongPressed(
-    String ingredientId,
-    List<Ingredient> ingredients,
-  ) {
-    // TODO: 애니메이션 볼 길게 누름 기능 구현
-  }
+  // void _onIngredientBallLongPressed(String ingredientId, List<Ingredient> ingredients) {}
 
-  /// 재료 볼 위치 저장 처리 (향후 구현 예정)
-  void _onIngredientPositionSaved(Ingredient updatedIngredient) {
-    // TODO: 데이터베이스에 위치 정보 저장
-  }
+  // void _onIngredientPositionSaved(Ingredient updatedIngredient) {}
 }

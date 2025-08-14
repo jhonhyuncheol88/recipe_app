@@ -1,257 +1,373 @@
 PODS:
+  - app_settings (5.1.1):
+    - Flutter
   - camera_avfoundation (0.0.1):
     - Flutter
+  - DKImagePickerController/Core (4.3.9):
+    - DKImagePickerController/ImageDataManager
+    - DKImagePickerController/Resource
+  - DKImagePickerController/ImageDataManager (4.3.9)
+  - DKImagePickerController/PhotoGallery (4.3.9):
+    - DKImagePickerController/Core
+    - DKPhotoGallery
+  - DKImagePickerController/Resource (4.3.9)
+  - DKPhotoGallery (0.0.19):
+    - DKPhotoGallery/Core (= 0.0.19)
+    - DKPhotoGallery/Model (= 0.0.19)
+    - DKPhotoGallery/Preview (= 0.0.19)
+    - DKPhotoGallery/Resource (= 0.0.19)
+    - SDWebImage
+    - SwiftyGif
+  - DKPhotoGallery/Core (0.0.19):
+    - DKPhotoGallery/Model
+    - DKPhotoGallery/Preview
+    - SDWebImage
+    - SwiftyGif
+  - DKPhotoGallery/Model (0.0.19):
+    - SDWebImage
+    - SwiftyGif
+  - DKPhotoGallery/Preview (0.0.19):
+    - DKPhotoGallery/Model
+    - DKPhotoGallery/Resource
+    - SDWebImage
+    - SwiftyGif
+  - DKPhotoGallery/Resource (0.0.19):
+    - SDWebImage
+    - SwiftyGif
+  - file_picker (0.0.1):
+    - DKImagePickerController/PhotoGallery
+    - Flutter
+  - Firebase/CoreOnly (12.0.0):
+    - FirebaseCore (~> 12.0.0)
+  - firebase_analytics (12.0.0):
+    - firebase_core
+    - FirebaseAnalytics (= 12.0.0)
+    - Flutter
+  - firebase_core (4.0.0):
+    - Firebase/CoreOnly (= 12.0.0)
+    - Flutter
+  - FirebaseAnalytics (12.0.0):
+    - FirebaseAnalytics/Default (= 12.0.0)
+    - FirebaseCore (~> 12.0.0)
+    - FirebaseInstallations (~> 12.0.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - FirebaseAnalytics/Default (12.0.0):
+    - FirebaseCore (~> 12.0.0)
+    - FirebaseInstallations (~> 12.0.0)
+    - GoogleAppMeasurement/Default (= 12.0.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - FirebaseCore (12.0.0):
+    - FirebaseCoreInternal (~> 12.0.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Logger (~> 8.1)
+  - FirebaseCoreInternal (12.0.0):
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+  - FirebaseInstallations (12.0.0):
+    - FirebaseCore (~> 12.0.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - PromisesObjC (~> 2.4)
   - Flutter (1.0.0)
   - flutter_local_notifications (0.0.1):
     - Flutter
-  - google_mlkit_barcode_scanning (0.11.1):
+  - flutter_native_timezone (0.0.1):
+    - Flutter
+  - fluttertoast (0.0.2):
+    - Flutter
+  - google_mlkit_barcode_scanning (0.14.1):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/BarcodeScanning (~> 5.0.0)
-  - google_mlkit_commons (0.7.1):
+    - GoogleMLKit/BarcodeScanning (~> 7.0.0)
+  - google_mlkit_commons (0.11.0):
     - Flutter
     - MLKitVision
-  - google_mlkit_digital_ink_recognition (0.11.1):
+  - google_mlkit_digital_ink_recognition (0.14.1):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/DigitalInkRecognition (~> 5.0.0)
-  - google_mlkit_entity_extraction (0.12.1):
+    - GoogleMLKit/DigitalInkRecognition (~> 7.0.0)
+  - google_mlkit_entity_extraction (0.15.1):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/EntityExtraction (~> 5.0.0)
-  - google_mlkit_face_detection (0.10.1):
+    - GoogleMLKit/EntityExtraction (~> 7.0.0)
+  - google_mlkit_face_detection (0.13.1):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/FaceDetection (~> 5.0.0)
-  - google_mlkit_face_mesh_detection (0.1.1):
+    - GoogleMLKit/FaceDetection (~> 7.0.0)
+  - google_mlkit_face_mesh_detection (0.4.1):
     - Flutter
     - google_mlkit_commons
-  - google_mlkit_image_labeling (0.11.1):
+  - google_mlkit_image_labeling (0.14.1):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/ImageLabeling (~> 5.0.0)
-    - GoogleMLKit/ImageLabelingCustom (~> 5.0.0)
-  - google_mlkit_language_id (0.10.1):
+    - GoogleMLKit/ImageLabeling (~> 7.0.0)
+    - GoogleMLKit/ImageLabelingCustom (~> 7.0.0)
+  - google_mlkit_language_id (0.13.0):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/LanguageID (~> 5.0.0)
-  - google_mlkit_object_detection (0.12.1):
+    - GoogleMLKit/LanguageID (~> 7.0.0)
+  - google_mlkit_object_detection (0.15.0):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/ObjectDetection (~> 5.0.0)
-    - GoogleMLKit/ObjectDetectionCustom (~> 5.0.0)
-  - google_mlkit_pose_detection (0.11.1):
+    - GoogleMLKit/ObjectDetection (~> 7.0.0)
+    - GoogleMLKit/ObjectDetectionCustom (~> 7.0.0)
+  - google_mlkit_pose_detection (0.14.0):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/PoseDetection (~> 5.0.0)
-    - GoogleMLKit/PoseDetectionAccurate (~> 5.0.0)
-  - google_mlkit_selfie_segmentation (0.7.1):
+    - GoogleMLKit/PoseDetection (~> 7.0.0)
+    - GoogleMLKit/PoseDetectionAccurate (~> 7.0.0)
+  - google_mlkit_selfie_segmentation (0.10.0):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/SegmentationSelfie (~> 5.0.0)
-  - google_mlkit_smart_reply (0.10.1):
+    - GoogleMLKit/SegmentationSelfie (~> 7.0.0)
+  - google_mlkit_smart_reply (0.13.0):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/SmartReply (~> 5.0.0)
-  - google_mlkit_text_recognition (0.12.1):
+    - GoogleMLKit/SmartReply (~> 7.0.0)
+  - google_mlkit_text_recognition (0.15.0):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/TextRecognition (~> 5.0.0)
-  - google_mlkit_translation (0.10.1):
+    - GoogleMLKit/TextRecognition (~> 7.0.0)
+  - google_mlkit_translation (0.13.0):
     - Flutter
     - google_mlkit_commons
-    - GoogleMLKit/Translate (~> 5.0.0)
-  - GoogleDataTransport (9.4.1):
-    - GoogleUtilities/Environment (~> 7.7)
-    - nanopb (< 2.30911.0, >= 2.30908.0)
-    - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleMLKit/BarcodeScanning (5.0.0):
+    - GoogleMLKit/Translate (~> 7.0.0)
+  - GoogleAdsOnDeviceConversion (2.1.0):
+    - GoogleUtilities/Logger (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement/Core (12.0.0):
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement/Default (12.0.0):
+    - GoogleAdsOnDeviceConversion (= 2.1.0)
+    - GoogleAppMeasurement/Core (= 12.0.0)
+    - GoogleAppMeasurement/IdentitySupport (= 12.0.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement/IdentitySupport (12.0.0):
+    - GoogleAppMeasurement/Core (= 12.0.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - GoogleDataTransport (10.1.0):
+    - nanopb (~> 3.30910.0)
+    - PromisesObjC (~> 2.4)
+  - GoogleMLKit/BarcodeScanning (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitBarcodeScanning (~> 4.0.0)
-  - GoogleMLKit/DigitalInkRecognition (5.0.0):
+    - MLKitBarcodeScanning (~> 6.0.0)
+  - GoogleMLKit/DigitalInkRecognition (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitDigitalInkRecognition (~> 4.0.0)
-  - GoogleMLKit/EntityExtraction (5.0.0):
+    - MLKitDigitalInkRecognition (~> 6.0.0)
+  - GoogleMLKit/EntityExtraction (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitEntityExtraction (~> 1.0.0-beta11)
-  - GoogleMLKit/FaceDetection (5.0.0):
+    - MLKitEntityExtraction (~> 1.0.0-beta13)
+  - GoogleMLKit/FaceDetection (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitFaceDetection (~> 4.0.0)
-  - GoogleMLKit/ImageLabeling (5.0.0):
+    - MLKitFaceDetection (~> 6.0.0)
+  - GoogleMLKit/ImageLabeling (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitImageLabeling (~> 4.0.0)
-  - GoogleMLKit/ImageLabelingCustom (5.0.0):
+    - MLKitImageLabeling (~> 6.0.0)
+  - GoogleMLKit/ImageLabelingCustom (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitImageLabelingCustom (~> 4.0.0)
-  - GoogleMLKit/LanguageID (5.0.0):
+    - MLKitImageLabelingCustom (~> 6.0.0)
+  - GoogleMLKit/LanguageID (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitLanguageID (~> 5.0.0)
-  - GoogleMLKit/MLKitCore (5.0.0):
-    - MLKitCommon (~> 10.0.0)
-  - GoogleMLKit/ObjectDetection (5.0.0):
+    - MLKitLanguageID (~> 7.0.0)
+  - GoogleMLKit/MLKitCore (7.0.0):
+    - MLKitCommon (~> 12.0.0)
+  - GoogleMLKit/ObjectDetection (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitObjectDetection (~> 4.0.0)
-  - GoogleMLKit/ObjectDetectionCustom (5.0.0):
+    - MLKitObjectDetection (~> 6.0.0)
+  - GoogleMLKit/ObjectDetectionCustom (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitObjectDetectionCustom (~> 4.0.0)
-  - GoogleMLKit/PoseDetection (5.0.0):
+    - MLKitObjectDetectionCustom (~> 6.0.0)
+  - GoogleMLKit/PoseDetection (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitPoseDetection (~> 1.0.0-beta12)
-  - GoogleMLKit/PoseDetectionAccurate (5.0.0):
+    - MLKitPoseDetection (~> 1.0.0-beta14)
+  - GoogleMLKit/PoseDetectionAccurate (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitPoseDetectionAccurate (~> 1.0.0-beta12)
-  - GoogleMLKit/SegmentationSelfie (5.0.0):
+    - MLKitPoseDetectionAccurate (~> 1.0.0-beta14)
+  - GoogleMLKit/SegmentationSelfie (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitSegmentationSelfie (~> 1.0.0-beta10)
-  - GoogleMLKit/SmartReply (5.0.0):
+    - MLKitSegmentationSelfie (~> 1.0.0-beta12)
+  - GoogleMLKit/SmartReply (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitSmartReply (~> 4.0.0)
-  - GoogleMLKit/TextRecognition (5.0.0):
+    - MLKitSmartReply (~> 6.0.0)
+  - GoogleMLKit/TextRecognition (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitTextRecognition (~> 3.0.0)
-  - GoogleMLKit/Translate (5.0.0):
+    - MLKitTextRecognition (~> 5.0.0)
+  - GoogleMLKit/Translate (7.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitTranslate (~> 4.0.0)
-  - GoogleToolboxForMac/DebugUtils (2.3.2):
-    - GoogleToolboxForMac/Defines (= 2.3.2)
-  - GoogleToolboxForMac/Defines (2.3.2)
-  - GoogleToolboxForMac/Logger (2.3.2):
-    - GoogleToolboxForMac/Defines (= 2.3.2)
-  - "GoogleToolboxForMac/NSData+zlib (2.3.2)":
-    - GoogleToolboxForMac/Defines (= 2.3.2)
-  - "GoogleToolboxForMac/NSDictionary+URLArguments (2.3.2)":
-    - GoogleToolboxForMac/DebugUtils (= 2.3.2)
-    - GoogleToolboxForMac/Defines (= 2.3.2)
-    - "GoogleToolboxForMac/NSString+URLArguments (= 2.3.2)"
-  - "GoogleToolboxForMac/NSString+URLArguments (2.3.2)"
-  - GoogleToolboxForMac/StringEncoding (2.3.2):
-    - GoogleToolboxForMac/Defines (= 2.3.2)
-  - GoogleUtilities/Environment (7.13.3):
+    - MLKitTranslate (~> 6.0.0)
+  - GoogleToolboxForMac/Defines (4.2.1)
+  - GoogleToolboxForMac/Logger (4.2.1):
+    - GoogleToolboxForMac/Defines (= 4.2.1)
+  - "GoogleToolboxForMac/NSData+zlib (4.2.1)":
+    - GoogleToolboxForMac/Defines (= 4.2.1)
+  - GoogleToolboxForMac/StringEncoding (4.2.1):
+    - GoogleToolboxForMac/Defines (= 4.2.1)
+  - GoogleUtilities/AppDelegateSwizzler (8.1.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
     - GoogleUtilities/Privacy
-    - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.13.3):
+  - GoogleUtilities/Environment (8.1.0):
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Logger (8.1.0):
     - GoogleUtilities/Environment
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Privacy (7.13.3)
-  - GoogleUtilities/UserDefaults (7.13.3):
+  - GoogleUtilities/MethodSwizzler (8.1.0):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - GoogleUtilitiesComponents (1.1.0):
+  - GoogleUtilities/Network (8.1.0):
     - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Privacy
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (8.1.0)":
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (8.1.0)
+  - GoogleUtilities/Reachability (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/UserDefaults (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
   - GTMSessionFetcher/Core (3.5.0)
   - image_picker_ios (0.0.1):
     - Flutter
-  - MLImage (1.0.0-beta5)
-  - MLKitBarcodeScanning (4.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitVision (~> 6.0)
-  - MLKitCommon (10.0.0):
-    - GoogleDataTransport (~> 9.0)
-    - GoogleToolboxForMac/Logger (~> 2.1)
-    - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
-    - "GoogleToolboxForMac/NSDictionary+URLArguments (~> 2.1)"
-    - GoogleUtilities/UserDefaults (~> 7.0)
-    - GoogleUtilitiesComponents (~> 1.0)
-    - GTMSessionFetcher/Core (< 4.0, >= 1.1)
-  - MLKitDigitalInkRecognition (4.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitMDD (~> 6.0)
-    - SSZipArchive (< 3.0, >= 2.2.3)
-  - MLKitEntityExtraction (1.0.0-beta11):
-    - MLKitNaturalLanguage (~> 6.0)
-  - MLKitFaceDetection (4.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitVision (~> 6.0)
-  - MLKitImageLabeling (4.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitImageLabelingCommon (~> 6.0)
-    - MLKitVision (~> 6.0)
-    - MLKitVisionKit (~> 7.0)
-  - MLKitImageLabelingCommon (6.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitVision (~> 6.0)
-  - MLKitImageLabelingCustom (4.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitImageLabelingCommon (~> 6.0)
-    - MLKitVision (~> 6.0)
-    - MLKitVisionKit (~> 7.0)
-  - MLKitLanguageID (5.0.0):
-    - MLKitNaturalLanguage (~> 6.0)
-  - MLKitMDD (6.0.0):
-    - MLKitCommon (~> 10.0)
-  - MLKitNaturalLanguage (6.0.0):
-    - GoogleToolboxForMac/Logger (~> 2.1)
-    - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
-    - "GoogleToolboxForMac/NSDictionary+URLArguments (~> 2.1)"
-    - GoogleToolboxForMac/StringEncoding (~> 2.1)
-    - GTMSessionFetcher/Core (< 4.0, >= 1.1)
-    - MLKitCommon (~> 10.0)
-  - MLKitObjectDetection (4.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitObjectDetectionCommon (~> 6.0)
-    - MLKitVision (~> 6.0)
-    - MLKitVisionKit (~> 7.0)
-  - MLKitObjectDetectionCommon (6.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitVision (~> 6.0)
-  - MLKitObjectDetectionCustom (4.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitObjectDetectionCommon (~> 6.0)
-    - MLKitVision (~> 6.0)
-    - MLKitVisionKit (~> 7.0)
-  - MLKitPoseDetection (1.0.0-beta12):
-    - MLKitCommon (~> 10.0)
-    - MLKitPoseDetectionCommon (= 1.0.0-beta12)
-    - MLKitXenoCommon (= 1.0.0-beta12)
-  - MLKitPoseDetectionAccurate (1.0.0-beta12):
-    - MLKitCommon (~> 10.0)
-    - MLKitPoseDetectionCommon (= 1.0.0-beta12)
-    - MLKitXenoCommon (= 1.0.0-beta12)
-  - MLKitPoseDetectionCommon (1.0.0-beta12):
-    - MLKitCommon (~> 10.0)
-    - MLKitXenoCommon (= 1.0.0-beta12)
-  - MLKitSegmentationCommon (1.0.0-beta10):
-    - MLKitCommon (~> 10.0)
-    - MLKitXenoCommon (= 1.0.0-beta12)
-  - MLKitSegmentationSelfie (1.0.0-beta10):
-    - MLKitSegmentationCommon (= 1.0.0-beta10)
-  - MLKitSmartReply (4.0.0):
-    - MLKitLanguageID (~> 5.0)
-    - MLKitNaturalLanguage (~> 6.0)
-  - MLKitTextRecognition (3.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitTextRecognitionCommon (= 2.0.0)
-    - MLKitVision (~> 6.0)
-  - MLKitTextRecognitionCommon (2.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitVision (~> 6.0)
-  - MLKitTranslate (4.0.0):
-    - MLKitNaturalLanguage (~> 6.0)
-    - SSZipArchive (< 3.0, >= 2.2.3)
-  - MLKitVision (6.0.0):
-    - GoogleToolboxForMac/Logger (~> 2.1)
-    - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
-    - GTMSessionFetcher/Core (< 4.0, >= 1.1)
-    - MLImage (= 1.0.0-beta5)
-    - MLKitCommon (~> 10.0)
-  - MLKitVisionKit (7.0.0):
-    - MLKitCommon (~> 10.0)
-    - MLKitImageLabelingCommon (~> 6.0)
-    - MLKitObjectDetectionCommon (~> 6.0)
-    - MLKitVision (~> 6.0)
-  - MLKitXenoCommon (1.0.0-beta12):
-    - MLKitCommon (~> 10.0)
-    - MLKitVision (~> 6.0)
-  - nanopb (2.30910.0):
-    - nanopb/decode (= 2.30910.0)
-    - nanopb/encode (= 2.30910.0)
-  - nanopb/decode (2.30910.0)
-  - nanopb/encode (2.30910.0)
+  - MLImage (1.0.0-beta6)
+  - MLKitBarcodeScanning (6.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitVision (~> 8.0)
+  - MLKitCommon (12.0.0):
+    - GoogleDataTransport (~> 10.0)
+    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
+    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
+    - GoogleUtilities/Logger (~> 8.0)
+    - GoogleUtilities/UserDefaults (~> 8.0)
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
+  - MLKitDigitalInkRecognition (6.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitMDD (~> 8.0)
+    - SSZipArchive (< 3.0, >= 2.5.5)
+  - MLKitEntityExtraction (1.0.0-beta13):
+    - MLKitNaturalLanguage (~> 8.0)
+  - MLKitFaceDetection (6.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitVision (~> 8.0)
+  - MLKitImageLabeling (6.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitImageLabelingCommon (~> 8.0)
+    - MLKitVision (~> 8.0)
+    - MLKitVisionKit (~> 9.0)
+  - MLKitImageLabelingCommon (8.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitVision (~> 8.0)
+  - MLKitImageLabelingCustom (6.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitImageLabelingCommon (~> 8.0)
+    - MLKitVision (~> 8.0)
+    - MLKitVisionKit (~> 9.0)
+  - MLKitLanguageID (7.0.0):
+    - MLKitNaturalLanguage (~> 8.0)
+  - MLKitMDD (8.0.0):
+    - MLKitCommon (~> 12.0)
+  - MLKitNaturalLanguage (8.0.0):
+    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
+    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
+    - GoogleToolboxForMac/StringEncoding (< 5.0, >= 4.2.1)
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
+    - MLKitCommon (~> 12.0)
+  - MLKitObjectDetection (6.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitObjectDetectionCommon (~> 8.0)
+    - MLKitVision (~> 8.0)
+    - MLKitVisionKit (~> 9.0)
+  - MLKitObjectDetectionCommon (8.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitVision (~> 8.0)
+  - MLKitObjectDetectionCustom (6.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitObjectDetectionCommon (~> 8.0)
+    - MLKitVision (~> 8.0)
+    - MLKitVisionKit (~> 9.0)
+  - MLKitPoseDetection (1.0.0-beta14):
+    - MLKitCommon (~> 12.0)
+    - MLKitPoseDetectionCommon (= 1.0.0-beta14)
+    - MLKitXenoCommon (= 1.0.0-beta14)
+  - MLKitPoseDetectionAccurate (1.0.0-beta14):
+    - MLKitCommon (~> 12.0)
+    - MLKitPoseDetectionCommon (= 1.0.0-beta14)
+    - MLKitXenoCommon (= 1.0.0-beta14)
+  - MLKitPoseDetectionCommon (1.0.0-beta14):
+    - MLKitCommon (~> 12.0)
+    - MLKitXenoCommon (= 1.0.0-beta14)
+  - MLKitSegmentationCommon (1.0.0-beta12):
+    - MLKitCommon (~> 12.0)
+    - MLKitXenoCommon (= 1.0.0-beta14)
+  - MLKitSegmentationSelfie (1.0.0-beta12):
+    - MLKitSegmentationCommon (= 1.0.0-beta12)
+  - MLKitSmartReply (6.0.0):
+    - MLKitLanguageID (~> 7.0)
+    - MLKitNaturalLanguage (~> 8.0)
+  - MLKitTextRecognition (5.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitTextRecognitionCommon (= 4.0.0)
+    - MLKitVision (~> 8.0)
+  - MLKitTextRecognitionCommon (4.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitVision (~> 8.0)
+  - MLKitTranslate (6.0.0):
+    - MLKitNaturalLanguage (~> 8.0)
+    - SSZipArchive (< 3.0, >= 2.5.5)
+  - MLKitVision (8.0.0):
+    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
+    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
+    - MLImage (= 1.0.0-beta6)
+    - MLKitCommon (~> 12.0)
+  - MLKitVisionKit (9.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitImageLabelingCommon (~> 8.0)
+    - MLKitObjectDetectionCommon (~> 8.0)
+    - MLKitVision (~> 8.0)
+  - MLKitXenoCommon (1.0.0-beta14):
+    - MLKitCommon (~> 12.0)
+    - MLKitVision (~> 8.0)
+  - nanopb (3.30910.0):
+    - nanopb/decode (= 3.30910.0)
+    - nanopb/encode (= 3.30910.0)
+  - nanopb/decode (3.30910.0)
+  - nanopb/encode (3.30910.0)
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - permission_handler_apple (9.3.0):
+    - Flutter
   - PromisesObjC (2.4.0)
   - rive_common (0.0.1):
+    - Flutter
+  - SDWebImage (5.21.1):
+    - SDWebImage/Core (= 5.21.1)
+  - SDWebImage/Core (5.21.1)
+  - share_plus (0.0.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
     - Flutter
@@ -259,12 +375,19 @@ PODS:
   - sqflite_darwin (0.0.4):
     - Flutter
     - FlutterMacOS
-  - SSZipArchive (2.4.3)
+  - SSZipArchive (2.6.0)
+  - SwiftyGif (5.4.5)
 
 DEPENDENCIES:
+  - app_settings (from `.symlinks/plugins/app_settings/ios`)
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
+  - file_picker (from `.symlinks/plugins/file_picker/ios`)
+  - firebase_analytics (from `.symlinks/plugins/firebase_analytics/ios`)
+  - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
+  - flutter_native_timezone (from `.symlinks/plugins/flutter_native_timezone/ios`)
+  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - google_mlkit_barcode_scanning (from `.symlinks/plugins/google_mlkit_barcode_scanning/ios`)
   - google_mlkit_commons (from `.symlinks/plugins/google_mlkit_commons/ios`)
   - google_mlkit_digital_ink_recognition (from `.symlinks/plugins/google_mlkit_digital_ink_recognition/ios`)
@@ -281,17 +404,27 @@ DEPENDENCIES:
   - google_mlkit_translation (from `.symlinks/plugins/google_mlkit_translation/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - rive_common (from `.symlinks/plugins/rive_common/ios`)
+  - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
 
 SPEC REPOS:
   trunk:
+    - DKImagePickerController
+    - DKPhotoGallery
+    - Firebase
+    - FirebaseAnalytics
+    - FirebaseCore
+    - FirebaseCoreInternal
+    - FirebaseInstallations
+    - GoogleAdsOnDeviceConversion
+    - GoogleAppMeasurement
     - GoogleDataTransport
     - GoogleMLKit
     - GoogleToolboxForMac
     - GoogleUtilities
-    - GoogleUtilitiesComponents
     - GTMSessionFetcher
     - MLImage
     - MLKitBarcodeScanning
@@ -322,15 +455,29 @@ SPEC REPOS:
     - MLKitXenoCommon
     - nanopb
     - PromisesObjC
+    - SDWebImage
     - SSZipArchive
+    - SwiftyGif
 
 EXTERNAL SOURCES:
+  app_settings:
+    :path: ".symlinks/plugins/app_settings/ios"
   camera_avfoundation:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
+  file_picker:
+    :path: ".symlinks/plugins/file_picker/ios"
+  firebase_analytics:
+    :path: ".symlinks/plugins/firebase_analytics/ios"
+  firebase_core:
+    :path: ".symlinks/plugins/firebase_core/ios"
   Flutter:
     :path: Flutter
   flutter_local_notifications:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
+  flutter_native_timezone:
+    :path: ".symlinks/plugins/flutter_native_timezone/ios"
+  fluttertoast:
+    :path: ".symlinks/plugins/fluttertoast/ios"
   google_mlkit_barcode_scanning:
     :path: ".symlinks/plugins/google_mlkit_barcode_scanning/ios"
   google_mlkit_commons:
@@ -363,73 +510,95 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
   rive_common:
     :path: ".symlinks/plugins/rive_common/ios"
+  share_plus:
+    :path: ".symlinks/plugins/share_plus/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sqflite_darwin:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
 
 SPEC CHECKSUMS:
+  app_settings: 58017cd26b604ae98c3e65acbdd8ba173703cc82
   camera_avfoundation: adb0207d868b2d873e895371d88448399ab78d87
+  DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
+  DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
+  file_picker: b159e0c068aef54932bb15dc9fd1571818edaf49
+  Firebase: 800d487043c0557d9faed71477a38d9aafb08a41
+  firebase_analytics: 2d63841132d444fad3d3e71682dc0072ae2aaf08
+  firebase_core: c70f903d70ec229c08c2f49aba5a8c1338546d40
+  FirebaseAnalytics: 6d790cd1b159b4eb61a99948df0934ce505a34f7
+  FirebaseCore: 055f4ab117d5964158c833f3d5e7ec6d91648d4a
+  FirebaseCoreInternal: dedc28e569a4be85f38f3d6af1070a2e12018d55
+  FirebaseInstallations: d4c7c958f99c8860d7fcece786314ae790e2f988
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_local_notifications: 4cde75091f6327eb8517fa068a0a5950212d2086
-  google_mlkit_barcode_scanning: 98d454079047f23114f6875f03fc6318f0366f1f
-  google_mlkit_commons: 96aaca445520311b84a2da013dedf3427fe4cc69
-  google_mlkit_digital_ink_recognition: 2905160b4f8ace1ff29fac26c020cc9228be1dac
-  google_mlkit_entity_extraction: f5faa6ab35fded6b7a310591d3d5db1e7621917c
-  google_mlkit_face_detection: c27eb0204f0ceeb439219516274a429509104f6f
-  google_mlkit_face_mesh_detection: 1746ddb8d3658b3da12fbe1bdf5d13abb5b1f1c5
-  google_mlkit_image_labeling: b17681c9c8123ffb8d94806ad9f90a072ea79973
-  google_mlkit_language_id: 95426f0b7d1228ba01bddc5e14a6f615820a1e49
-  google_mlkit_object_detection: 8a6529a2cb3049b0d76e9df5342f6aaa5e430f51
-  google_mlkit_pose_detection: 378f41270e79957b883c6e7a0883833ef6e9da90
-  google_mlkit_selfie_segmentation: b39cbd8370dfc32c0a1386ab545698d8a2291097
-  google_mlkit_smart_reply: 71b9789e853cb62a792e9bb4591257eb201831d4
-  google_mlkit_text_recognition: 6afe60af9fc3099f8f172fa42fbb14d4fe87f738
-  google_mlkit_translation: 269021c5f68d0719f1a6672d979c0bd0b13094c1
-  GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
-  GoogleMLKit: 90ba06e028795a50261f29500d238d6061538711
-  GoogleToolboxForMac: 8bef7c7c5cf7291c687cf5354f39f9db6399ad34
-  GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
-  GoogleUtilitiesComponents: 679b2c881db3b615a2777504623df6122dd20afe
+  flutter_native_timezone: 5f05b2de06c9776b4cc70e1839f03de178394d22
+  fluttertoast: 21eecd6935e7064cc1fcb733a4c5a428f3f24f0f
+  google_mlkit_barcode_scanning: e6c5e596d4dd5342e51516dcf99becb9154bae2d
+  google_mlkit_commons: 2544377e5503bf78ee7412ccfce0394c2dcb8a6b
+  google_mlkit_digital_ink_recognition: f0d5f5085f5af385f9e89a7634cad1ac21d5cea3
+  google_mlkit_entity_extraction: ae00e2eb6fc3a5ee236ef4a103d9152a5a3502c7
+  google_mlkit_face_detection: 111b3ac2f2df6ad5f464bafed9ba380ac8366d37
+  google_mlkit_face_mesh_detection: 0bf0802f4d6e26942b6992d578fc86a72f20e21b
+  google_mlkit_image_labeling: 7f16bdb0e7f38805d9bf78527ba644572ef76089
+  google_mlkit_language_id: a7c92ec75c3aaf0e5511011bb5987fd23da08f84
+  google_mlkit_object_detection: 7127aa6c97beda18b413a6d5c971a81ab200da00
+  google_mlkit_pose_detection: 59df333b48a6e2a3115504f7811bf87454b20537
+  google_mlkit_selfie_segmentation: 2f9120dc546ef0b4e8efcbad07e36f46ed156d2a
+  google_mlkit_smart_reply: bc21ddc58d3291267d451806313888095c552041
+  google_mlkit_text_recognition: c30828d00af79c10dc56bed2c6a4ca8b7dd40a50
+  google_mlkit_translation: 9f762b8689e18a13e2a75bd0cebba2831b3986c1
+  GoogleAdsOnDeviceConversion: 2be6297a4f048459e0ae17fad9bfd2844e10cf64
+  GoogleAppMeasurement: 8f6ab04ad6ae493b53fcf56bd26323fb2f1384f3
+  GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+  GoogleMLKit: eff9e23ec1d90ea4157a1ee2e32a4f610c5b3318
+  GoogleToolboxForMac: d1a2cbf009c453f4d6ded37c105e2f67a32206d8
+  GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
-  MLImage: 1824212150da33ef225fbd3dc49f184cf611046c
-  MLKitBarcodeScanning: 9cb0ec5ec65bbb5db31de4eba0a3289626beab4e
-  MLKitCommon: afcd11b6c0735066a0dde8b4bf2331f6197cbca2
-  MLKitDigitalInkRecognition: 51411badefc7f60c5fc2f8606a4a4d9819752ffc
-  MLKitEntityExtraction: 7c7082849c4cf211e1cf4abc16676f1c2c01b676
-  MLKitFaceDetection: 96effb0e6407e299fc286034f45d55267a212c26
-  MLKitImageLabeling: e464e5fb53cbdec431ef537a76d7778c9928537b
-  MLKitImageLabelingCommon: cb779d4460ff7fe7d4c53c608f3555e4453f3855
-  MLKitImageLabelingCustom: 3e2c4815c8c5724ee0f059dcb036193027d8e16d
-  MLKitLanguageID: a42e25eb6732709385adadaa6b3548c2bfe69c34
-  MLKitMDD: ad94b775d9497b32af2dba0e104dc5695b310921
-  MLKitNaturalLanguage: b9a77b1811edf35bfba52ec1ce2c25a463aa45e0
-  MLKitObjectDetection: f2ad5946bd7c981638a40cdb07a28ca68ca28189
-  MLKitObjectDetectionCommon: 3faafd522cd921cf3f59f1ee480d65269766e21e
-  MLKitObjectDetectionCustom: ccaa86f0169315c08a622f20469b85549b43cf20
-  MLKitPoseDetection: 541797754bb66a87e95cb80f51064cf9b72dd404
-  MLKitPoseDetectionAccurate: e0448e8ca87b335b8ef633e15fc5b3cd2cc090bb
-  MLKitPoseDetectionCommon: f693ecced9a704b1b7fbb9d45edfb6b81fa78424
-  MLKitSegmentationCommon: 931e3c0efbb0020843f807dcdcdbc0fd39972242
-  MLKitSegmentationSelfie: 4d67e838b2f6ac37af5a62b6280c715367fff9ab
-  MLKitSmartReply: 24ccc5f28f3c1301ded73bdf73b7d299b574ddff
-  MLKitTextRecognition: 91706574e4db9b48cd2e66cbbcc6b58956156b0a
-  MLKitTextRecognitionCommon: 3bd8375160d21dc9f9cc512d1fab2530ecc43dde
-  MLKitTranslate: 52e52e7c4800e853c274711c9034306b80abba88
-  MLKitVision: 90922bca854014a856f8b649d1f1f04f63fd9c79
-  MLKitVisionKit: 7500e88fdbe6def590154d50fcbf0d61ae62568c
-  MLKitXenoCommon: 7e4785ec6344ec6ae70f0c205ffd52403ec36f3b
-  nanopb: 438bc412db1928dac798aa6fd75726007be04262
+  MLImage: 0ad1c5f50edd027672d8b26b0fee78a8b4a0fc56
+  MLKitBarcodeScanning: 0a3064da0a7f49ac24ceb3cb46a5bc67496facd2
+  MLKitCommon: 07c2c33ae5640e5380beaaa6e4b9c249a205542d
+  MLKitDigitalInkRecognition: 42c38de99db7074ea19c9a92dafb1672f64a2649
+  MLKitEntityExtraction: 0a3cdc3498ce58aaba2ebb3479fe34a0787d3812
+  MLKitFaceDetection: 2a593db4837db503ad3426b565e7aab045cefea5
+  MLKitImageLabeling: 7f052589de9ffde213bc2c26854d212ea4dde17a
+  MLKitImageLabelingCommon: 23f0c9037c2c6433784db594bd1bb87173172fe9
+  MLKitImageLabelingCustom: 594c49fa1bb809ec05215bb4ac1c15729c7a601a
+  MLKitLanguageID: f52e378d875f1a5e67ac0f259ebddaab95faa1c7
+  MLKitMDD: a8d5a4d6a3520403d7beea887ae6ed837cf0ad26
+  MLKitNaturalLanguage: 1faece38017b0cf8eb49ac69cff10cb419f68c01
+  MLKitObjectDetection: a5f066aa6e90f134fc1ac47940e95381b7eb5257
+  MLKitObjectDetectionCommon: 0198709a728984e3b6fac98a5fa53a8042880336
+  MLKitObjectDetectionCustom: b243512ccac75c98399c272e213b53413a255c07
+  MLKitPoseDetection: 9570bd90f18cd38c1599314785d1f70401569d94
+  MLKitPoseDetectionAccurate: 2c40d53a7b8cbb67b0ca1892b221f24ef4bac1ce
+  MLKitPoseDetectionCommon: b1fc630b8af919dd04bf3dd6c24cec239c0f95fd
+  MLKitSegmentationCommon: a172e593007cb4c2637276280ea7bc4dd8a4ca3e
+  MLKitSegmentationSelfie: 9a70d110d1ab62bab31bf3337727d1dfeb98cbe8
+  MLKitSmartReply: 3039858d37cd53807d1c00d239f7b52cbd3cabee
+  MLKitTextRecognition: 3b41f3ff084a79afb214408d25d2068d77ab322c
+  MLKitTextRecognitionCommon: cd44577a8c506fc6bba065096de03bec0d01a213
+  MLKitTranslate: 2082cce437292f2f7477bfef02022ef69d8e77aa
+  MLKitVision: 45e79d68845a2de77e2dd4d7f07947f0ed157b0e
+  MLKitVisionKit: 8a7abd5f11aeb1add2942a694c2685eca422a849
+  MLKitXenoCommon: ce5047943af6b4be7ae035dd81b3a56fdb29aab3
+  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
+  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   rive_common: 3a4c254c6e4db7e4b9e05daeb3d1f47ae4f7bf76
+  SDWebImage: f29024626962457f3470184232766516dee8dfea
+  share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
   sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
-  SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
+  SSZipArchive: 8a6ee5677c8e304bebc109e39cf0da91ccef22ea
+  SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
 
-PODFILE CHECKSUM: 4305caec6b40dde0ae97be1573c53de1882a07e5
+PODFILE CHECKSUM: 9ed13369cf53c6120fda222b9ac817daa924ee4f
 
 COCOAPODS: 1.16.2

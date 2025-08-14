@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'app_locale.dart';
+import 'unit_converter.dart' as uc;
 
 /// 천 단위 구분자 입력 포맷터
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
@@ -234,5 +235,35 @@ class NumberFormatter {
       case AppLocale.euro:
         return 'Euro';
     }
+  }
+
+  /// g/ml/개 당 가격 텍스트 (예: g당 ₩120)
+  static String formatPerUnitText(
+    double unitPrice,
+    String unitId,
+    AppLocale locale,
+  ) {
+    final unitType = uc.UnitConverter.getUnitType(unitId);
+    final label = unitType == uc.UnitType.count
+        ? '개당'
+        : unitType == uc.UnitType.weight
+        ? 'g당'
+        : 'ml당';
+    return '$label ${formatCurrency(unitPrice, locale)}';
+  }
+
+  /// 기본 단위 기준 단가 (예: ₩120 / g)
+  static String formatPerBaseUnitPrice(
+    double unitPrice,
+    String unitId,
+    AppLocale locale,
+  ) {
+    final unitType = uc.UnitConverter.getUnitType(unitId);
+    final baseSymbol = unitType == uc.UnitType.count
+        ? '개'
+        : unitType == uc.UnitType.weight
+        ? 'g'
+        : 'ml';
+    return '${formatCurrency(unitPrice, locale)} / $baseSymbol';
   }
 }
