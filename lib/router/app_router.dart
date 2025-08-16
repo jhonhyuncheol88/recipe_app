@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:recipe_app/util/app_strings.dart';
 import '../screen/pages/ingredient/ingredient_main_page.dart';
 import '../screen/pages/ingredient/ingredient_add_page.dart';
+import '../screen/pages/ingredient/ingredient_bulk_add_page.dart';
 import '../screen/pages/ingredient/ingredient_edit_page.dart';
 import '../screen/pages/recipe/recipe_main_page.dart';
 import '../screen/pages/recipe/recipe_add_page.dart';
@@ -11,6 +12,8 @@ import '../screen/pages/sauce/sauce_main_page.dart';
 import '../screen/pages/sauce/sauce_edit_page.dart';
 import '../model/index.dart';
 import '../screen/pages/settings_page.dart';
+import '../screen/pages/ai/ai_tabbar_page.dart';
+import '../screen/pages/ai/ai_recipe_detail_page.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -26,10 +29,14 @@ class AppRouter {
   static const String home = '/';
   static const String ingredients = '/ingredients';
   static const String recipes = '/recipes';
+  static const String ai = '/ai';
+  static const String aiRecipeManagement = '/ai/recipes';
+  static const String aiRecipeDetail = '/ai/recipe/detail';
   static const String settings = '/settings';
   static const String widgetExamples = '/widget-examples';
   static const String recipeCreate = '/recipe/create';
   static const String ingredientAdd = '/ingredient/add';
+  static const String ingredientBulkAdd = '/ingredient/bulk-add';
   static const String ingredientEdit = '/ingredient/edit';
   static const String recipeEdit = '/recipe/edit';
   static const String ingredientDetail = '/ingredient/detail';
@@ -52,7 +59,18 @@ class AppRouter {
       ),
       GoRoute(
         path: ingredientAdd,
-        builder: (context, state) => const IngredientAddPage(),
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>?;
+          final preFilledIngredientName =
+              args?['preFilledIngredientName'] as String?;
+          return IngredientAddPage(
+            preFilledIngredientName: preFilledIngredientName,
+          );
+        },
+      ),
+      GoRoute(
+        path: ingredientBulkAdd,
+        builder: (context, state) => const IngredientBulkAddPage(),
       ),
       GoRoute(
         path: ingredientEdit,
@@ -99,6 +117,19 @@ class AppRouter {
       GoRoute(
         path: settings,
         builder: (context, state) => const SettingsPage(),
+      ),
+
+      // AI 페이지 (탭바 페이지)
+      GoRoute(path: ai, builder: (context, state) => const AiTabbarPage()),
+
+      // AI 레시피 상세 페이지
+      GoRoute(
+        path: aiRecipeDetail,
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>?;
+          final aiRecipeId = args?['aiRecipeId'] as String? ?? '';
+          return AiRecipeDetailPage(aiRecipeId: aiRecipeId);
+        },
       ),
 
       // 영수증 스캔 페이지
@@ -169,6 +200,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     const IngredientMainPage(),
     const RecipeMainPage(),
+    const AiTabbarPage(),
     const SettingsPage(),
   ];
 
@@ -195,6 +227,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.restaurant_menu),
             label: AppStrings.getRecipes(AppLocale.korea),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.auto_awesome),
+            label: 'AI',
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings),

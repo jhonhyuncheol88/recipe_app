@@ -125,7 +125,7 @@ class AppStrings {
     }
   }
 
-  static String getTotalCost(AppLocale locale) {
+  static String getAiRecipeTotalCost(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
         return '총 원가';
@@ -843,7 +843,7 @@ class AppStrings {
   }
 
   /// 원가 정보 관련
-  static String getCostInfo(AppLocale locale) {
+  static String getAiRecipeCostInfo(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
         return '원가 정보';
@@ -2296,6 +2296,1406 @@ class AppStrings {
         return '${date.year}년 ${date.month}월 ${date.day}일';
       default:
         return '${date.year}-${date.month}-${date.day}';
+    }
+  }
+
+  /// 알람 시간 설정
+  static String getAlarmTimeSetting(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '알람 시간 설정';
+      case AppLocale.japan:
+        return 'アラーム時間設定';
+      case AppLocale.china:
+        return '闹钟时间设置';
+      case AppLocale.usa:
+        return 'Alarm Time Setting';
+      case AppLocale.euro:
+        return 'Alarm Time Setting';
+    }
+  }
+
+  /// AI 페이지 관련
+  static String getAiRecipeGeneration(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 생성';
+      case AppLocale.japan:
+        return 'AIレシピ生成';
+      case AppLocale.china:
+        return 'AI食谱生成';
+      case AppLocale.usa:
+        return 'AI Recipe Generation';
+      case AppLocale.euro:
+        return 'AI Recipe Generation';
+    }
+  }
+
+  static String getAiRecipeGenerationTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI와 함께 창의적인 레시피 만들기';
+      case AppLocale.japan:
+        return 'AIと一緒に創造的なレシピを作ろう';
+      case AppLocale.china:
+        return '与AI一起制作创意食谱';
+      case AppLocale.usa:
+        return 'Create Creative Recipes with AI';
+      case AppLocale.euro:
+        return 'Create Creative Recipes with AI';
+    }
+  }
+
+  static String getAiRecipeGenerationDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '보유한 식자재를 선택하면 AI가 창의적인 레시피를 제안하고, 필요한 추가 재료도 알려드립니다.';
+      case AppLocale.japan:
+        return '保有している食材を選択すると、AIが創造的なレシピを提案し、必要な追加材料も教えてくれます。';
+      case AppLocale.china:
+        return '选择您拥有的食材，AI将建议创意食谱，并告诉您需要的额外材料。';
+      case AppLocale.usa:
+        return 'Select your available ingredients and AI will suggest creative recipes and tell you about any additional ingredients needed.';
+      case AppLocale.euro:
+        return 'Select your available ingredients and AI will suggest creative recipes and tell you about any additional ingredients needed.';
+    }
+  }
+
+  static String getSelectIngredientsToUse(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '사용할 식자재 선택';
+      case AppLocale.japan:
+        return '使用する食材を選択';
+      case AppLocale.china:
+        return '选择要使用的食材';
+      case AppLocale.usa:
+        return 'Select Ingredients to Use';
+      case AppLocale.euro:
+        return 'Select Ingredients to Use';
+    }
+  }
+
+  static String getRecipeGeneration(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피 생성';
+      case AppLocale.japan:
+        return 'レシピ生成';
+      case AppLocale.china:
+        return '食谱生成';
+      case AppLocale.usa:
+        return 'Recipe Generation';
+      case AppLocale.euro:
+        return 'Recipe Generation';
+    }
+  }
+
+  static String getAiRecipeGenerationButton(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 생성';
+      case AppLocale.japan:
+        return 'AIレシピ生成';
+      case AppLocale.china:
+        return 'AI食谱生成';
+      case AppLocale.usa:
+        return 'Generate AI Recipe';
+      case AppLocale.euro:
+        return 'Generate AI Recipe';
+    }
+  }
+
+  static String getGeneratingRecipe(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피 생성 중...';
+      case AppLocale.japan:
+        return 'レシピ生成中...';
+      case AppLocale.china:
+        return '食谱生成中...';
+      case AppLocale.usa:
+        return 'Generating Recipe...';
+      case AppLocale.euro:
+        return 'Generating Recipe...';
+    }
+  }
+
+  static String getGeneratedRecipe(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '생성된 레시피';
+      case AppLocale.japan:
+        return '生成されたレシピ';
+      case AppLocale.china:
+        return '生成的食谱';
+      case AppLocale.usa:
+        return 'Generated Recipe';
+      case AppLocale.euro:
+        return 'Generated Recipe';
+    }
+  }
+
+  static String getCookingStyle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '요리 스타일';
+      case AppLocale.japan:
+        return '料理スタイル';
+      case AppLocale.china:
+        return '烹饪风格';
+      case AppLocale.usa:
+        return 'Cooking Style';
+      case AppLocale.euro:
+        return 'Cooking Style';
+    }
+  }
+
+  static String getServings(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '인분';
+      case AppLocale.japan:
+        return '人前';
+      case AppLocale.china:
+        return '份数';
+      case AppLocale.usa:
+        return 'Servings';
+      case AppLocale.euro:
+        return 'Servings';
+      default:
+        return 'Servings';
+    }
+  }
+
+  static String getCookingTime(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '조리 시간';
+      case AppLocale.japan:
+        return '調理時間';
+      case AppLocale.china:
+        return '烹饪时间';
+      case AppLocale.usa:
+        return 'Cooking Time';
+      case AppLocale.euro:
+        return 'Cooking Time';
+    }
+  }
+
+  static String getDifficulty(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '난이도';
+      case AppLocale.japan:
+        return '難易度';
+      case AppLocale.china:
+        return '难度';
+      case AppLocale.usa:
+        return 'Difficulty';
+      case AppLocale.euro:
+        return 'Difficulty';
+    }
+  }
+
+  static String getRequiredIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '필요한 재료';
+      case AppLocale.japan:
+        return '必要な材料';
+      case AppLocale.china:
+        return '所需材料';
+      case AppLocale.usa:
+        return 'Required Ingredients';
+      case AppLocale.euro:
+        return 'Required Ingredients';
+    }
+  }
+
+  static String getAdditionalIngredientsNeeded(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '추가로 필요한 재료';
+      case AppLocale.japan:
+        return '追加で必要な材料';
+      case AppLocale.china:
+        return '额外需要的材料';
+      case AppLocale.usa:
+        return 'Additional Ingredients Needed';
+      case AppLocale.euro:
+        return 'Additional Ingredients Needed';
+    }
+  }
+
+  static String getAddAllIngredientsAtOnce(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '모든 재료 한번에 추가';
+      case AppLocale.japan:
+        return 'すべての材料を一度に追加';
+      case AppLocale.china:
+        return '一次性添加所有材料';
+      case AppLocale.usa:
+        return 'Add All Ingredients at Once';
+      case AppLocale.euro:
+        return 'Add All Ingredients at Once';
+    }
+  }
+
+  static String getAiRecipeGeneratorUsage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 생성기 사용법';
+      case AppLocale.japan:
+        return 'AIレシピ生成機の使い方';
+      case AppLocale.china:
+        return 'AI食谱生成器使用方法';
+      case AppLocale.usa:
+        return 'AI Recipe Generator Usage';
+      case AppLocale.euro:
+        return 'AI Recipe Generator Usage';
+    }
+  }
+
+  static String getAiRecipeGeneratorInstructions(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '1. 사용할 식자재를 선택하세요\n'
+            '2. AI 레시피 생성 버튼을 누르세요\n'
+            '3. AI가 창의적인 레시피를 제안합니다\n'
+            '4. 추가로 필요한 재료가 있다면 알려드립니다';
+      case AppLocale.japan:
+        return '1. 使用する食材を選択してください\n'
+            '2. AIレシピ生成ボタンを押してください\n'
+            '3. AIが創造的なレシピを提案します\n'
+            '4. 追加で必要な材料があれば教えてくれます';
+      case AppLocale.china:
+        return '1. 选择要使用的食材\n'
+            '2. 点击AI食谱生成按钮\n'
+            '3. AI将建议创意食谱\n'
+            '4. 如果有额外需要的材料会告诉您';
+      case AppLocale.usa:
+        return '1. Select ingredients to use\n'
+            '2. Press the AI Recipe Generation button\n'
+            '3. AI suggests creative recipes\n'
+            '4. Tells you about any additional ingredients needed';
+      case AppLocale.euro:
+        return '1. Select ingredients to use\n'
+            '2. Press the AI Recipe Generation button\n'
+            '3. AI suggests creative recipes\n'
+            '4. Tells you about any additional ingredients needed';
+    }
+  }
+
+  static String getNoIngredientsForRecipe(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피 생성을 위해 최소 1개 이상의 식자재를 선택해주세요.';
+      case AppLocale.japan:
+        return 'レシピ生成のために最低1つ以上の食材を選択してください。';
+      case AppLocale.china:
+        return '为了生成食谱，请至少选择1种食材。';
+      case AppLocale.usa:
+        return 'Please select at least 1 ingredient to generate a recipe.';
+      case AppLocale.euro:
+        return 'Please select at least 1 ingredient to generate a recipe.';
+    }
+  }
+
+  static String getNoRegisteredIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '등록된 식자재가 없습니다.\n먼저 식자재를 추가해주세요.';
+      case AppLocale.japan:
+        return '登録された食材がありません。\nまず食材を追加してください。';
+      case AppLocale.china:
+        return '没有已注册的食材。\n请先添加食材。';
+      case AppLocale.usa:
+        return 'No ingredients registered.\nPlease add ingredients first.';
+      case AppLocale.euro:
+        return 'No ingredients registered.\nPlease add ingredients first.';
+    }
+  }
+
+  static String getCannotLoadIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '식자재를 불러올 수 없습니다.';
+      case AppLocale.japan:
+        return '食材を読み込めません。';
+      case AppLocale.china:
+        return '无法加载食材。';
+      case AppLocale.usa:
+        return 'Cannot load ingredients.';
+      case AppLocale.euro:
+        return 'Cannot load ingredients.';
+    }
+  }
+
+  static String getRecipeGenerationError(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피 생성 중 오류가 발생했습니다';
+      case AppLocale.japan:
+        return 'レシピ生成中にエラーが発生しました';
+      case AppLocale.china:
+        return '食谱生成时发生错误';
+      case AppLocale.usa:
+        return 'An error occurred while generating the recipe';
+      case AppLocale.euro:
+        return 'An error occurred while generating the recipe';
+    }
+  }
+
+  static String getFeatureComingSoon(AppLocale locale, String featureName) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '$featureName 기능은 추후 구현 예정입니다.';
+      case AppLocale.japan:
+        return '$featureName機能は今後の実装予定です。';
+      case AppLocale.china:
+        return '$featureName功能将在后续实现。';
+      case AppLocale.usa:
+        return '$featureName feature will be implemented later.';
+      case AppLocale.euro:
+        return '$featureName feature will be implemented later.';
+    }
+  }
+
+  static String getIngredientAdditionFeature(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 추가';
+      case AppLocale.japan:
+        return '材料追加';
+      case AppLocale.china:
+        return '材料添加';
+      case AppLocale.usa:
+        return 'Ingredient Addition';
+      case AppLocale.euro:
+        return 'Ingredient Addition';
+    }
+  }
+
+  static String getBulkIngredientAdditionFeature(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '일괄 재료 추가';
+      case AppLocale.japan:
+        return '一括材料追加';
+      case AppLocale.china:
+        return '批量材料添加';
+      case AppLocale.usa:
+        return 'Bulk Ingredient Addition';
+      case AppLocale.euro:
+        return 'Bulk Ingredient Addition';
+    }
+  }
+
+  /// 일괄 재료 추가 페이지 제목
+  static String getBulkAddIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 일괄 추가';
+      case AppLocale.japan:
+        return '材料一括追加';
+      case AppLocale.china:
+        return '材料批量添加';
+      case AppLocale.usa:
+        return 'Bulk Add Ingredients';
+      case AppLocale.euro:
+        return 'Bulk Add Ingredients';
+    }
+  }
+
+  /// 일괄 재료 추가 설명
+  static String getBulkAddIngredientsDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '여러 재료를 한 번에 추가할 수 있습니다';
+      case AppLocale.japan:
+        return '複数の材料を一度に追加できます';
+      case AppLocale.china:
+        return '可以一次性添加多种材料';
+      case AppLocale.usa:
+        return 'Add multiple ingredients at once';
+      case AppLocale.euro:
+        return 'Add multiple ingredients at once';
+    }
+  }
+
+  /// 재료 목록
+  static String getIngredientList(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 목록';
+      case AppLocale.japan:
+        return '材料リスト';
+      case AppLocale.china:
+        return '材料列表';
+      case AppLocale.usa:
+        return 'Ingredient List';
+      case AppLocale.euro:
+        return 'Ingredient List';
+    }
+  }
+
+  /// 재료 추가
+  static String getAddIngredientToList(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 추가';
+      case AppLocale.japan:
+        return '材料追加';
+      case AppLocale.china:
+        return '添加材料';
+      case AppLocale.usa:
+        return 'Add Ingredient';
+      case AppLocale.euro:
+        return 'Add Ingredient';
+    }
+  }
+
+  /// 재료 제거
+  static String getRemoveIngredient(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 제거';
+      case AppLocale.japan:
+        return '材料削除';
+      case AppLocale.china:
+        return '移除材料';
+      case AppLocale.usa:
+        return 'Remove Ingredient';
+      case AppLocale.euro:
+        return 'Remove Ingredient';
+    }
+  }
+
+  /// 일괄 저장
+  static String getBulkSave(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '일괄 저장';
+      case AppLocale.japan:
+        return '一括保存';
+      case AppLocale.china:
+        return '批量保存';
+      case AppLocale.usa:
+        return 'Bulk Save';
+      case AppLocale.euro:
+        return 'Bulk Save';
+    }
+  }
+
+  /// 저장 중
+  static String getSaving(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '저장 중...';
+      case AppLocale.japan:
+        return '保存中...';
+      case AppLocale.china:
+        return '保存中...';
+      case AppLocale.usa:
+        return 'Saving...';
+      case AppLocale.euro:
+        return 'Saving...';
+    }
+  }
+
+  /// 일괄 저장 성공
+  static String getBulkSaveSuccess(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료가 성공적으로 추가되었습니다';
+      case AppLocale.japan:
+        return '材料が正常に追加されました';
+      case AppLocale.china:
+        return '材料已成功添加';
+      case AppLocale.usa:
+        return 'Ingredients added successfully';
+      case AppLocale.euro:
+        return 'Ingredients added successfully';
+    }
+  }
+
+  /// 일괄 저장 실패
+  static String getBulkSaveFailed(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 추가에 실패했습니다';
+      case AppLocale.japan:
+        return '材料追加に失敗しました';
+      case AppLocale.china:
+        return '添加材料失败';
+      case AppLocale.usa:
+        return 'Failed to add ingredients';
+      case AppLocale.euro:
+        return 'Failed to add ingredients';
+    }
+  }
+
+  /// 재료 개수
+  static String getIngredientCount(AppLocale locale, int count) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 $count개';
+      case AppLocale.japan:
+        return '材料$count個';
+      case AppLocale.china:
+        return '材料$count个';
+      case AppLocale.usa:
+        return '$count Ingredients';
+      case AppLocale.euro:
+        return '$count Ingredients';
+    }
+  }
+
+  /// 재료 정보
+  static String getIngredientInfo(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 정보';
+      case AppLocale.japan:
+        return '材料情報';
+      case AppLocale.china:
+        return '材料信息';
+      case AppLocale.usa:
+        return 'Ingredient Info';
+      case AppLocale.euro:
+        return 'Ingredient Info';
+    }
+  }
+
+  /// 재료명 입력 힌트
+  static String getEnterIngredientNameHint(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '예: 양파, 당근, 감자';
+      case AppLocale.japan:
+        return '例: 玉ねぎ、にんじん、じゃがいも';
+      case AppLocale.china:
+        return '例: 洋葱、胡萝卜、土豆';
+      case AppLocale.usa:
+        return 'e.g., Onion, Carrot, Potato';
+      case AppLocale.euro:
+        return 'e.g., Onion, Carrot, Potato';
+    }
+  }
+
+  /// 가격 입력 힌트
+  static String getEnterPriceHint(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '예: 5000';
+      case AppLocale.japan:
+        return '例: 5000';
+      case AppLocale.china:
+        return '例: 5000';
+      case AppLocale.usa:
+        return 'e.g., 5000';
+      case AppLocale.euro:
+        return 'e.g., 5000';
+    }
+  }
+
+  /// 수량 입력 힌트
+  static String getEnterAmountHint(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '예: 1.5';
+      case AppLocale.japan:
+        return '例: 1.5';
+      case AppLocale.china:
+        return '例: 1.5';
+      case AppLocale.usa:
+        return 'e.g., 1.5';
+      case AppLocale.euro:
+        return 'e.g., 1.5';
+    }
+  }
+
+  /// CSV 가져오기
+  static String getImportFromCsv(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'CSV 가져오기';
+      case AppLocale.japan:
+        return 'CSVインポート';
+      case AppLocale.china:
+        return 'CSV导入';
+      case AppLocale.usa:
+        return 'Import from CSV';
+      case AppLocale.euro:
+        return 'Import from CSV';
+    }
+  }
+
+  /// CSV 내보내기
+  static String getExportToCsv(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'CSV 내보내기';
+      case AppLocale.japan:
+        return 'CSVエクスポート';
+      case AppLocale.china:
+        return 'CSV导出';
+      case AppLocale.usa:
+        return 'Export to CSV';
+      case AppLocale.euro:
+        return 'Export to CSV';
+    }
+  }
+
+  /// 템플릿 다운로드
+  static String getDownloadTemplate(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '템플릿 다운로드';
+      case AppLocale.japan:
+        return 'テンプレートダウンロード';
+      case AppLocale.china:
+        return '模板下载';
+      case AppLocale.usa:
+        return 'Download Template';
+      case AppLocale.euro:
+        return 'Download Template';
+    }
+  }
+
+  /// 템플릿 설명
+  static String getTemplateDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'CSV 파일을 다운로드하여 재료 정보를 입력한 후 업로드하세요';
+      case AppLocale.japan:
+        return 'CSVファイルをダウンロードして材料情報を入力し、アップロードしてください';
+      case AppLocale.china:
+        return '下载CSV文件，输入材料信息后上传';
+      case AppLocale.usa:
+        return 'Download CSV file, enter ingredient info, then upload';
+      case AppLocale.euro:
+        return 'Download CSV file, enter ingredient info, then upload';
+    }
+  }
+
+  /// 파일 선택
+  static String getSelectFile(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '파일 선택';
+      case AppLocale.japan:
+        return 'ファイル選択';
+      case AppLocale.china:
+        return '选择文件';
+      case AppLocale.usa:
+        return 'Select File';
+      case AppLocale.euro:
+        return 'Select File';
+    }
+  }
+
+  /// 파일 업로드
+  static String getUploadFile(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '파일 업로드';
+      case AppLocale.japan:
+        return 'ファイルアップロード';
+      case AppLocale.china:
+        return '文件上传';
+      case AppLocale.usa:
+        return 'Upload File';
+      case AppLocale.euro:
+        return 'Upload File';
+    }
+  }
+
+  /// 파일 형식 오류
+  static String getInvalidFileFormat(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '올바르지 않은 파일 형식입니다';
+      case AppLocale.japan:
+        return '正しくないファイル形式です';
+      case AppLocale.china:
+        return '文件格式不正确';
+      case AppLocale.usa:
+        return 'Invalid file format';
+      case AppLocale.euro:
+        return 'Invalid file format';
+    }
+  }
+
+  /// 파일 읽기 오류
+  static String getFileReadError(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '파일을 읽을 수 없습니다';
+      case AppLocale.japan:
+        return 'ファイルを読むことができません';
+      case AppLocale.china:
+        return '无法读取文件';
+      case AppLocale.usa:
+        return 'Cannot read file';
+      case AppLocale.euro:
+        return 'Cannot read file';
+    }
+  }
+
+  /// 데이터 검증 오류
+  static String getDataValidationError(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '데이터 검증에 실패했습니다';
+      case AppLocale.japan:
+        return 'データ検証に失敗しました';
+      case AppLocale.china:
+        return '数据验证失败';
+      case AppLocale.usa:
+        return 'Data validation failed';
+      case AppLocale.euro:
+        return 'Data validation failed';
+    }
+  }
+
+  /// 필수 필드 누락
+  static String getRequiredFieldMissing(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '필수 필드가 누락되었습니다';
+      case AppLocale.japan:
+        return '必須フィールドが不足しています';
+      case AppLocale.china:
+        return '缺少必填字段';
+      case AppLocale.usa:
+        return 'Required fields are missing';
+      case AppLocale.euro:
+        return 'Required fields are missing';
+    }
+  }
+
+  /// 재료명 중복
+  static String getDuplicateIngredientName(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '중복된 재료명이 있습니다';
+      case AppLocale.japan:
+        return '重複した材料名があります';
+      case AppLocale.china:
+        return '有重复的材料名称';
+      case AppLocale.usa:
+        return 'Duplicate ingredient names found';
+      case AppLocale.euro:
+        return 'Duplicate ingredient names found';
+    }
+  }
+
+  /// 미리보기
+  static String getPreview(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '미리보기';
+      case AppLocale.japan:
+        return 'プレビュー';
+      case AppLocale.china:
+        return '预览';
+      case AppLocale.usa:
+        return 'Preview';
+      case AppLocale.euro:
+        return 'Preview';
+    }
+  }
+
+  /// 미리보기 설명
+  static String getPreviewDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '추가될 재료 목록을 확인하세요';
+      case AppLocale.japan:
+        return '追加される材料リストを確認してください';
+      case AppLocale.china:
+        return '确认将要添加的材料列表';
+      case AppLocale.usa:
+        return 'Review the list of ingredients to be added';
+      case AppLocale.euro:
+        return 'Review the list of ingredients to be added';
+    }
+  }
+
+  static String getKoreanCuisine(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '한국 요리';
+      case AppLocale.japan:
+        return '韓国料理';
+      case AppLocale.china:
+        return '韩国料理';
+      case AppLocale.usa:
+        return 'Korean Cuisine';
+      case AppLocale.euro:
+        return 'Korean Cuisine';
+    }
+  }
+
+  static String getBeginnerLevel(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '초급';
+      case AppLocale.japan:
+        return '初級';
+      case AppLocale.china:
+        return '初级';
+      case AppLocale.usa:
+        return 'Beginner';
+      case AppLocale.euro:
+        return 'Beginner';
+    }
+  }
+
+  static String getMinutes(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '분';
+      case AppLocale.japan:
+        return '分';
+      case AppLocale.china:
+        return '分钟';
+      case AppLocale.usa:
+        return 'min';
+      case AppLocale.euro:
+        return 'min';
+    }
+  }
+
+  static String getPeople(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '인분';
+      case AppLocale.japan:
+        return '人前';
+      case AppLocale.china:
+        return '人份';
+      case AppLocale.usa:
+        return 'servings';
+      case AppLocale.euro:
+        return 'servings';
+    }
+  }
+
+  /// 대량등록 버튼 텍스트
+  static String getBulkAdd(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '대량등록';
+      case AppLocale.japan:
+        return '一括登録';
+      case AppLocale.china:
+        return '批量注册';
+      case AppLocale.usa:
+        return 'Bulk Add';
+      case AppLocale.euro:
+        return 'Bulk Add';
+    }
+  }
+
+  /// 대량등록 버튼 툴팁
+  static String getBulkAddTooltip(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '여러 재료를 한 번에 추가';
+      case AppLocale.japan:
+        return '複数の材料を一度に追加';
+      case AppLocale.china:
+        return '一次性添加多种材料';
+      case AppLocale.usa:
+        return 'Add multiple ingredients at once';
+      case AppLocale.euro:
+        return 'Add multiple ingredients at once';
+    }
+  }
+
+  /// 조리 방법
+  static String getAiRecipeCookingInstructions(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '조리 방법';
+      case AppLocale.japan:
+        return '調理方法';
+      case AppLocale.china:
+        return '烹饪方法';
+      case AppLocale.usa:
+        return 'Cooking Instructions';
+      case AppLocale.euro:
+        return 'Cooking Instructions';
+    }
+  }
+
+  /// AI 레시피 관리 페이지 관련
+  static String getAiRecipeManagement(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 관리';
+      case AppLocale.japan:
+        return 'AIレシピ管理';
+      case AppLocale.china:
+        return 'AI食谱管理';
+      case AppLocale.usa:
+        return 'AI Recipe Management';
+      case AppLocale.euro:
+        return 'AI Recipe Management';
+    }
+  }
+
+  static String getSavedAiRecipes(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '저장된 AI 레시피';
+      case AppLocale.japan:
+        return '保存されたAIレシピ';
+      case AppLocale.china:
+        return '已保存的AI食谱';
+      case AppLocale.usa:
+        return 'Saved AI Recipes';
+      case AppLocale.euro:
+        return 'Saved AI Recipes';
+    }
+  }
+
+  static String getAiRecipeList(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 목록';
+      case AppLocale.japan:
+        return 'AIレシピリスト';
+      case AppLocale.china:
+        return 'AI食谱列表';
+      case AppLocale.usa:
+        return 'AI Recipe List';
+      case AppLocale.euro:
+        return 'AI Recipe List';
+    }
+  }
+
+  static String getNoSavedAiRecipes(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '저장된 AI 레시피가 없습니다';
+      case AppLocale.japan:
+        return '保存されたAIレシピがありません';
+      case AppLocale.china:
+        return '没有已保存的AI食谱';
+      case AppLocale.usa:
+        return 'No saved AI recipes';
+      case AppLocale.euro:
+        return 'No saved AI recipes';
+    }
+  }
+
+  static String getNoSavedAiRecipesDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI로 레시피를 생성하면 자동으로 저장됩니다.\n첫 번째 AI 레시피를 만들어보세요!';
+      case AppLocale.japan:
+        return 'AIでレシピを生成すると自動的に保存されます。\n最初のAIレシピを作ってみましょう！';
+      case AppLocale.china:
+        return '使用AI生成食谱时会自动保存。\n创建您的第一个AI食谱吧！';
+      case AppLocale.usa:
+        return 'AI-generated recipes are automatically saved.\nCreate your first AI recipe!';
+      case AppLocale.euro:
+        return 'AI-generated recipes are automatically saved.\nCreate your first AI recipe!';
+    }
+  }
+
+  static String getConvertToRecipe(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '일반 레시피로 변환';
+      case AppLocale.japan:
+        return '通常レシピに変換';
+      case AppLocale.china:
+        return '转换为普通食谱';
+      case AppLocale.usa:
+        return 'Convert to Recipe';
+      case AppLocale.euro:
+        return 'Convert to Recipe';
+    }
+  }
+
+  static String getConvertToRecipeDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피를 일반 레시피로 변환하여 관리할 수 있습니다';
+      case AppLocale.japan:
+        return 'AIレシピを通常レシピに変換して管理できます';
+      case AppLocale.china:
+        return '可以将AI食谱转换为普通食谱进行管理';
+      case AppLocale.usa:
+        return 'Convert AI recipe to regular recipe for management';
+      case AppLocale.euro:
+        return 'Convert AI recipe to regular recipe for management';
+    }
+  }
+
+  static String getAiRecipeStats(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 통계';
+      case AppLocale.japan:
+        return 'AIレシピ統計';
+      case AppLocale.china:
+        return 'AI食谱统计';
+      case AppLocale.usa:
+        return 'AI Recipe Stats';
+      case AppLocale.euro:
+        return 'AI Recipe Stats';
+    }
+  }
+
+  static String getTotalGenerated(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '총 생성된 레시피';
+      case AppLocale.japan:
+        return '総生成レシピ数';
+      case AppLocale.china:
+        return '总生成食谱数';
+      case AppLocale.usa:
+        return 'Total Generated';
+      case AppLocale.euro:
+        return 'Total Generated';
+    }
+  }
+
+  static String getConvertedRecipes(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '변환된 레시피';
+      case AppLocale.japan:
+        return '変換されたレシピ';
+      case AppLocale.china:
+        return '已转换食谱';
+      case AppLocale.usa:
+        return 'Converted Recipes';
+      case AppLocale.euro:
+        return 'Converted Recipes';
+    }
+  }
+
+  static String getConversionRate(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '변환율';
+      case AppLocale.japan:
+        return '変換率';
+      case AppLocale.china:
+        return '转换率';
+      case AppLocale.usa:
+        return 'Conversion Rate';
+      case AppLocale.euro:
+        return 'Conversion Rate';
+    }
+  }
+
+  static String getRecentGenerated(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '최근 생성된 레시피';
+      case AppLocale.japan:
+        return '最近生成されたレシピ';
+      case AppLocale.china:
+        return '最近生成的食谱';
+      case AppLocale.usa:
+        return 'Recently Generated';
+      case AppLocale.euro:
+        return 'Recently Generated';
+    }
+  }
+
+  static String getFilterByCuisine(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '요리 스타일별 필터';
+      case AppLocale.japan:
+        return '料理スタイル別フィルター';
+      case AppLocale.china:
+        return '按烹饪风格筛选';
+      case AppLocale.usa:
+        return 'Filter by Cuisine';
+      case AppLocale.euro:
+        return 'Filter by Cuisine';
+    }
+  }
+
+  static String getSearchAiRecipes(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 검색';
+      case AppLocale.japan:
+        return 'AIレシピ検索';
+      case AppLocale.china:
+        return '搜索AI食谱';
+      case AppLocale.usa:
+        return 'Search AI Recipes';
+      case AppLocale.euro:
+        return 'Search AI Recipes';
+    }
+  }
+
+  static String getSearchAiRecipesHint(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피명, 설명, 요리 스타일로 검색';
+      case AppLocale.japan:
+        return 'レシピ名、説明、料理スタイルで検索';
+      case AppLocale.china:
+        return '按食谱名称、描述、烹饪风格搜索';
+      case AppLocale.usa:
+        return 'Search by recipe name, description, or cuisine style';
+      case AppLocale.euro:
+        return 'Search by recipe name, description, or cuisine style';
+    }
+  }
+
+  static String getDeleteAiRecipe(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 삭제';
+      case AppLocale.japan:
+        return 'AIレシピ削除';
+      case AppLocale.china:
+        return '删除AI食谱';
+      case AppLocale.usa:
+        return 'Delete AI Recipe';
+      case AppLocale.euro:
+        return 'Delete AI Recipe';
+    }
+  }
+
+  static String getDeleteAiRecipeConfirm(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이 AI 레시피를 삭제하시겠습니까?';
+      case AppLocale.japan:
+        return 'このAIレシピを削除しますか？';
+      case AppLocale.china:
+        return '确定要删除这个AI食谱吗？';
+      case AppLocale.usa:
+        return 'Are you sure you want to delete this AI recipe?';
+      case AppLocale.euro:
+        return 'Are you sure you want to delete this AI recipe?';
+    }
+  }
+
+  static String getAiRecipeDeleted(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피가 삭제되었습니다';
+      case AppLocale.japan:
+        return 'AIレシピが削除されました';
+      case AppLocale.china:
+        return 'AI食谱已删除';
+      case AppLocale.usa:
+        return 'AI recipe has been deleted';
+      case AppLocale.euro:
+        return 'AI recipe has been deleted';
+    }
+  }
+
+  static String getAiRecipeSaved(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피가 자동으로 저장되었습니다';
+      case AppLocale.japan:
+        return 'AIレシピが自動的に保存されました';
+      case AppLocale.china:
+        return 'AI食谱已自动保存';
+      case AppLocale.usa:
+        return 'AI recipe has been automatically saved';
+      case AppLocale.euro:
+        return 'AI recipe has been automatically saved';
+    }
+  }
+
+  static String getAiRecipeDetail(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 상세';
+      case AppLocale.japan:
+        return 'AIレシピ詳細';
+      case AppLocale.china:
+        return 'AI食谱详情';
+      case AppLocale.usa:
+        return 'AI Recipe Detail';
+      case AppLocale.euro:
+        return 'AI Recipe Detail';
+    }
+  }
+
+  static String getIngredientsAnalysis(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 분석';
+      case AppLocale.japan:
+        return '材料分析';
+      case AppLocale.china:
+        return '材料分析';
+      case AppLocale.usa:
+        return 'Ingredients Analysis';
+      case AppLocale.euro:
+        return 'Ingredients Analysis';
+    }
+  }
+
+  static String getCostInfo(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '원가 정보';
+      case AppLocale.japan:
+        return '原価情報';
+      case AppLocale.china:
+        return '成本信息';
+      case AppLocale.usa:
+        return 'Cost Information';
+      case AppLocale.euro:
+        return 'Cost Information';
+    }
+  }
+
+  static String getCookingInstructions(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '조리 방법';
+      case AppLocale.japan:
+        return '調理方法';
+      case AppLocale.china:
+        return '烹饪方法';
+      case AppLocale.usa:
+        return 'Cooking Instructions';
+      case AppLocale.euro:
+        return 'Cooking Instructions';
+    }
+  }
+
+  static String getIngredientAvailability(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 가용성';
+      case AppLocale.japan:
+        return '材料の可用性';
+      case AppLocale.china:
+        return '材料可用性';
+      case AppLocale.usa:
+        return 'Ingredient Availability';
+      case AppLocale.euro:
+        return 'Ingredient Availability';
+    }
+  }
+
+  static String getTotalCost(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '총 원가';
+      case AppLocale.japan:
+        return '総原価';
+      case AppLocale.china:
+        return '总成本';
+      case AppLocale.usa:
+        return 'Total Cost';
+      case AppLocale.euro:
+        return 'Total Cost';
+    }
+  }
+
+  static String getAiRecipeStandard(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 기준';
+      case AppLocale.japan:
+        return 'AIレシピ基準';
+      case AppLocale.china:
+        return 'AI食谱标准';
+      case AppLocale.usa:
+        return 'AI Recipe Standard';
+      case AppLocale.euro:
+        return 'AI Recipe Standard';
+    }
+  }
+
+  static String getAddIngredientRequired(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이 재료를 추가해야 합니다';
+      case AppLocale.japan:
+        return 'この材料を追加する必要があります';
+      case AppLocale.china:
+        return '需要添加这种材料';
+      case AppLocale.usa:
+        return 'This ingredient needs to be added';
+      case AppLocale.euro:
+        return 'This ingredient needs to be added';
+    }
+  }
+
+  static String getLoadingAiRecipe(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피를 불러오는 중...';
+      case AppLocale.japan:
+        return 'AIレシピを読み込み中...';
+      case AppLocale.china:
+        return '正在加载AI食谱...';
+      case AppLocale.usa:
+        return 'Loading AI recipe...';
+      case AppLocale.euro:
+        return 'Loading AI recipe...';
+    }
+  }
+
+  static String getAiRecipeNotFound(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피를 찾을 수 없습니다';
+      case AppLocale.japan:
+        return 'AIレシピが見つかりません';
+      case AppLocale.china:
+        return '找不到AI食谱';
+      case AppLocale.usa:
+        return 'AI recipe not found';
+      case AppLocale.euro:
+        return 'AI recipe not found';
+    }
+  }
+
+  static String getConversionSuccess(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '일반 레시피로 변환되었습니다';
+      case AppLocale.japan:
+        return '通常レシピに変換されました';
+      case AppLocale.china:
+        return '已转换为普通食谱';
+      case AppLocale.usa:
+        return 'Converted to regular recipe';
+      case AppLocale.euro:
+        return 'Converted to regular recipe';
+    }
+  }
+
+  static String getConversionFailed(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '변환에 실패했습니다';
+      case AppLocale.japan:
+        return '変換に失敗しました';
+      case AppLocale.china:
+        return '转换失败';
+      case AppLocale.usa:
+        return 'Conversion failed';
+      case AppLocale.euro:
+        return 'Conversion failed';
     }
   }
 }

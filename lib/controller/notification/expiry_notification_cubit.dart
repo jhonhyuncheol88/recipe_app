@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:developer' as developer;
 import 'package:uuid/uuid.dart';
@@ -29,11 +30,16 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
   static const String _kNotifWarning = 'notif_warning';
   static const String _kNotifDanger = 'notif_danger';
   static const String _kNotifExpired = 'notif_expired';
+  static const String _kNotifTime = 'notif_time'; // 알람 시간 설정 추가
 
   bool notificationsEnabled = true;
   bool warningEnabled = true;
   bool dangerEnabled = true;
   bool expiredEnabled = true;
+  TimeOfDay notificationTime = const TimeOfDay(
+    hour: 9,
+    minute: 0,
+  ); // 기본값: 오전 9시
 
   // 시간 기준 임계값 (로컬 시간 기준)
   static const int dangerThresholdHours = 24; // 24시간 이내 → 위험
@@ -99,6 +105,20 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
     } else {
       emit(ExpiryNotificationsLoaded(const []));
     }
+  }
+
+  /// 알람 시간 설정
+  void setNotificationTime(TimeOfDay time) {
+    notificationTime = time;
+    _savePrefs();
+    if (notificationsEnabled) {
+      loadExpiryNotifications();
+    }
+  }
+
+  /// 현재 설정된 알람 시간 반환
+  TimeOfDay getNotificationTime() {
+    return notificationTime;
   }
 
   /// 재료와 소스의 만료 임계값에 따라 노티피케이션 목록 산출 (메모리 상)
@@ -196,6 +216,7 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
           warningEnabled: warningEnabled,
           dangerEnabled: dangerEnabled,
           expiredEnabled: expiredEnabled,
+          notificationTime: notificationTime,
         );
       }
       developer.log(
@@ -225,8 +246,14 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
       warningEnabled = prefs.getBool(_kNotifWarning) ?? true;
       dangerEnabled = prefs.getBool(_kNotifDanger) ?? true;
       expiredEnabled = prefs.getBool(_kNotifExpired) ?? true;
+
+      // 알람 시간 로드
+      final hour = prefs.getInt(_kNotifTime + '_hour') ?? 9;
+      final minute = prefs.getInt(_kNotifTime + '_minute') ?? 0;
+      notificationTime = TimeOfDay(hour: hour, minute: minute);
+
       developer.log(
-        'Prefs loaded -> enabled:$notificationsEnabled warning:$warningEnabled danger:$dangerEnabled expired:$expiredEnabled',
+        'Prefs loaded -> enabled:$notificationsEnabled warning:$warningEnabled danger:$dangerEnabled expired:$expiredEnabled time:${notificationTime.hour}:${notificationTime.minute}',
         name: 'ExpiryNotif',
       );
       // Emit empty list to trigger UI rebuild with restored toggles.
@@ -245,8 +272,13 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
       await prefs.setBool(_kNotifWarning, warningEnabled);
       await prefs.setBool(_kNotifDanger, dangerEnabled);
       await prefs.setBool(_kNotifExpired, expiredEnabled);
+
+      // 알람 시간 저장
+      await prefs.setInt(_kNotifTime + '_hour', notificationTime.hour);
+      await prefs.setInt(_kNotifTime + '_minute', notificationTime.minute);
+
       developer.log(
-        'Prefs saved -> enabled:$notificationsEnabled warning:$warningEnabled danger:$dangerEnabled expired:$expiredEnabled',
+        'Prefs saved -> enabled:$notificationsEnabled warning:$warningEnabled danger:$dangerEnabled expired:$expiredEnabled time:${notificationTime.hour}:${notificationTime.minute}',
         name: 'ExpiryNotif',
       );
     } catch (e) {

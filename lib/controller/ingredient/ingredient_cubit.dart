@@ -94,12 +94,36 @@ class IngredientCubit extends Cubit<IngredientState> {
         }
       }
 
-      developer.log('재료 목록 다시 로드 시작', name: 'IngredientCubit');
+      developer.log('재료 목록 다시 로드 시작 (유통기한 순으로 정렬)', name: 'IngredientCubit');
       final ingredients = await _ingredientRepository.getAllIngredients();
-      developer.log(
-        '재료 목록 로드 완료: ${ingredients.length}개',
-        name: 'IngredientCubit',
-      );
+
+      // 유통기한 순 정렬 확인을 위한 로그
+      if (ingredients.isNotEmpty) {
+        final withExpiry = ingredients
+            .where((i) => i.expiryDate != null)
+            .toList();
+        final withoutExpiry = ingredients
+            .where((i) => i.expiryDate == null)
+            .toList();
+
+        if (withExpiry.isNotEmpty) {
+          developer.log(
+            '첫 번째 재료 (유통기한 있음): ${withExpiry.first.name} - ${withExpiry.first.expiryDate}',
+            name: 'IngredientCubit',
+          );
+        }
+        if (withoutExpiry.isNotEmpty) {
+          developer.log(
+            '마지막 재료 (유통기한 없음): ${withoutExpiry.last.name}',
+            name: 'IngredientCubit',
+          );
+        }
+
+        developer.log(
+          '재료 목록 로드 완료: ${ingredients.length}개 (유통기한 있음: ${withExpiry.length}개, 유통기한 없음: ${withoutExpiry.length}개)',
+          name: 'IngredientCubit',
+        );
+      }
 
       emit(IngredientLoaded(ingredients: ingredients));
       // 재료 추가 후 알림 스케줄 갱신 (유통기한이 있는 항목 대상)
@@ -129,6 +153,7 @@ class IngredientCubit extends Cubit<IngredientState> {
       emit(const IngredientLoading());
 
       await _ingredientRepository.updateIngredient(ingredient);
+      developer.log('재료 수정 후 목록 다시 로드 (유통기한 순으로 정렬)', name: 'IngredientCubit');
       final ingredients = await _ingredientRepository.getAllIngredients();
 
       // 재료 변경이 소스/레시피 비용에 영향 → 관련 레시피들 재계산
@@ -198,6 +223,7 @@ class IngredientCubit extends Cubit<IngredientState> {
         }
       } catch (_) {}
 
+      developer.log('재료 삭제 후 목록 다시 로드 (유통기한 순으로 정렬)', name: 'IngredientCubit');
       final ingredients = await _ingredientRepository.getAllIngredients();
       emit(IngredientLoaded(ingredients: ingredients));
       // 재료 삭제 후 알림 스케줄 갱신
@@ -434,6 +460,26 @@ class IngredientCubit extends Cubit<IngredientState> {
       emit(IngredientLoaded(ingredients: ingredients));
     } catch (e) {
       emit(IngredientError('OCR 결과 처리에 실패했습니다: $e'));
+    }
+  }
+
+  // 누락된 재료들을 일괄 추가 페이지로 전달하기 위한 데이터 준비
+  List<Map<String, dynamic>> prepareMissingIngredientsForBulkAdd(List<String> missingIngredientNames) {
+    try {
+      final ingredients = <Map<String, dynamic>>[];
+      
+      for (final name in missingIngredientNames) {
+        if (name.trim().isNotEmpty) {
+          ingredients.add({
+            'name': name.trim(), // 이름만 전달
+          });
+        }
+      }
+      
+      return ingredients;
+    } catch (e) {
+      developer.log('누락된 재료 데이터 준비 실패: $e', name: 'IngredientCubit');
+      return [];
     }
   }
 }

@@ -9,3 +9,4 @@ export 'notification_model.dart';
 export 'tag.dart';
 export 'sauce.dart';
 export 'sauce_ingredient.dart';
+export 'ai_recipe.dart';

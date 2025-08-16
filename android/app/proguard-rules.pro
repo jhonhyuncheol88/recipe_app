@@ -21,12 +21,7 @@
 -keep class com.google.android.play.core.splitinstall.** { *; }
 -keep class com.google.android.play.core.tasks.** { *; }
 
-# ML Kit Text Recognition 관련 규칙 (누락된 클래스들 보호)
--keep class com.google.mlkit.vision.text.** { *; }
--keep class com.google.mlkit.vision.text.chinese.** { *; }
--keep class com.google.mlkit.vision.text.devanagari.** { *; }
--keep class com.google.mlkit.vision.text.japanese.** { *; }
--keep class com.google.mlkit.vision.text.korean.** { *; }
+
 
 # 앱 모델 클래스 보호
 -keep class com.jalam.recipeapp.model.** { *; }

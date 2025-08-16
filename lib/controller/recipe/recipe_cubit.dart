@@ -8,6 +8,7 @@ import '../../service/recipe_cost_service.dart';
 import '../../service/sauce_cost_service.dart';
 import 'recipe_state.dart';
 import '../../util/unit_converter.dart' as uc;
+import 'package:uuid/uuid.dart';
 
 class RecipeCubit extends Cubit<RecipeState> {
   final RecipeRepository _recipeRepository;
@@ -15,6 +16,7 @@ class RecipeCubit extends Cubit<RecipeState> {
   final UnitRepository _unitRepository;
   final TagRepository _tagRepository;
   final SauceRepository _sauceRepository = SauceRepository();
+  final AiRecipeRepository _aiRecipeRepository = AiRecipeRepository();
   late final SauceCostService _sauceCostService;
   late final RecipeCostService _recipeCostService;
   final Uuid _uuid = const Uuid();
@@ -693,6 +695,163 @@ class RecipeCubit extends Cubit<RecipeState> {
   // 레시피 새로고침
   Future<void> refreshRecipes() async {
     await loadRecipes();
+  }
+
+  // AI 레시피 저장
+  Future<void> saveAiRecipe(
+    Map<String, dynamic> aiRecipeData,
+    List<String> sourceIngredients,
+  ) async {
+    try {
+      emit(const RecipeLoading());
+
+      final aiRecipe = AiRecipe(
+        id: _uuid.v4(),
+        recipeName: aiRecipeData['recipe_name'] ?? '',
+        description: aiRecipeData['description'] ?? '',
+        cuisineType: aiRecipeData['cuisine_type'],
+        servings: aiRecipeData['servings'] ?? 0,
+        prepTimeMinutes: aiRecipeData['prep_time_minutes'] ?? 0,
+        cookTimeMinutes: aiRecipeData['cook_time_minutes'] ?? 0,
+        totalTimeMinutes: aiRecipeData['total_time_minutes'] ?? 0,
+        difficulty: aiRecipeData['difficulty'] ?? 'Beginner',
+        ingredients: List<Map<String, dynamic>>.from(
+          aiRecipeData['ingredients'] ?? [],
+        ),
+        instructions: List<String>.from(aiRecipeData['instructions'] ?? []),
+        tips: aiRecipeData['tips'] != null
+            ? List<String>.from(aiRecipeData['tips'])
+            : null,
+        nutritionalInfo: aiRecipeData['nutritional_info_per_serving'],
+        estimatedCost: (aiRecipeData['estimated_cost']?['amount'] ?? 0.0)
+            .toDouble(),
+        tags: List<String>.from(aiRecipeData['tags'] ?? []),
+        creativityScore: aiRecipeData['creativity_score'],
+        generatedAt: DateTime.now(),
+        sourceIngredients: sourceIngredients,
+        aiModel: 'gemini-1.5-flash',
+        promptVersion: '1.0',
+      );
+
+      await _aiRecipeRepository.insertAiRecipe(aiRecipe);
+
+      emit(AiRecipeSaved(aiRecipe: aiRecipe));
+    } catch (e) {
+      emit(RecipeError('AI 레시피 저장에 실패했습니다: $e'));
+    }
+  }
+
+  // AI 레시피를 일반 레시피로 변환
+  Future<void> convertAiRecipeToRecipe(String aiRecipeId) async {
+    try {
+      emit(const RecipeLoading());
+
+      final aiRecipe = await _aiRecipeRepository.getAiRecipeById(aiRecipeId);
+      if (aiRecipe == null) {
+        emit(const RecipeError('AI 레시피를 찾을 수 없습니다.'));
+        return;
+      }
+
+      // AI 레시피를 일반 레시피 데이터로 변환
+      final recipeData = aiRecipe.toRecipeData();
+
+      // 일반 레시피로 추가
+      await addRecipe(
+        name: recipeData['name'],
+        description: recipeData['description'],
+        outputAmount: recipeData['outputAmount'],
+        outputUnit: recipeData['outputUnit'],
+        tagIds: recipeData['tagIds'],
+        ingredients: [], // 재료는 별도로 추가해야 함
+      );
+
+      // AI 레시피를 변환됨으로 표시
+      final recipes = await _recipeRepository.getAllRecipes();
+      final latestRecipe = recipes.first;
+      await _aiRecipeRepository.markAsConverted(aiRecipeId, latestRecipe.id);
+
+      emit(AiRecipeConverted(aiRecipe: aiRecipe, recipe: latestRecipe));
+    } catch (e) {
+      emit(RecipeError('AI 레시피 변환에 실패했습니다: $e'));
+    }
+  }
+
+  // AI 레시피 목록 조회
+  Future<void> loadAiRecipes() async {
+    try {
+      emit(const RecipeLoading());
+
+      final aiRecipes = await _aiRecipeRepository.getAllAiRecipes();
+
+      if (aiRecipes.isEmpty) {
+        emit(const AiRecipesEmpty());
+      } else {
+        emit(AiRecipesLoaded(aiRecipes: aiRecipes));
+      }
+    } catch (e) {
+      emit(RecipeError('AI 레시피 목록을 불러오는데 실패했습니다: $e'));
+    }
+  }
+
+  // AI 레시피 검색
+  Future<void> searchAiRecipes(String query) async {
+    try {
+      if (query.isEmpty) {
+        await loadAiRecipes();
+        return;
+      }
+
+      emit(const RecipeLoading());
+      final aiRecipes = await _aiRecipeRepository.searchAiRecipes(query);
+
+      if (aiRecipes.isEmpty) {
+        emit(const AiRecipesEmpty());
+      } else {
+        emit(AiRecipesSearchResult(aiRecipes: aiRecipes, query: query));
+      }
+    } catch (e) {
+      emit(RecipeError('AI 레시피 검색에 실패했습니다: $e'));
+    }
+  }
+
+  // AI 레시피 통계 로드
+  Future<void> loadAiRecipeStats() async {
+    try {
+      emit(const RecipeLoading());
+      final stats = await _aiRecipeRepository.getAiRecipeStats();
+      emit(AiRecipeStatsLoaded(stats: stats));
+    } catch (e) {
+      emit(RecipeError('AI 레시피 통계 로드에 실패했습니다: $e'));
+    }
+  }
+
+  // AI 레시피 삭제
+  Future<void> deleteAiRecipe(String aiRecipeId) async {
+    try {
+      emit(const RecipeLoading());
+
+      await _aiRecipeRepository.deleteAiRecipe(aiRecipeId);
+      final aiRecipes = await _aiRecipeRepository.getAllAiRecipes();
+
+      if (aiRecipes.isEmpty) {
+        emit(const AiRecipesEmpty());
+      } else {
+        emit(AiRecipesLoaded(aiRecipes: aiRecipes));
+      }
+    } catch (e) {
+      emit(RecipeError('AI 레시피 삭제에 실패했습니다: $e'));
+    }
+  }
+
+  // AI 레시피 상세 정보 조회
+  Future<AiRecipe?> getAiRecipeDetail(String aiRecipeId) async {
+    try {
+      final aiRecipe = await _aiRecipeRepository.getAiRecipeById(aiRecipeId);
+      return aiRecipe;
+    } catch (e) {
+      emit(RecipeError('AI 레시피 상세 정보를 불러오는데 실패했습니다: $e'));
+      return null;
+    }
   }
 
   // 재료 원가 계산 (내부 메서드)

@@ -27,7 +27,7 @@ class DatabaseHelper {
 
       final database = await openDatabase(
         path,
-        version: 4, // 버전 업데이트 (소스 테이블 추가)
+        version: 5, // 버전 업데이트 (AI 레시피 테이블 추가)
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       );
@@ -172,6 +172,43 @@ class DatabaseHelper {
         'CREATE INDEX IF NOT EXISTS idx_recipe_sauces_recipe_id ON recipe_sauces(recipe_id)',
       );
 
+      // AI Recipes 테이블 생성
+      developer.log('AI Recipes 테이블 생성', name: 'DatabaseHelper');
+      await db.execute('''
+          CREATE TABLE ai_recipes (
+            id TEXT PRIMARY KEY,
+            recipe_name TEXT NOT NULL,
+            description TEXT,
+            cuisine_type TEXT,
+            servings INTEGER,
+            prep_time_minutes INTEGER,
+            cook_time_minutes INTEGER,
+            total_time_minutes INTEGER,
+            difficulty TEXT,
+            ingredients TEXT NOT NULL,
+            instructions TEXT NOT NULL,
+            tips TEXT,
+            nutritional_info TEXT,
+            estimated_cost REAL,
+            tags TEXT,
+            creativity_score TEXT,
+            generated_at TEXT NOT NULL,
+            source_ingredients TEXT,
+            ai_model TEXT,
+            prompt_version TEXT,
+            is_converted_to_recipe INTEGER DEFAULT 0,
+            converted_recipe_id TEXT
+          )
+        ''');
+
+      // AI Recipes 인덱스 생성
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_ai_recipes_generated_at ON ai_recipes(generated_at)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_ai_recipes_cuisine_type ON ai_recipes(cuisine_type)',
+      );
+
       // 기본 단위 데이터 삽입
       developer.log('기본 단위 데이터 삽입', name: 'DatabaseHelper');
       await _insertDefaultUnits(db);
@@ -257,7 +294,6 @@ class DatabaseHelper {
 
         await db.execute('''
           CREATE TABLE IF NOT EXISTS sauce_ingredients (
-            id TEXT PRIMARY KEY,
             sauce_id TEXT NOT NULL,
             ingredient_id TEXT NOT NULL,
             amount REAL NOT NULL,
@@ -289,6 +325,47 @@ class DatabaseHelper {
         );
 
         developer.log('소스 테이블 추가 완료', name: 'DatabaseHelper');
+      }
+
+      if (oldVersion < 5) {
+        // 버전 5: AI 레시피 테이블 추가
+        developer.log('AI 레시피 테이블 추가 시작', name: 'DatabaseHelper');
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS ai_recipes (
+            id TEXT PRIMARY KEY,
+            recipe_name TEXT NOT NULL,
+            description TEXT,
+            cuisine_type TEXT,
+            servings INTEGER,
+            prep_time_minutes INTEGER,
+            cook_time_minutes INTEGER,
+            total_time_minutes INTEGER,
+            difficulty TEXT,
+            ingredients TEXT NOT NULL,
+            instructions TEXT NOT NULL,
+            tips TEXT,
+            nutritional_info TEXT,
+            estimated_cost REAL,
+            tags TEXT,
+            creativity_score TEXT,
+            generated_at TEXT NOT NULL,
+            source_ingredients TEXT,
+            ai_model TEXT,
+            prompt_version TEXT,
+            is_converted_to_recipe INTEGER DEFAULT 0,
+            converted_recipe_id TEXT
+          )
+        ''');
+
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_ai_recipes_generated_at ON ai_recipes(generated_at)',
+        );
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_ai_recipes_cuisine_type ON ai_recipes(cuisine_type)',
+        );
+
+        developer.log('AI 레시피 테이블 추가 완료', name: 'DatabaseHelper');
       }
     } catch (e) {
       developer.log('데이터베이스 업그레이드 실패: $e', name: 'DatabaseHelper');

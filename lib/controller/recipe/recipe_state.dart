@@ -278,3 +278,60 @@ class RecipeError extends RecipeState {
 class RecipeEmpty extends RecipeState {
   const RecipeEmpty();
 }
+
+// AI 레시피 저장 성공
+class AiRecipeSaved extends RecipeState {
+  final AiRecipe aiRecipe;
+
+  const AiRecipeSaved({required this.aiRecipe});
+
+  @override
+  List<Object?> get props => [aiRecipe];
+}
+
+// AI 레시피를 일반 레시피로 변환 성공
+class AiRecipeConverted extends RecipeState {
+  final AiRecipe aiRecipe;
+  final Recipe recipe;
+
+  const AiRecipeConverted({required this.aiRecipe, required this.recipe});
+
+  @override
+  List<Object?> get props => [aiRecipe, recipe];
+}
+
+// AI 레시피 목록 로드 성공
+class AiRecipesLoaded extends RecipeState {
+  final List<AiRecipe> aiRecipes;
+
+  const AiRecipesLoaded({required this.aiRecipes});
+
+  @override
+  List<Object?> get props => [aiRecipes];
+}
+
+// AI 레시피 검색 결과
+class AiRecipesSearchResult extends RecipeState {
+  final List<AiRecipe> aiRecipes;
+  final String query;
+
+  const AiRecipesSearchResult({required this.aiRecipes, required this.query});
+
+  @override
+  List<Object?> get props => [aiRecipes, query];
+}
+
+// AI 레시피 통계 로드 성공
+class AiRecipeStatsLoaded extends RecipeState {
+  final Map<String, dynamic> stats;
+
+  const AiRecipeStatsLoaded({required this.stats});
+
+  @override
+  List<Object?> get props => [stats];
+}
+
+// AI 레시피가 없을 때
+class AiRecipesEmpty extends RecipeState {
+  const AiRecipesEmpty();
+}

@@ -24,18 +24,64 @@ class RouterHelper {
     context.go(AppRouter.settings);
   }
 
+  /// AI 페이지로 이동 (탭바 페이지)
+  static void goToAi(BuildContext context) {
+    context.go(AppRouter.ai);
+  }
+
+  /// AI 레시피 관리 페이지로 이동
+  static void goToAiRecipeManagement(BuildContext context) {
+    context.go(AppRouter.aiRecipeManagement);
+  }
+
   /// 재료 추가 페이지로 이동
   static void goToIngredientAdd(BuildContext context) {
     context.push(AppRouter.ingredientAdd);
   }
 
+  /// 재료 추가 페이지로 이동 (재료 이름 미리 입력)
+  static void goToIngredientAddWithName(
+    BuildContext context,
+    String ingredientName,
+  ) {
+    context.push(
+      AppRouter.ingredientAdd,
+      extra: {'preFilledIngredientName': ingredientName},
+    );
+  }
+
+  /// 재료 대량등록 페이지로 이동
+  static void goToIngredientBulkAdd(BuildContext context) {
+    context.push(AppRouter.ingredientBulkAdd);
+  }
+
+  /// 재료 대량등록 페이지로 이동 (데이터와 함께)
+  static void goToIngredientBulkAddWithData(
+    BuildContext context,
+    List<Map<String, dynamic>> ingredients,
+  ) {
+    context.push(
+      AppRouter.ingredientBulkAdd,
+      extra: {
+        'prefilledIngredients': ingredients,
+        'source': 'ai_recipe_missing_ingredients',
+      },
+    );
+  }
+
   /// 재료 수정 페이지로 이동
-  static void goToIngredientEdit(BuildContext context, Map<String, dynamic> ingredient) {
+  static void goToIngredientEdit(
+    BuildContext context,
+    Map<String, dynamic> ingredient,
+  ) {
     context.push(AppRouter.ingredientEdit, extra: {'ingredient': ingredient});
   }
 
   /// 재료 상세 페이지로 이동
-  static void goToIngredientDetail(BuildContext context, Map<String, dynamic> ingredient) {
+  static void goToIngredientDetail(
+    BuildContext context,
+    Map<String, dynamic> ingredient,
+  ) {
     context.push(AppRouter.ingredientDetail, extra: {'ingredient': ingredient});
   }
 
@@ -55,12 +101,18 @@ class RouterHelper {
   }
 
   /// 레시피 수정 페이지로 이동
-  static void goToRecipeEdit(BuildContext context, Map<String, dynamic> recipe) {
+  static void goToRecipeEdit(
+    BuildContext context,
+    Map<String, dynamic> recipe,
+  ) {
     context.push(AppRouter.recipeEdit, extra: {'recipe': recipe});
   }
 
   /// 레시피 상세 페이지로 이동
-  static void goToRecipeDetail(BuildContext context, Map<String, dynamic> recipe) {
+  static void goToRecipeDetail(
+    BuildContext context,
+    Map<String, dynamic> recipe,
+  ) {
     context.push(AppRouter.recipeDetail, extra: {'recipe': recipe});
   }
 
@@ -118,4 +170,4 @@ class RouterHelper {
   static Map<String, dynamic>? getExtraData(BuildContext context) {
     return GoRouterState.of(context).extra as Map<String, dynamic>?;
   }
-} 
+}

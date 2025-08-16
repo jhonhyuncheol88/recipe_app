@@ -5,3 +5,4 @@ export 'unit_repository.dart';
 export 'recipe_repository.dart';
 export 'tag_repository.dart';
 export 'sauce_repository.dart';
+export 'ai_recipe_repository.dart';

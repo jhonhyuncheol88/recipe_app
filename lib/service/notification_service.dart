@@ -41,9 +41,14 @@ class NotificationService {
 
     // Timezone 초기화
     tz.initializeTimeZones();
-    final localTz = DateTime.now().timeZoneName;
-    tz.setLocalLocation(tz.getLocation('Asia/Seoul')); // 한국 시간대 기본값
-
+    try {
+      final deviceTimeZone = DateTime.now().timeZoneName;
+      final deviceLocation = tz.getLocation(deviceTimeZone);
+      tz.setLocalLocation(deviceLocation);
+    } catch (e) {
+      // 기기 시간대 감지 실패 시 UTC로 fallback
+      tz.setLocalLocation(tz.getLocation('UTC'));
+    }
     // Android 채널 사전 생성
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       _channelId,
@@ -83,9 +88,9 @@ class NotificationService {
   }
 
   int _stableIdFromString(String input) {
-    // 간단한 해시 → 양수 보장
-    final hash = input.hashCode & 0x7fffffff;
-    return hash;
+    // 더 안전한 ID 생성 - 32비트 범위 내로 보장
+    final hash = input.hashCode.abs();
+    return hash % 1000000; // 0~999,999 범위
   }
 
   /// 즉시 알림 표시
@@ -156,6 +161,7 @@ class NotificationService {
     required String itemId,
     required String itemName,
     required DateTime expiryAt,
+    required TimeOfDay notificationTime, // 알람 시간 추가
     bool warningEnabled = true,
     bool dangerEnabled = true,
     bool expiredEnabled = true,
@@ -163,9 +169,15 @@ class NotificationService {
     final now = DateTime.now();
     final baseId = _stableIdFromString(itemId) * 10;
 
-    // 경고: 만료 72시간 전
+    // 경고: 만료 72시간 전 + 사용자 설정 시간
     if (warningEnabled) {
-      final at = expiryAt.subtract(const Duration(hours: 72));
+      final at = DateTime(
+        expiryAt.year,
+        expiryAt.month,
+        expiryAt.day - 3, // 3일 전
+        notificationTime.hour,
+        notificationTime.minute,
+      );
       if (at.isAfter(now)) {
         await _plugin.zonedSchedule(
           baseId + 1,
@@ -174,15 +186,20 @@ class NotificationService {
           tz.TZDateTime.from(at, tz.local),
           _details(),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-
           payload: 'warning:$itemId',
         );
       }
     }
 
-    // 위험: 만료 24시간 전
+    // 위험: 만료 24시간 전 + 사용자 설정 시간
     if (dangerEnabled) {
-      final at = expiryAt.subtract(const Duration(hours: 24));
+      final at = DateTime(
+        expiryAt.year,
+        expiryAt.month,
+        expiryAt.day - 1, // 1일 전
+        notificationTime.hour,
+        notificationTime.minute,
+      );
       if (at.isAfter(now)) {
         await _plugin.zonedSchedule(
           baseId + 2,
@@ -191,15 +208,20 @@ class NotificationService {
           tz.TZDateTime.from(at, tz.local),
           _details(),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-
           payload: 'danger:$itemId',
         );
       }
     }
 
-    // 만료 시점
+    // 만료 시점 + 사용자 설정 시간
     if (expiredEnabled) {
-      final at = expiryAt;
+      final at = DateTime(
+        expiryAt.year,
+        expiryAt.month,
+        expiryAt.day, // 당일
+        notificationTime.hour,
+        notificationTime.minute,
+      );
       if (at.isAfter(now)) {
         await _plugin.zonedSchedule(
           baseId + 3,
@@ -208,7 +230,6 @@ class NotificationService {
           tz.TZDateTime.from(at, tz.local),
           _details(),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-
           payload: 'expired:$itemId',
         );
       }

@@ -48,3 +48,9 @@ app.*.map.json
 *.jks
 *.keystore
 key.properties
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production

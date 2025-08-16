@@ -26,6 +26,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
     with SingleTickerProviderStateMixin {
   String _selectedFilter = '전체';
   late final TabController _tabController;
+  String _searchQuery = ''; // 검색 쿼리 추가
 
   // 필터 옵션
   final List<String> _filterOptions = ['전체', '냉장', '냉동', '실온'];
@@ -96,37 +97,79 @@ class _IngredientMainPageState extends State<IngredientMainPage>
       '냉동': AppStrings.getIngredientTagFrozen(currentLocale),
       '실온': AppStrings.getIngredientTagIndoor(currentLocale),
     };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: _filterOptions.map((filter) {
-            final isSelected = _selectedFilter == filter;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: FilterChip(
-                label: Text(localized[filter] ?? filter),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    _selectedFilter = filter;
-                  });
-                  _applyFilter(filter);
-                },
-                backgroundColor: AppColors.surface,
-                selectedColor: AppColors.primary,
-                labelStyle: AppTextStyles.bodySmall.copyWith(
-                  color: isSelected
-                      ? AppColors.buttonText
-                      : AppColors.textSecondary,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
+    return Column(
+      children: [
+        // 검색바 추가
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: TextField(
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
+            decoration: InputDecoration(
+              hintText: '재료 검색...',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                      },
+                    )
+                  : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.divider),
               ),
-            );
-          }).toList(),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
+              ),
+              filled: true,
+              fillColor: AppColors.surface,
+            ),
+          ),
         ),
-      ),
+        // 기존 필터 칩들
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _filterOptions.map((filter) {
+                final isSelected = _selectedFilter == filter;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(localized[filter] ?? filter),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        _selectedFilter = filter;
+                      });
+                      _applyFilter(filter);
+                    },
+                    backgroundColor: AppColors.surface,
+                    selectedColor: AppColors.primary,
+                    labelStyle: AppTextStyles.bodySmall.copyWith(
+                      color: isSelected
+                          ? AppColors.buttonText
+                          : AppColors.textSecondary,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -275,15 +318,60 @@ class _IngredientMainPageState extends State<IngredientMainPage>
     if (state is IngredientLoaded) {
       final ingredients = state.ingredients;
 
-      if (ingredients.isEmpty) {
-        return const IngredientEmptyState();
+      // 검색 필터링 적용
+      final filteredIngredients = _searchQuery.isEmpty
+          ? ingredients
+          : ingredients
+                .where(
+                  (ingredient) =>
+                      ingredient.name.toLowerCase().contains(
+                        _searchQuery.toLowerCase(),
+                      ) ||
+                      ingredient.purchaseUnitId.toLowerCase().contains(
+                        _searchQuery.toLowerCase(),
+                      ),
+                )
+                .toList();
+
+      if (filteredIngredients.isEmpty) {
+        if (_searchQuery.isNotEmpty) {
+          // 검색 결과가 없는 경우
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.search_off,
+                  size: 64,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '검색 결과가 없습니다',
+                  style: AppTextStyles.headline4.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '다른 검색어를 입력해보세요',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return const IngredientEmptyState();
+        }
       }
 
       return ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: ingredients.length,
+        itemCount: filteredIngredients.length,
         itemBuilder: (context, index) {
-          final ingredient = ingredients[index];
+          final ingredient = filteredIngredients[index];
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -297,6 +385,9 @@ class _IngredientMainPageState extends State<IngredientMainPage>
   }
 
   Widget _buildIngredientCard(Ingredient ingredient) {
+    // 단위당 가격 계산
+    final unitPrice = ingredient.purchasePrice / ingredient.purchaseAmount;
+
     return GestureDetector(
       onTap: () => _editIngredient(ingredient),
       onLongPress: () => _showIngredientDetailBottomSheet(ingredient),
@@ -305,6 +396,8 @@ class _IngredientMainPageState extends State<IngredientMainPage>
         price: ingredient.purchasePrice,
         amount: ingredient.purchaseAmount,
         unit: ingredient.purchaseUnitId,
+        unitPrice: unitPrice, // 단위당 가격 추가
+        expiryDate: ingredient.expiryDate, // 유통기한 추가
       ),
     );
   }

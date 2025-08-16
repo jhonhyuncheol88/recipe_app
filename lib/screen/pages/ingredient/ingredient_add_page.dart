@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:recipe_app/router/router_helper.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
@@ -17,7 +18,9 @@ import '../../../controller/setting/locale_cubit.dart';
 
 /// 재료 추가 페이지
 class IngredientAddPage extends StatefulWidget {
-  const IngredientAddPage({super.key});
+  final String? preFilledIngredientName;
+
+  const IngredientAddPage({super.key, this.preFilledIngredientName});
 
   @override
   State<IngredientAddPage> createState() => _IngredientAddPageState();
@@ -42,6 +45,11 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
   void initState() {
     super.initState();
     _loadInitialData();
+
+    // 미리 입력된 재료 이름이 있다면 설정
+    if (widget.preFilledIngredientName != null) {
+      _nameController.text = widget.preFilledIngredientName!;
+    }
   }
 
   void _loadInitialData() {
@@ -102,12 +110,31 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
         ),
         actions: [
+          Tooltip(
+            message: AppStrings.getBulkAddTooltip(currentLocale),
+            child: TextButton(
+              onPressed: _isLoading
+                  ? null
+                  : () => RouterHelper.goToIngredientBulkAdd(context),
+              child: Text(
+                AppStrings.getBulkAdd(currentLocale),
+                style: AppTextStyles.buttonMedium.copyWith(
+                  color: _isLoading
+                      ? AppColors.textSecondary
+                      : AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           TextButton(
             onPressed: _isLoading ? null : _saveIngredient,
             child: Text(
               AppStrings.getSave(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
                 color: _isLoading ? AppColors.textSecondary : AppColors.primary,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -450,37 +477,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
       );
 
       if (mounted) {
-        context.pop();
-
-        // 성공 메시지와 함께 레시피 생성 옵션 제공
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    AppStrings.getIngredientAddedSuccessfully(currentLocale),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    // 레시피 생성 페이지로 이동
-                    context.push('/recipe/create');
-                  },
-                  child: Text(
-                    AppStrings.getCreateRecipeFromIngredients(currentLocale),
-                    style: const TextStyle(
-                      color: AppColors.accent,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: AppColors.success,
-            duration: const Duration(seconds: 4),
-          ),
-        );
+        context.pop(true); // 성공 결과 반환
       }
     } catch (e) {
       if (mounted) {

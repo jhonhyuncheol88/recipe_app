@@ -31,7 +31,7 @@ class IngredientRepository {
     }
   }
 
-  // 재료 목록 조회
+  // 재료 목록 조회 (유통기한 순으로 정렬)
   Future<List<Ingredient>> getAllIngredients() async {
     try {
       developer.log('재료 목록 조회 시작', name: 'IngredientRepository');
@@ -39,13 +39,32 @@ class IngredientRepository {
       final db = await _databaseHelper.database;
       developer.log('데이터베이스 연결 완료', name: 'IngredientRepository');
 
-      final List<Map<String, dynamic>> maps = await db.query('ingredients');
-      developer.log('쿼리 결과: ${maps.length}개', name: 'IngredientRepository');
+      // 유통기한이 있는 재료를 먼저 가져오고, 유통기한 순으로 정렬
+      final List<Map<String, dynamic>> mapsWithExpiry = await db.query(
+        'ingredients',
+        where: 'expiry_date IS NOT NULL',
+        orderBy: 'expiry_date ASC',
+      );
 
-      if (maps.isNotEmpty) {}
+      // 유통기한이 없는 재료를 가져옴
+      final List<Map<String, dynamic>> mapsWithoutExpiry = await db.query(
+        'ingredients',
+        where: 'expiry_date IS NULL',
+      );
 
-      final ingredients = List.generate(maps.length, (i) {
-        return Ingredient.fromJson(maps[i]);
+      // 두 리스트를 합치기
+      final List<Map<String, dynamic>> allMaps = [
+        ...mapsWithExpiry,
+        ...mapsWithoutExpiry,
+      ];
+
+      developer.log(
+        '쿼리 결과: ${allMaps.length}개 (유통기한 있음: ${mapsWithExpiry.length}개, 유통기한 없음: ${mapsWithoutExpiry.length}개)',
+        name: 'IngredientRepository',
+      );
+
+      final ingredients = List.generate(allMaps.length, (i) {
+        return Ingredient.fromJson(allMaps[i]);
       });
 
       developer.log(

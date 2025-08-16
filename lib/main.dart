@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'router/index.dart';
 import 'theme/app_theme.dart';
 import 'util/app_strings.dart';
@@ -17,6 +18,10 @@ import 'service/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 환경 변수 로드 - assets에서 로드
+  await dotenv.load();
+
   await Firebase.initializeApp();
   final firebaseAnalytics = FirebaseAnalytics.instance;
   await firebaseAnalytics.setAnalyticsCollectionEnabled(true);
@@ -92,9 +97,6 @@ class MyApp extends StatelessWidget {
             sauceCostService: context.read<SauceCostService>(),
           ),
         ),
-
-        // OCR 관련 BLoC
-        BlocProvider<OcrCubit>(create: (context) => OcrCubit()),
 
         // 태그 관련 BLoC
         BlocProvider<TagCubit>(

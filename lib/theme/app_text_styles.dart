@@ -137,4 +137,26 @@ class AppTextStyles {
 
   static TextStyle expiryExpired() =>
       expiryText.copyWith(color: AppColors.expiryExpired);
+
+  // AI 레시피 관련 스타일
+  static TextStyle get aiRecipeTitle => GoogleFonts.nunito(
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+    height: 1.3,
+  );
+
+  static TextStyle get aiRecipeDescription => GoogleFonts.nunito(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary,
+    height: 1.5,
+  );
+
+  static TextStyle get aiRecipeTag => GoogleFonts.nunito(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    color: AppColors.accent,
+    height: 1.2,
+  );
 }

@@ -43,5 +43,9 @@ class AppColors {
 
   // 구분선 색상
   static const Color divider = Color(0xFFE0E0E0); // 연한 회색
-  static const Color dividerLight = Color(0xFFF0F0F0); // 매우 연한 회색
+  static const Color dividerLight = Color(0xFFF0F0E0); // 매우 연한 회색
+
+  // AI 레시피 관련 색상
+  static const Color aiRecipeCard = Color(0xFFF8F6F0); // AI 레시피 카드 배경
+  static const Color aiRecipeHeader = Color(0xFFE8E0D0); // AI 레시피 헤더 배경
 }

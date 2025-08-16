@@ -137,6 +137,14 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             onTap: null,
           ),
+          // 알람 시간 설정 추가
+          SettingsListTile(
+            title: AppStrings.getAlarmTimeSetting(locale),
+            subtitle:
+                '${notifCubit.getNotificationTime().hour.toString().padLeft(2, '0')}:${notifCubit.getNotificationTime().minute.toString().padLeft(2, '0')}',
+            icon: Icons.access_time,
+            onTap: _showTimePickerDialog,
+          ),
         ],
       ],
     );
@@ -352,13 +360,27 @@ class _SettingsPageState extends State<SettingsPage> {
   void _importData() async {
     try {
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['db'],
+        type: FileType.any, // 모든 파일 타입 허용
       );
+
       if (result == null || result.files.single.path == null) {
         return;
       }
+
       final pickedPath = result.files.single.path!;
+      final fileExtension = p.extension(pickedPath).toLowerCase();
+
+      // 파일 확장자 검증
+      if (fileExtension != '.db') {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('데이터베이스 파일(.db)만 선택할 수 있습니다.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
 
       // DB 닫기
       await DatabaseHelper().close();
@@ -475,6 +497,36 @@ class _SettingsPageState extends State<SettingsPage> {
         ],
       ),
     );
+  }
+
+  /// 알람 시간 설정 다이얼로그
+  void _showTimePickerDialog() {
+    final notifCubit = context.read<ExpiryNotificationCubit>();
+    final currentTime = notifCubit.getNotificationTime();
+
+    showTimePicker(
+      context: context,
+      initialTime: currentTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            timePickerTheme: TimePickerThemeData(
+              backgroundColor: AppColors.surface,
+              hourMinuteTextColor: AppColors.textPrimary,
+              dayPeriodTextColor: AppColors.textPrimary,
+              dialHandColor: AppColors.accent,
+              dialBackgroundColor: AppColors.background,
+              entryModeIconColor: AppColors.accent,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    ).then((selectedTime) {
+      if (selectedTime != null) {
+        notifCubit.setNotificationTime(selectedTime);
+      }
+    });
   }
 
   void _showDeveloperInfo() {

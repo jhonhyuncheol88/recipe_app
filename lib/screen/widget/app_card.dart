@@ -65,6 +65,7 @@ class IngredientCard extends StatelessWidget {
   final double price;
   final double amount;
   final String unit;
+  final double? unitPrice; // 단위당 가격 추가
   final DateTime? expiryDate;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
@@ -76,6 +77,7 @@ class IngredientCard extends StatelessWidget {
     required this.price,
     required this.amount,
     required this.unit,
+    this.unitPrice, // 단위당 가격 매개변수 추가
     this.expiryDate,
     this.onTap,
     this.onEdit,
@@ -134,6 +136,16 @@ class IngredientCard extends StatelessWidget {
               ),
             ],
           ),
+          if (unitPrice != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              '${NumberFormatter.formatCurrency(unitPrice!, AppLocale.korea)}/$unit',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textLight,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
           if (expiryDate != null) ...[
             const SizedBox(height: 8),
             _buildExpiryDate(context),
@@ -144,6 +156,30 @@ class IngredientCard extends StatelessWidget {
   }
 
   Widget _buildExpiryDate(BuildContext context) {
+    if (expiryDate == null) {
+      // 유통기한이 없는 경우
+      return Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: AppColors.textLight,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '유통기한 없음',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textLight,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      );
+    }
+
     final now = DateTime.now();
     final daysUntilExpiry = expiryDate!.difference(now).inDays;
 

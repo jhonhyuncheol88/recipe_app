@@ -10,11 +10,6 @@ export 'recipe/recipe_event.dart';
 export 'recipe/recipe_state.dart';
 export 'recipe/recipe_cubit.dart';
 
-// OCR 관련
-export 'ocr/ocr_event.dart';
-export 'ocr/ocr_state.dart';
-export 'ocr/ocr_cubit.dart';
-
 // 태그 관련
 export 'tag/tag_event.dart';
 export 'tag/tag_state.dart';
