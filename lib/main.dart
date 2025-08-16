@@ -105,9 +105,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
-        // 애니메이션 관련 BLoC
-        BlocProvider<AnimationCubit>(create: (context) => AnimationCubit()),
-
         // 알림 관련 BLoC
         BlocProvider<ExpiryNotificationCubit>(
           create: (context) => ExpiryNotificationCubit(

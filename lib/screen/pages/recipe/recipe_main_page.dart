@@ -87,6 +87,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     final currentLocale = context.watch<LocaleCubit>().state;
     return Scaffold(
       backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
           AppStrings.getRecipeManagement(currentLocale),
@@ -118,13 +119,24 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       ),
       body: BlocBuilder<RecipeCubit, RecipeState>(
         builder: (context, recipeState) {
-          return Column(
-            children: [
-              if (_isSelectionMode) _buildSelectionHeader(),
-              _buildSearchSection(),
-              _buildFilterSection(),
-              Expanded(child: _buildRecipeList(recipeState)),
-            ],
+          final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+          final availableHeight =
+              MediaQuery.of(context).size.height - keyboardHeight;
+
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: availableHeight - 200, // AppBar와 기타 요소들의 높이 고려
+              ),
+              child: Column(
+                children: [
+                  if (_isSelectionMode) _buildSelectionHeader(),
+                  _buildSearchSection(),
+                  _buildFilterSection(),
+                  _buildRecipeList(recipeState),
+                ],
+              ),
+            ),
           );
         },
       ),
@@ -219,36 +231,42 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
 
   Widget _buildRecipeList(RecipeState state) {
     if (state is RecipeLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SizedBox(
+        height: 200,
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
 
     if (state is RecipeEmpty) {
-      return RecipeEmptyState();
+      return const SizedBox(height: 200, child: RecipeEmptyState());
     }
 
     if (state is RecipeError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 64, color: AppColors.error),
-            const SizedBox(height: 16),
-            Text(
-              state.message,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+      return SizedBox(
+        height: 200,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: AppColors.error),
+              const SizedBox(height: 16),
+              Text(
+                state.message,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            AppButton(
-              text: AppStrings.getRetry(context.watch<LocaleCubit>().state),
-              type: AppButtonType.primary,
-              onPressed: () {
-                context.read<RecipeCubit>().loadRecipes();
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+              AppButton(
+                text: AppStrings.getRetry(context.watch<LocaleCubit>().state),
+                type: AppButtonType.primary,
+                onPressed: () {
+                  context.read<RecipeCubit>().loadRecipes();
+                },
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -279,34 +297,41 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     }
 
     if (recipes.isEmpty) {
-      return RecipeEmptyState();
+      return const SizedBox(height: 200, child: RecipeEmptyState());
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: recipes.length,
-      itemBuilder: (context, index) {
-        final recipe = recipes[index];
-        final isSelected = _selectedRecipes.contains(recipe.id);
+    return Container(
+      constraints: BoxConstraints(
+        minHeight: 100,
+        maxHeight: MediaQuery.of(context).size.height * 0.6, // 화면 높이의 60%로 제한
+      ),
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        shrinkWrap: true,
+        itemCount: recipes.length,
+        itemBuilder: (context, index) {
+          final recipe = recipes[index];
+          final isSelected = _selectedRecipes.contains(recipe.id);
 
-        final recipeInfo = _calculateRecipeInfo(recipe);
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: RecipeCard(
-            name: recipe.name,
-            description: recipe.description,
-            totalCost: recipe.totalCost,
-            ingredientCount: recipeInfo['ingredientCount'],
-            totalWeight: recipeInfo['totalWeight'],
-            weightUnit: recipeInfo['weightUnit'],
-            isSelected: isSelected,
-            onTap: () => _editRecipe(recipe),
-            onEdit: () => _editRecipe(recipe),
-            onDelete: () => _deleteRecipe(recipe),
-            onLongPress: () => _toggleRecipeSelection(recipe.id),
-          ),
-        );
-      },
+          final recipeInfo = _calculateRecipeInfo(recipe);
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: RecipeCard(
+              name: recipe.name,
+              description: recipe.description,
+              totalCost: recipe.totalCost,
+              ingredientCount: recipeInfo['ingredientCount'],
+              totalWeight: recipeInfo['totalWeight'],
+              weightUnit: recipeInfo['weightUnit'],
+              isSelected: isSelected,
+              onTap: () => _editRecipe(recipe),
+              onEdit: () => _editRecipe(recipe),
+              onDelete: () => _deleteRecipe(recipe),
+              onLongPress: () => _toggleRecipeSelection(recipe.id),
+            ),
+          );
+        },
+      ),
     );
   }
 

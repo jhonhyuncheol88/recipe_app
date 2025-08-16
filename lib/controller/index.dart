@@ -20,11 +20,6 @@ export 'tag/tag_event.dart';
 export 'tag/tag_state.dart';
 export 'tag/tag_cubit.dart';
 
-// 애니메이션 관련
-export 'animation/animation_event.dart';
-export 'animation/animation_state.dart';
-export 'animation/animation_cubit.dart';
-
 // 소스 관련
 export 'sauce/sauce_state.dart';
 export 'sauce/sauce_cubit.dart';

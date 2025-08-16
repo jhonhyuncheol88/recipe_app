@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
+
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -41,8 +41,8 @@ class NotificationService {
 
     // Timezone 초기화
     tz.initializeTimeZones();
-    final localTz = await FlutterNativeTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(localTz));
+    final localTz = DateTime.now().timeZoneName;
+    tz.setLocalLocation(tz.getLocation('Asia/Seoul')); // 한국 시간대 기본값
 
     // Android 채널 사전 생성
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -114,8 +114,7 @@ class NotificationService {
       tzTime,
       _details(),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+
       payload: payload,
     );
   }
@@ -147,8 +146,7 @@ class NotificationService {
       next,
       _details(),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+
       matchDateTimeComponents: DateTimeComponents.time,
       payload: payload,
     );
@@ -176,8 +174,7 @@ class NotificationService {
           tz.TZDateTime.from(at, tz.local),
           _details(),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
+
           payload: 'warning:$itemId',
         );
       }
@@ -194,8 +191,7 @@ class NotificationService {
           tz.TZDateTime.from(at, tz.local),
           _details(),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
+
           payload: 'danger:$itemId',
         );
       }
@@ -212,8 +208,7 @@ class NotificationService {
           tz.TZDateTime.from(at, tz.local),
           _details(),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
+
           payload: 'expired:$itemId',
         );
       }

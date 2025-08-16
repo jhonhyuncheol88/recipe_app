@@ -28,60 +28,67 @@ class AppEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: (iconColor ?? AppColors.primary).withOpacity(0.1),
-                shape: BoxShape.circle,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: (iconColor ?? AppColors.primary).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 60,
+                  color: iconColor ?? AppColors.accent,
+                ),
               ),
-              child: Icon(icon, size: 60, color: iconColor ?? AppColors.accent),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              title,
-              style: AppTextStyles.headline4.copyWith(
-                color: AppColors.textPrimary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 24),
               Text(
-                subtitle!,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                title,
+                style: AppTextStyles.headline4.copyWith(
+                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
-            ],
-            if (onActionPressed != null && actionText != null) ...[
-              const SizedBox(height: 32),
-              SizedBox(
-                width: 200,
-                child: ElevatedButton(
-                  onPressed: onActionPressed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.buttonPrimary,
-                    foregroundColor: AppColors.buttonText,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  subtitle!,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
                   ),
-                  child: Text(actionText!, style: AppTextStyles.buttonMedium),
+                  textAlign: TextAlign.center,
                 ),
-              ),
+              ],
+              if (onActionPressed != null && actionText != null) ...[
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: 200,
+                  child: ElevatedButton(
+                    onPressed: onActionPressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.buttonPrimary,
+                      foregroundColor: AppColors.buttonText,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: Text(actionText!, style: AppTextStyles.buttonMedium),
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -160,20 +167,23 @@ class AppLoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
