@@ -37,9 +37,10 @@ class AppTheme {
       // 카드 테마
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        elevation: 2,
+        elevation: 4,
         shadowColor: AppColors.shadow,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       ),
 
       // 버튼 테마

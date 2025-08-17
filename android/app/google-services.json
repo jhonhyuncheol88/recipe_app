@@ -12,7 +12,28 @@
           "package_name": "com.jalam.recipeapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "584875089226-c6mn0uv6cdh8j052jie1dd91ipdqb1c4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jalam.recipeapp",
+            "certificate_hash": "63b527e6a2b56f38a4691bc7593d4a25ddfe464d"
+          }
+        },
+        {
+          "client_id": "584875089226-g8m93vli2c8b9gi81n3rdf7okjcoib0r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jalam.recipeapp",
+            "certificate_hash": "14bbc9b5331a7464950eac609e66c51f9ad0f789"
+          }
+        },
+        {
+          "client_id": "584875089226-1a8m5mnol7ap58bqtivd97no1uu5bmj6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCFi8JV7QKQvnA2qT8zCpM-DnSvLbuf0no"
@@ -20,7 +41,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "584875089226-1a8m5mnol7ap58bqtivd97no1uu5bmj6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "584875089226-29nmhk5bfc1kp0ev1386lqakm1nl4q03.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.recipeApp"
+              }
+            }
+          ]
         }
       }
     }

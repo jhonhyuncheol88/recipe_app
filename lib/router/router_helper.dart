@@ -24,6 +24,16 @@ class RouterHelper {
     context.go(AppRouter.settings);
   }
 
+  /// 로그인 페이지로 이동
+  static void goToLogin(BuildContext context) {
+    context.go(AppRouter.login);
+  }
+
+  /// 계정 정보 페이지로 이동
+  static void goToAccountInfo(BuildContext context) {
+    context.go(AppRouter.accountInfo);
+  }
+
   /// AI 페이지로 이동 (탭바 페이지)
   static void goToAi(BuildContext context) {
     context.go(AppRouter.ai);

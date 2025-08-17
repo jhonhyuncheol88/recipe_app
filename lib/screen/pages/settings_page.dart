@@ -16,7 +16,12 @@ import '../../util/app_locale.dart';
 import '../widget/index.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../controller/index.dart';
+import '../../controller/auth/auth_bloc.dart';
+import '../../controller/auth/auth_state.dart';
+import '../../controller/auth/auth_event.dart';
 import '../../data/index.dart';
+import '../../router/router_helper.dart';
+import 'package:go_router/go_router.dart';
 
 /// 설정 페이지
 class SettingsPage extends StatefulWidget {
@@ -33,33 +38,54 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          AppStrings.getSettings(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is Unauthenticated) {
+          // 로그아웃 시 홈으로 이동
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              context.go('/');
+            }
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(
+            AppStrings.getSettings(currentLocale),
+            style: AppTextStyles.headline4.copyWith(
+              color: AppColors.textPrimary,
+            ),
+          ),
+          backgroundColor: AppColors.surface,
+          elevation: 0,
         ),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildSectionTitle(AppStrings.getNotificationSettings(currentLocale)),
-          const SizedBox(height: 8),
-          _buildNotificationSettings(currentLocale),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _buildSectionTitle(
+              AppStrings.getNotificationSettings(currentLocale),
+            ),
+            const SizedBox(height: 8),
+            _buildNotificationSettings(currentLocale),
 
-          const SizedBox(height: 32),
-          _buildSectionTitle(AppStrings.getAppSettings(currentLocale)),
-          const SizedBox(height: 8),
-          _buildAppSettings(currentLocale),
+            const SizedBox(height: 32),
+            _buildSectionTitle(AppStrings.getAccountSettings(currentLocale)),
+            const SizedBox(height: 8),
+            _buildAccountSettings(currentLocale),
 
-          const SizedBox(height: 32),
-          // _buildSectionTitle(AppStrings.getInformation(currentLocale)),
-          // const SizedBox(height: 8),
-          // _buildAppInfo(currentLocale),
-        ],
+            const SizedBox(height: 32),
+            _buildSectionTitle(AppStrings.getAppSettings(currentLocale)),
+            const SizedBox(height: 8),
+            _buildAppSettings(currentLocale),
+
+            const SizedBox(height: 32),
+            // _buildSectionTitle(AppStrings.getInformation(currentLocale)),
+            // const SizedBox(height: 8),
+            // _buildAppInfo(currentLocale),
+          ],
+        ),
       ),
     );
   }
@@ -147,6 +173,45 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ],
+    );
+  }
+
+  Widget _buildAccountSettings(AppLocale locale) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        if (state is Authenticated) {
+          return Column(
+            children: [
+              SettingsListTile(
+                title: AppStrings.getSignedInAs(locale),
+                subtitle: state.user.displayName ?? state.user.email ?? '',
+                icon: Icons.account_circle,
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textSecondary,
+                  size: 20,
+                ),
+                onTap: () {
+                  RouterHelper.goToAccountInfo(context);
+                },
+              ),
+            ],
+          );
+        } else {
+          return Column(
+            children: [
+              SettingsListTile(
+                title: AppStrings.getNotSignedIn(locale),
+                subtitle: '로그인하여 데이터를 동기화하세요',
+                icon: Icons.account_circle_outlined,
+                onTap: () {
+                  RouterHelper.goToAccountInfo(context);
+                },
+              ),
+            ],
+          );
+        }
+      },
     );
   }
 

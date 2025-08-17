@@ -14,6 +14,8 @@ import '../model/index.dart';
 import '../screen/pages/settings_page.dart';
 import '../screen/pages/ai/ai_tabbar_page.dart';
 import '../screen/pages/ai/ai_recipe_detail_page.dart';
+import '../screen/pages/auth/login_screen.dart';
+import '../screen/pages/auth/account_info_page.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -44,6 +46,8 @@ class AppRouter {
   static const String scanReceipt = '/scan-receipt';
   static const String sauces = '/sauces';
   static const String sauceEdit = '/sauce/edit';
+  static const String login = '/login';
+  static const String accountInfo = '/account-info';
 
   /// GoRouter 인스턴스 생성
   static GoRouter get router => GoRouter(
@@ -117,6 +121,15 @@ class AppRouter {
       GoRoute(
         path: settings,
         builder: (context, state) => const SettingsPage(),
+      ),
+
+      // 로그인 페이지
+      GoRoute(path: login, builder: (context, state) => LoginScreen()),
+
+      // 계정 정보 페이지
+      GoRoute(
+        path: accountInfo,
+        builder: (context, state) => const AccountInfoPage(),
       ),
 
       // AI 페이지 (탭바 페이지)

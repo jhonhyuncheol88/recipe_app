@@ -15,6 +15,9 @@ import 'service/sauce_expiry_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'service/notification_service.dart';
+import 'controller/auth/auth_bloc.dart';
+import 'controller/auth/auth_event.dart';
+import 'data/auth_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -131,6 +134,12 @@ class MyApp extends StatelessWidget {
 
         // 로케일 관련 BLoC
         BlocProvider<LocaleCubit>(create: (context) => LocaleCubit()),
+
+        // Firebase 인증 관련 BLoC
+        BlocProvider<AuthBloc>(
+          create: (context) =>
+              AuthBloc(authRepository: AuthRepository())..add(AppStarted()),
+        ),
       ],
       child: BlocBuilder<LocaleCubit, AppLocale>(
         builder: (context, currentLocale) {
