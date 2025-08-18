@@ -44,6 +44,14 @@ class RouterHelper {
     context.go(AppRouter.aiRecipeManagement);
   }
 
+  /// AI 판매 분석 페이지로 이동
+  static void goToAiSalesAnalysis(
+    BuildContext context,
+    Map<String, dynamic> recipe,
+  ) {
+    context.push(AppRouter.aiSalesAnalysis, extra: {'recipe': recipe});
+  }
+
   /// 재료 추가 페이지로 이동
   static void goToIngredientAdd(BuildContext context) {
     context.push(AppRouter.ingredientAdd);

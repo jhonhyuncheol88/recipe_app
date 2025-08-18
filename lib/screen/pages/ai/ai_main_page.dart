@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
@@ -8,12 +8,12 @@ import '../../../util/app_locale.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/ingredient/ingredient_state.dart';
 import '../../../controller/recipe/recipe_cubit.dart';
+import '../../../controller/setting/locale_cubit.dart';
 import '../../../model/ingredient.dart';
 import '../../../model/tag.dart';
 import '../../../service/gemini_service.dart';
 import '../../../router/router_helper.dart';
-import '../../../util/app_strings.dart';
-import '../../../util/app_locale.dart';
+
 import 'dart:math';
 
 class AiMainPage extends StatefulWidget {
@@ -43,49 +43,55 @@ class _AiMainPageState extends State<AiMainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          AppStrings.getAiRecipeGeneration(AppLocale.korea),
-          style: AppTextStyles.headline3.copyWith(color: AppColors.textPrimary),
-        ),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () => _showInfoDialog(),
-            color: AppColors.textSecondary,
+    return BlocBuilder<LocaleCubit, AppLocale>(
+      builder: (context, currentLocale) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            title: Text(
+              AppStrings.getAiRecipeGeneration(currentLocale),
+              style: AppTextStyles.headline3.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+            backgroundColor: AppColors.surface,
+            elevation: 0,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.info_outline),
+                onPressed: () => _showInfoDialog(currentLocale),
+                color: AppColors.textSecondary,
+              ),
+            ],
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildIngredientSelection(),
-            const SizedBox(height: 24),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(currentLocale),
+                const SizedBox(height: 24),
+                _buildIngredientSelection(currentLocale),
+                const SizedBox(height: 24),
 
-            _buildRecipeGeneration(),
-            if (_generatedRecipe != null) ...[
-              const SizedBox(height: 24),
-              _buildGeneratedRecipe(),
-            ],
-            if (_missingIngredients.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              _buildMissingIngredients(),
-            ],
-          ],
-        ),
-      ),
+                _buildRecipeGeneration(currentLocale),
+                if (_generatedRecipe != null) ...[
+                  const SizedBox(height: 24),
+                  _buildGeneratedRecipe(currentLocale),
+                ],
+                if (_missingIngredients.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _buildMissingIngredients(currentLocale),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppLocale locale) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -102,7 +108,7 @@ class _AiMainPageState extends State<AiMainPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  AppStrings.getAiRecipeGenerationTitle(AppLocale.korea),
+                  AppStrings.getAiRecipeGenerationTitle(locale),
                   style: AppTextStyles.headline4.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
@@ -113,7 +119,7 @@ class _AiMainPageState extends State<AiMainPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            AppStrings.getAiRecipeGenerationDescription(AppLocale.korea),
+            AppStrings.getAiRecipeGenerationDescription(locale),
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -123,8 +129,9 @@ class _AiMainPageState extends State<AiMainPage> {
     );
   }
 
-  Widget _buildIngredientSelection() {
+  Widget _buildIngredientSelection(AppLocale locale) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -135,7 +142,7 @@ class _AiMainPageState extends State<AiMainPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '사용할 재료를 선택하세요',
+            AppStrings.getSelectIngredientsToUse(locale),
             style: AppTextStyles.headline4.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.bold,
@@ -156,7 +163,7 @@ class _AiMainPageState extends State<AiMainPage> {
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Text(
-                        '등록된 재료가 없습니다',
+                        AppStrings.getNoRegisteredIngredients(locale),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -168,7 +175,7 @@ class _AiMainPageState extends State<AiMainPage> {
 
                 return Column(
                   children: [
-                    Container(
+                    SizedBox(
                       height: 200,
                       child: SingleChildScrollView(
                         child: Wrap(
@@ -218,22 +225,24 @@ class _AiMainPageState extends State<AiMainPage> {
                                 child: Center(
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
+                                      horizontal: 8,
+                                      vertical: 4,
                                     ),
-                                    child: Text(
-                                      ingredient.name,
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: isSelected
-                                            ? AppColors.buttonText
-                                            : AppColors.textPrimary,
-                                        fontWeight: isSelected
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        ingredient.name,
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: isSelected
+                                              ? AppColors.buttonText
+                                              : AppColors.textPrimary,
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
                                       ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ),
@@ -264,7 +273,7 @@ class _AiMainPageState extends State<AiMainPage> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                '선택된 재료: ${_selectedIngredients.map((e) => e.name).join(', ')}',
+                                '${AppStrings.getSelectedIngredients(locale)}: ${_selectedIngredients.map((e) => e.name).join(', ')}',
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   color: AppColors.accent,
                                   fontWeight: FontWeight.w500,
@@ -280,7 +289,7 @@ class _AiMainPageState extends State<AiMainPage> {
 
               return Center(
                 child: Text(
-                  '재료 목록을 불러올 수 없습니다',
+                  AppStrings.getCannotLoadIngredients(locale),
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -293,7 +302,7 @@ class _AiMainPageState extends State<AiMainPage> {
     );
   }
 
-  Widget _buildRecipeGeneration() {
+  Widget _buildRecipeGeneration(AppLocale locale) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -305,7 +314,7 @@ class _AiMainPageState extends State<AiMainPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppStrings.getRecipeGeneration(AppLocale.korea),
+            AppStrings.getRecipeGeneration(locale),
             style: AppTextStyles.headline4.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.bold,
@@ -326,7 +335,7 @@ class _AiMainPageState extends State<AiMainPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      AppStrings.getNoIngredientsForRecipe(AppLocale.korea),
+                      AppStrings.getNoIngredientsForRecipe(locale),
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.warning,
                       ),
@@ -339,7 +348,7 @@ class _AiMainPageState extends State<AiMainPage> {
             Column(
               children: [
                 Text(
-                  '선택된 재료: ${_selectedIngredients.map((e) => e.name).join(', ')}',
+                  '${AppStrings.getSelectedIngredients(locale)}: ${_selectedIngredients.map((e) => e.name).join(', ')}',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -348,7 +357,9 @@ class _AiMainPageState extends State<AiMainPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: _isGeneratingRecipe ? null : _generateRecipe,
+                    onPressed: _isGeneratingRecipe
+                        ? null
+                        : () => _generateRecipe(locale),
                     icon: _isGeneratingRecipe
                         ? const SizedBox(
                             width: 20,
@@ -358,10 +369,8 @@ class _AiMainPageState extends State<AiMainPage> {
                         : const Icon(Icons.auto_awesome),
                     label: Text(
                       _isGeneratingRecipe
-                          ? AppStrings.getGeneratingRecipe(AppLocale.korea)
-                          : AppStrings.getAiRecipeGenerationButton(
-                              AppLocale.korea,
-                            ),
+                          ? AppStrings.getGeneratingRecipe(locale)
+                          : AppStrings.getAiRecipeGenerationButton(locale),
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -383,7 +392,7 @@ class _AiMainPageState extends State<AiMainPage> {
     );
   }
 
-  Widget _buildGeneratedRecipe() {
+  Widget _buildGeneratedRecipe(AppLocale locale) {
     if (_generatedRecipe == null) return const SizedBox.shrink();
 
     return Container(
@@ -402,7 +411,7 @@ class _AiMainPageState extends State<AiMainPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  AppStrings.getGeneratedRecipe(AppLocale.korea),
+                  AppStrings.getGeneratedRecipe(locale),
                   style: AppTextStyles.headline4.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
@@ -414,7 +423,7 @@ class _AiMainPageState extends State<AiMainPage> {
           const SizedBox(height: 16),
           Text(
             _generatedRecipe!['recipe_name'] ??
-                AppStrings.getRecipeName(AppLocale.korea),
+                AppStrings.getRecipeName(locale),
             style: AppTextStyles.headline3.copyWith(
               color: AppColors.accent,
               fontWeight: FontWeight.bold,
@@ -423,47 +432,46 @@ class _AiMainPageState extends State<AiMainPage> {
           const SizedBox(height: 8),
           Text(
             _generatedRecipe!['description'] ??
-                AppStrings.getRecipeDescription(AppLocale.korea),
+                AppStrings.getRecipeDescription(locale),
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
-          _buildRecipeDetails(),
+          _buildRecipeDetails(locale),
           const SizedBox(height: 24),
-          _buildNewRecipeButton(),
+          _buildNewRecipeButton(locale),
           const SizedBox(height: 24),
-          _buildViewSavedRecipesButton(),
+          _buildViewSavedRecipesButton(locale),
         ],
       ),
     );
   }
 
-  Widget _buildRecipeDetails() {
+  Widget _buildRecipeDetails(AppLocale locale) {
     final recipe = _generatedRecipe!;
 
     return Column(
       children: [
         _buildInfoRow(
-          AppStrings.getCookingStyle(AppLocale.korea),
-          recipe['cuisine_type'] ??
-              AppStrings.getKoreanCuisine(AppLocale.korea),
+          AppStrings.getCookingStyle(locale),
+          recipe['cuisine_type'] ?? AppStrings.getKoreanCuisine(locale),
         ),
         _buildInfoRow(
-          AppStrings.getServings(AppLocale.korea),
-          '${recipe['servings']}${AppStrings.getPeople(AppLocale.korea)}',
+          AppStrings.getServings(locale),
+          '${recipe['servings']}${AppStrings.getPeople(locale)}',
         ),
         _buildInfoRow(
-          AppStrings.getCookingTime(AppLocale.korea),
-          '${recipe['total_time_minutes']}${AppStrings.getMinutes(AppLocale.korea)}',
+          AppStrings.getCookingTime(locale),
+          '${recipe['total_time_minutes']}${AppStrings.getMinutes(locale)}',
         ),
         _buildInfoRow(
-          AppStrings.getDifficulty(AppLocale.korea),
-          recipe['difficulty'] ?? AppStrings.getBeginnerLevel(AppLocale.korea),
+          AppStrings.getDifficulty(locale),
+          recipe['difficulty'] ?? AppStrings.getBeginnerLevel(locale),
         ),
         const SizedBox(height: 16),
         Text(
-          AppStrings.getRequiredIngredients(AppLocale.korea),
+          AppStrings.getRequiredIngredients(locale),
           style: AppTextStyles.headline4.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -483,7 +491,7 @@ class _AiMainPageState extends State<AiMainPage> {
         }).toList(),
         const SizedBox(height: 16),
         Text(
-          AppStrings.getCookingInstructions(AppLocale.korea),
+          AppStrings.getCookingInstructions(locale),
           style: AppTextStyles.headline4.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -533,7 +541,7 @@ class _AiMainPageState extends State<AiMainPage> {
     );
   }
 
-  Widget _buildMissingIngredients() {
+  Widget _buildMissingIngredients(AppLocale locale) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -549,7 +557,7 @@ class _AiMainPageState extends State<AiMainPage> {
               Icon(Icons.add_shopping_cart, color: AppColors.warning),
               const SizedBox(width: 12),
               Text(
-                AppStrings.getAdditionalIngredientsNeeded(AppLocale.korea),
+                AppStrings.getAdditionalIngredientsNeeded(locale),
                 style: AppTextStyles.headline4.copyWith(
                   color: AppColors.warning,
                   fontWeight: FontWeight.bold,
@@ -576,7 +584,7 @@ class _AiMainPageState extends State<AiMainPage> {
                   TextButton(
                     onPressed: () => _addIngredient(ingredient),
                     child: Text(
-                      AppStrings.getAddIngredient(AppLocale.korea),
+                      AppStrings.getAddIngredient(locale),
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.accent,
                         fontWeight: FontWeight.bold,
@@ -593,9 +601,7 @@ class _AiMainPageState extends State<AiMainPage> {
             child: OutlinedButton.icon(
               onPressed: _addAllMissingIngredients,
               icon: const Icon(Icons.add_shopping_cart),
-              label: Text(
-                AppStrings.getAddAllIngredientsAtOnce(AppLocale.korea),
-              ),
+              label: Text(AppStrings.getAddAllIngredientsAtOnce(locale)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.warning,
                 side: BorderSide(color: AppColors.warning),
@@ -611,7 +617,7 @@ class _AiMainPageState extends State<AiMainPage> {
     );
   }
 
-  Widget _buildNewRecipeButton() {
+  Widget _buildNewRecipeButton(AppLocale locale) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -623,7 +629,7 @@ class _AiMainPageState extends State<AiMainPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '같은 재료로 다른 스타일의 레시피 만들기',
+            AppStrings.getCreateDifferentStyleRecipes(locale),
             style: AppTextStyles.headline4.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.bold,
@@ -631,7 +637,7 @@ class _AiMainPageState extends State<AiMainPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            '선택한 재료를 활용해서 다른 요리 스타일의 레시피를 생성해보세요',
+            AppStrings.getCreateDifferentStyleRecipesDescription(locale),
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -643,10 +649,10 @@ class _AiMainPageState extends State<AiMainPage> {
                 child: OutlinedButton.icon(
                   onPressed: _isGeneratingRecipe
                       ? null
-                      : _generateDifferentStyleRecipe,
+                      : () => _generateDifferentStyleRecipe(locale),
                   icon: const Icon(Icons.restaurant),
                   label: Text(
-                    '한식 스타일',
+                    AppStrings.getKoreanStyle(locale),
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -666,10 +672,10 @@ class _AiMainPageState extends State<AiMainPage> {
                 child: OutlinedButton.icon(
                   onPressed: _isGeneratingRecipe
                       ? null
-                      : _generateDifferentStyleRecipe,
+                      : () => _generateDifferentStyleRecipe(locale),
                   icon: const Icon(Icons.auto_awesome),
                   label: Text(
-                    '퓨전 스타일',
+                    AppStrings.getFusionStyle(locale),
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -691,7 +697,7 @@ class _AiMainPageState extends State<AiMainPage> {
     );
   }
 
-  Widget _buildViewSavedRecipesButton() {
+  Widget _buildViewSavedRecipesButton(AppLocale locale) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -707,7 +713,7 @@ class _AiMainPageState extends State<AiMainPage> {
               Icon(Icons.bookmark, color: AppColors.accent),
               const SizedBox(width: 12),
               Text(
-                '저장된 AI 레시피 보기',
+                AppStrings.getViewSavedAiRecipes(locale),
                 style: AppTextStyles.headline4.copyWith(
                   color: AppColors.accent,
                   fontWeight: FontWeight.bold,
@@ -717,7 +723,7 @@ class _AiMainPageState extends State<AiMainPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            '생성된 AI 레시피를 확인하고 관리할 수 있습니다',
+            AppStrings.getViewSavedAiRecipesDescription(locale),
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -734,7 +740,7 @@ class _AiMainPageState extends State<AiMainPage> {
               },
               icon: const Icon(Icons.auto_awesome),
               label: Text(
-                '저장된 레시피 보기',
+                AppStrings.getViewSavedRecipes(locale),
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -782,7 +788,7 @@ class _AiMainPageState extends State<AiMainPage> {
     );
   }
 
-  Future<void> _generateRecipe() async {
+  Future<void> _generateRecipe(AppLocale locale) async {
     if (_selectedIngredients.isEmpty) return;
 
     setState(() {
@@ -804,7 +810,7 @@ class _AiMainPageState extends State<AiMainPage> {
       });
 
       // AI 레시피 자동 저장
-      _saveAiRecipe(recipe);
+      _saveAiRecipe(recipe, locale);
 
       // 누락된 재료 분석
       _analyzeMissingIngredients(recipe);
@@ -816,9 +822,7 @@ class _AiMainPageState extends State<AiMainPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              '${AppStrings.getRecipeGenerationError(AppLocale.korea)}: $e',
-            ),
+            content: Text('${AppStrings.getRecipeGenerationError(locale)}: $e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -826,7 +830,7 @@ class _AiMainPageState extends State<AiMainPage> {
     }
   }
 
-  Future<void> _generateDifferentStyleRecipe() async {
+  Future<void> _generateDifferentStyleRecipe(AppLocale locale) async {
     if (_selectedIngredients.isEmpty) return;
 
     setState(() {
@@ -837,7 +841,7 @@ class _AiMainPageState extends State<AiMainPage> {
 
     try {
       // 랜덤으로 여러 나라의 음식 스타일 선택
-      final randomCuisineTypes = _getRandomCuisineTypes();
+      final randomCuisineTypes = _getRandomCuisineTypes(locale);
 
       final recipe = await _geminiService.generateDifferentStyleRecipe(
         _selectedIngredients,
@@ -852,7 +856,7 @@ class _AiMainPageState extends State<AiMainPage> {
       });
 
       // AI 레시피 자동 저장
-      _saveAiRecipe(recipe);
+      _saveAiRecipe(recipe, locale);
 
       // 누락된 재료 분석
       _analyzeMissingIngredients(recipe);
@@ -864,9 +868,7 @@ class _AiMainPageState extends State<AiMainPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              '${AppStrings.getRecipeGenerationError(AppLocale.korea)}: $e',
-            ),
+            content: Text('${AppStrings.getRecipeGenerationError(locale)}: $e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -875,9 +877,9 @@ class _AiMainPageState extends State<AiMainPage> {
   }
 
   /// 랜덤으로 여러 나라의 음식 스타일을 선택하는 메서드
-  List<String> _getRandomCuisineTypes() {
+  List<String> _getRandomCuisineTypes(AppLocale locale) {
     final random = Random();
-    final allCuisineTags = DefaultTags.recipeTagsFor(AppLocale.korea);
+    final allCuisineTags = DefaultTags.recipeTagsFor(locale);
 
     // 퓨전 태그는 제외하고 실제 국가별 태그만 선택
     final countryTags = allCuisineTags
@@ -900,7 +902,7 @@ class _AiMainPageState extends State<AiMainPage> {
     }
 
     // 퓨전 태그도 추가
-    selectedTags.add('퓨전');
+    selectedTags.add(AppStrings.getFusion(locale));
 
     return selectedTags;
   }
@@ -955,7 +957,7 @@ class _AiMainPageState extends State<AiMainPage> {
   }
 
   // AI 레시피 자동 저장
-  void _saveAiRecipe(Map<String, dynamic> recipe) {
+  void _saveAiRecipe(Map<String, dynamic> recipe, AppLocale locale) {
     try {
       final sourceIngredients = _selectedIngredients
           .map((e) => e.name)
@@ -967,7 +969,7 @@ class _AiMainPageState extends State<AiMainPage> {
 
       // 요리 스타일이 있지만 태그가 없는 경우 기본 태그 추가
       if (cuisineType.isNotEmpty && tags.isEmpty) {
-        final defaultTags = _getDefaultTagsForCuisine(cuisineType);
+        final defaultTags = _getDefaultTagsForCuisine(cuisineType, locale);
         recipe['tags'] = defaultTags;
       }
 
@@ -978,7 +980,7 @@ class _AiMainPageState extends State<AiMainPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppStrings.getAiRecipeSaved(AppLocale.korea)),
+            content: Text(AppStrings.getAiRecipeSaved(locale)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -990,8 +992,8 @@ class _AiMainPageState extends State<AiMainPage> {
   }
 
   // 요리 스타일에 따른 기본 태그 반환
-  List<String> _getDefaultTagsForCuisine(String cuisineType) {
-    final allTags = DefaultTags.recipeTagsFor(AppLocale.korea);
+  List<String> _getDefaultTagsForCuisine(String cuisineType, AppLocale locale) {
+    final allTags = DefaultTags.recipeTagsFor(locale);
     final defaultTags = <String>[];
 
     // 요리 스타일에 맞는 태그 찾기
@@ -1036,19 +1038,21 @@ class _AiMainPageState extends State<AiMainPage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('재료 일괄 추가 준비 중 오류가 발생했습니다: $e'),
+          content: Text(
+            '${AppStrings.getBulkIngredientAdditionError(AppLocale.korea)}: $e',
+          ),
           backgroundColor: AppColors.error,
         ),
       );
     }
   }
 
-  void _showInfoDialog() {
+  void _showInfoDialog(AppLocale locale) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          AppStrings.getAiRecipeGeneratorUsage(AppLocale.korea),
+          AppStrings.getAiRecipeGeneratorUsage(locale),
           style: AppTextStyles.headline4.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -1059,7 +1063,7 @@ class _AiMainPageState extends State<AiMainPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppStrings.getAiRecipeGeneratorInstructions(AppLocale.korea),
+              AppStrings.getAiRecipeGeneratorInstructions(locale),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -1070,7 +1074,7 @@ class _AiMainPageState extends State<AiMainPage> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
-              AppStrings.getConfirm(AppLocale.korea),
+              AppStrings.getConfirm(locale),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.accent,
                 fontWeight: FontWeight.bold,

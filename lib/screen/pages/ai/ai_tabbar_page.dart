@@ -77,7 +77,7 @@ class _AiTabbarPageState extends State<AiTabbarPage>
               tabs: [
                 Tab(
                   icon: Icon(Icons.auto_awesome, size: 20),
-                  text: 'AI 레시피 생성',
+                  text: AppStrings.getAiRecipeGenerationTab(currentLocale),
                 ),
                 Tab(
                   icon: Icon(Icons.auto_awesome_outlined, size: 20),

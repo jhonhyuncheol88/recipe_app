@@ -140,123 +140,193 @@ class _SauceEditPageState extends State<SauceEditPage> {
           if (!unitOptions.contains(unitId)) {
             unitId = unitOptions.first;
           }
-          return AlertDialog(
-            title: Text(AppStrings.getAddIngredientToSauce(AppLocale.korea)),
-            content: SizedBox(
-              width: 420,
+          return Dialog(
+            insetPadding: const EdgeInsets.all(16), // 기본 패딩 유지
+            child: Container(
+              width: double.infinity,
+              constraints: BoxConstraints(
+                maxHeight:
+                    MediaQuery.of(context).size.height * 0.8, // 화면 높이의 80%로 제한
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 검색 입력
-                  AppInputField(
-                    label: AppStrings.getSelectIngredient(AppLocale.korea),
-                    hint: AppStrings.getSelectIngredient(AppLocale.korea),
-                    controller: searchController,
-                    onChanged: (value) {
-                      setModalState(() {
-                        final q = value.trim();
-                        if (q.isEmpty) {
-                          filtered = List.of(ingredients);
-                        } else {
-                          filtered = ingredients
-                              .where((e) => e.name.contains(q))
-                              .toList();
-                        }
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  // 재료 목록
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 240),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final ing = filtered[index];
-                        final isSelected = selected?.id == ing.id;
-                        return ListTile(
-                          selected: isSelected,
-                          title: Text(ing.name),
-                          subtitle: Text(
-                            '구매단위: ${ing.purchaseAmount} ${ing.purchaseUnitId}',
-                          ),
-                          onTap: () => setModalState(() {
-                            selected = ing;
-                            unitId = ing.purchaseUnitId;
-                          }),
-                        );
-                      },
+                  // 헤더
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (selected != null)
-                    Wrap(
-                      spacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
+                    child: Row(
                       children: [
-                        Chip(label: Text(selected!.name)),
-                        const SizedBox(width: 8),
-                        DropdownButton<String>(
-                          value: unitId,
-                          items: unitOptions
-                              .map(
-                                (u) =>
-                                    DropdownMenuItem(value: u, child: Text(u)),
-                              )
-                              .toList(),
-                          onChanged: (v) => setModalState(() {
-                            if (v != null) unitId = v;
-                          }),
-                        ),
-                        SizedBox(
-                          width: 140,
-                          child: NumberInputField(
-                            label: AppStrings.getAmount(AppLocale.korea),
-                            controller: amountController,
-                            locale: AppLocale.korea,
-                            allowDecimal: true,
+                        Expanded(
+                          child: Text(
+                            AppStrings.getAddIngredientToSauce(AppLocale.korea),
+                            style: AppTextStyles.headline4,
                           ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
                         ),
                       ],
                     ),
+                  ),
+                  // 내용
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 검색 입력
+                          AppInputField(
+                            label: AppStrings.getSelectIngredient(
+                              AppLocale.korea,
+                            ),
+                            hint: AppStrings.getSelectIngredient(
+                              AppLocale.korea,
+                            ),
+                            controller: searchController,
+                            onChanged: (value) {
+                              setModalState(() {
+                                final q = value.trim();
+                                if (q.isEmpty) {
+                                  filtered = List.of(ingredients);
+                                } else {
+                                  filtered = ingredients
+                                      .where((e) => e.name.contains(q))
+                                      .toList();
+                                }
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          // 재료 목록
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight:
+                                  MediaQuery.of(context).size.height *
+                                  0.25, // 화면 높이의 25%로 제한
+                            ),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final ing = filtered[index];
+                                final isSelected = selected?.id == ing.id;
+                                return ListTile(
+                                  selected: isSelected,
+                                  title: Text(ing.name),
+                                  subtitle: Text(
+                                    '구매단위: ${ing.purchaseAmount} ${ing.purchaseUnitId}',
+                                  ),
+                                  onTap: () => setModalState(() {
+                                    selected = ing;
+                                    unitId = ing.purchaseUnitId;
+                                  }),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (selected != null)
+                            Column(
+                              spacing: 8,
+
+                              children: [
+                                Chip(label: Text(selected!.name)),
+                                const SizedBox(width: 8),
+                                DropdownButton<String>(
+                                  value: unitId,
+                                  items: unitOptions
+                                      .map(
+                                        (u) => DropdownMenuItem(
+                                          value: u,
+                                          child: Text(u),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (v) => setModalState(() {
+                                    if (v != null) unitId = v;
+                                  }),
+                                ),
+                                SizedBox(
+                                  width: 140,
+                                  child: NumberInputField(
+                                    label: AppStrings.getAmount(
+                                      AppLocale.korea,
+                                    ),
+                                    controller: amountController,
+                                    locale: AppLocale.korea,
+                                    allowDecimal: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // 액션 버튼
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(AppStrings.getCancel(AppLocale.korea)),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: () {
+                            final ing = selected;
+                            // 소수점 허용: 숫자와 점만 남김 (첫 점만 유지)
+                            var txt = amountController.text;
+                            txt = txt.replaceAll(',', '');
+                            final cleaned = txt.replaceAll(
+                              RegExp('[^0-9\.]'),
+                              '',
+                            );
+                            final parts = cleaned.split('.');
+                            String normalized;
+                            if (parts.length <= 1) {
+                              normalized = cleaned;
+                            } else {
+                              normalized =
+                                  parts.first + '.' + parts.sublist(1).join();
+                            }
+                            final amount = double.tryParse(normalized) ?? 0;
+                            if (ing != null && amount > 0) {
+                              context.read<SauceCubit>().addIngredientToSauce(
+                                sauceId: widget.sauce.id,
+                                ingredientId: ing.id,
+                                amount: amount,
+                                unitId: unitId,
+                              );
+                            }
+                            Navigator.pop(context);
+                          },
+                          child: Text(AppStrings.getAdd(AppLocale.korea)),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(AppStrings.getCancel(AppLocale.korea)),
-              ),
-              TextButton(
-                onPressed: () {
-                  final ing = selected;
-                  // 소수점 허용: 숫자와 점만 남김 (첫 점만 유지)
-                  var txt = amountController.text;
-                  txt = txt.replaceAll(',', '');
-                  final cleaned = txt.replaceAll(RegExp('[^0-9\.]'), '');
-                  final parts = cleaned.split('.');
-                  String normalized;
-                  if (parts.length <= 1) {
-                    normalized = cleaned;
-                  } else {
-                    normalized = parts.first + '.' + parts.sublist(1).join();
-                  }
-                  final amount = double.tryParse(normalized) ?? 0;
-                  if (ing != null && amount > 0) {
-                    context.read<SauceCubit>().addIngredientToSauce(
-                      sauceId: widget.sauce.id,
-                      ingredientId: ing.id,
-                      amount: amount,
-                      unitId: unitId,
-                    );
-                  }
-                  Navigator.pop(context);
-                },
-                child: Text(AppStrings.getAdd(AppLocale.korea)),
-              ),
-            ],
           );
         },
       ),

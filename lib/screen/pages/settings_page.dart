@@ -202,7 +202,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               SettingsListTile(
                 title: AppStrings.getNotSignedIn(locale),
-                subtitle: '로그인하여 데이터를 동기화하세요',
+                subtitle: AppStrings.getLoginRequired(locale),
                 icon: Icons.account_circle_outlined,
                 onTap: () {
                   RouterHelper.goToAccountInfo(context);
@@ -279,6 +279,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showLanguageDialog() {
+    final currentLocale = context.read<LocaleCubit>().state;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -302,7 +303,7 @@ class _SettingsPageState extends State<SettingsPage> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              '취소',
+              AppStrings.getCancel(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -327,6 +328,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _exportData() {
+    final currentLocale = context.read<LocaleCubit>().state;
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
@@ -338,7 +340,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               ListTile(
                 leading: const Icon(Icons.save_alt),
-                title: const Text('기기에 저장'),
+                title: Text(AppStrings.getSaveToDevice(currentLocale)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   try {
@@ -346,27 +348,56 @@ class _SettingsPageState extends State<SettingsPage> {
                       await getDatabasesPath(),
                       'recipe_app.db',
                     );
-                    final documentsDir =
-                        await getApplicationDocumentsDirectory();
+
+                    Directory targetDir;
+                    String platformInfo;
+
+                    if (Platform.isAndroid) {
+                      // 안드로이드: 다운로드 폴더에 저장
+                      targetDir = Directory('/storage/emulated/0/Download');
+                      if (!await targetDir.exists()) {
+                        // 다운로드 폴더가 없는 경우 Documents 폴더로 폴백
+                        targetDir = await getApplicationDocumentsDirectory();
+                        platformInfo = AppStrings.getDocumentsFolder(
+                          currentLocale,
+                        );
+                      } else {
+                        platformInfo = AppStrings.getDownloadFolder(
+                          currentLocale,
+                        );
+                      }
+                    } else {
+                      // iOS: Documents 폴더에 저장
+                      targetDir = await getApplicationDocumentsDirectory();
+                      platformInfo = AppStrings.getDocumentsFolder(
+                        currentLocale,
+                      );
+                    }
+
                     final timestamp = DateTime.now()
                         .toIso8601String()
                         .replaceAll(':', '-');
                     final outPath = p.join(
-                      documentsDir.path,
+                      targetDir.path,
                       'recipe_app_export_$timestamp.db',
                     );
                     await File(dbPath).copy(outPath);
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('내보내기 완료: $outPath'),
+                        content: Text(
+                          AppStrings.getExportCompleteMessage(
+                            currentLocale,
+                            platformInfo,
+                          ),
+                        ),
                         backgroundColor: AppColors.success,
                         action: SnackBarAction(
-                          label: '공유',
+                          label: AppStrings.getShare(currentLocale),
                           onPressed: () async {
                             await Share.shareXFiles([
                               XFile(outPath),
-                            ], text: '레시피 앱 데이터베이스 내보내기');
+                            ], text: AppStrings.getDatabaseFile(currentLocale));
                           },
                         ),
                       ),
@@ -375,7 +406,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('내보내기 실패: $e'),
+                        content: Text(
+                          AppStrings.getExportFailedMessage(
+                            currentLocale,
+                            e.toString(),
+                          ),
+                        ),
                         backgroundColor: AppColors.error,
                       ),
                     );
@@ -384,7 +420,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               ListTile(
                 leading: const Icon(Icons.ios_share),
-                title: const Text('공유하기'),
+                title: Text(AppStrings.getShare(currentLocale)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   try {
@@ -403,12 +439,17 @@ class _SettingsPageState extends State<SettingsPage> {
                     await File(dbPath).copy(tmpPath);
                     await Share.shareXFiles([
                       XFile(tmpPath),
-                    ], text: '레시피 앱 데이터베이스 내보내기');
+                    ], text: AppStrings.getDatabaseFile(currentLocale));
                   } catch (e) {
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('공유 실패: $e'),
+                        content: Text(
+                          AppStrings.getShareFailedMessage(
+                            currentLocale,
+                            e.toString(),
+                          ),
+                        ),
                         backgroundColor: AppColors.error,
                       ),
                     );
@@ -438,9 +479,10 @@ class _SettingsPageState extends State<SettingsPage> {
       // 파일 확장자 검증
       if (fileExtension != '.db') {
         if (!mounted) return;
+        final currentLocale = context.read<LocaleCubit>().state;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('데이터베이스 파일(.db)만 선택할 수 있습니다.'),
+            content: Text(AppStrings.getDatabaseFileOnly(currentLocale)),
             backgroundColor: AppColors.error,
           ),
         );
@@ -470,17 +512,21 @@ class _SettingsPageState extends State<SettingsPage> {
       ]);
 
       if (!mounted) return;
+      final currentLocale = context.read<LocaleCubit>().state;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('데이터 가져오기 완료'),
+          content: Text(AppStrings.getImportComplete(currentLocale)),
           backgroundColor: AppColors.success,
         ),
       );
     } catch (e) {
       if (!mounted) return;
+      final currentLocale = context.read<LocaleCubit>().state;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('가져오기 실패: $e'),
+          content: Text(
+            AppStrings.getImportFailedMessage(currentLocale, e.toString()),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -488,6 +534,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _resetData() {
+    final currentLocale = context.read<LocaleCubit>().state;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -503,7 +550,7 @@ class _SettingsPageState extends State<SettingsPage> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              '취소',
+              AppStrings.getCancel(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -533,10 +580,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 if (!mounted) return;
                 Navigator.pop(context);
+                final currentLocale = context.read<LocaleCubit>().state;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      AppStrings.getDataResetSuccess(AppLocale.korea),
+                      AppStrings.getDataResetSuccess(currentLocale),
                     ),
                     backgroundColor: AppColors.success,
                   ),
@@ -544,16 +592,22 @@ class _SettingsPageState extends State<SettingsPage> {
               } catch (e) {
                 if (!mounted) return;
                 Navigator.pop(context);
+                final currentLocale = context.read<LocaleCubit>().state;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('초기화 실패: $e'),
+                    content: Text(
+                      AppStrings.getResetFailedMessage(
+                        currentLocale,
+                        e.toString(),
+                      ),
+                    ),
                     backgroundColor: AppColors.error,
                   ),
                 );
               }
             },
             child: Text(
-              '초기화',
+              AppStrings.getReset(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
                 color: AppColors.error,
               ),

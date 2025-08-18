@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../util/number_formatter.dart';
 import '../../util/app_locale.dart';
+import '../../util/app_strings.dart';
+import '../../../router/router_helper.dart';
+import '../../model/recipe.dart';
 
 /// 앱에서 사용하는 공통 카드 위젯
 class AppCard extends StatelessWidget {
@@ -233,6 +236,8 @@ class RecipeCard extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onLongPress;
+  final Recipe? recipe; // 실제 Recipe 객체 추가
+  final AppLocale locale; // 로컬화 지원 추가
 
   const RecipeCard({
     super.key,
@@ -247,6 +252,8 @@ class RecipeCard extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.onLongPress,
+    this.recipe, // Recipe 객체 선택적 매개변수
+    required this.locale, // 로컬화 지원 필수 매개변수
   });
 
   @override
@@ -287,18 +294,18 @@ class RecipeCard extends StatelessWidget {
                   },
                   itemBuilder: (context) => [
                     if (onEdit != null)
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'edit',
                         child: Row(
                           children: [
                             Icon(Icons.edit, size: 16),
                             SizedBox(width: 8),
-                            Text('수정'),
+                            Text(AppStrings.getEdit(locale)),
                           ],
                         ),
                       ),
                     if (onDelete != null)
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
                         child: Row(
                           children: [
@@ -309,7 +316,7 @@ class RecipeCard extends StatelessWidget {
                             ),
                             SizedBox(width: 8),
                             Text(
-                              '삭제',
+                              AppStrings.getDelete(locale),
                               style: TextStyle(color: AppColors.error),
                             ),
                           ],
@@ -331,6 +338,54 @@ class RecipeCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 12),
+
+          // AI 분석 버튼
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                // AI 분석 페이지로 이동
+                if (recipe != null) {
+                  // 실제 Recipe 객체가 있으면 사용
+                  RouterHelper.goToAiSalesAnalysis(context, {
+                    'id': recipe!.id,
+                    'name': recipe!.name,
+                    'description': recipe!.description,
+                    'outputAmount': recipe!.outputAmount,
+                    'outputUnit': recipe!.outputUnit,
+                    'totalCost': recipe!.totalCost,
+                    'imagePath': recipe!.imagePath,
+                    'ingredients': recipe!.ingredients,
+                    'tagIds': recipe!.tagIds,
+                  });
+                } else {
+                  // 기존 방식으로 데이터 전달
+                  RouterHelper.goToAiSalesAnalysis(context, {
+                    'id': 'temp',
+                    'name': name,
+                    'description': description,
+                    'outputAmount': 0,
+                    'outputUnit': '',
+                    'totalCost': totalCost,
+                    'imagePath': null,
+                    'ingredients': [],
+                    'tagIds': [],
+                  });
+                }
+              },
+              icon: const Icon(Icons.analytics, size: 16),
+              label: Text(AppStrings.getAnalyzeWithAi(locale)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accent,
+                foregroundColor: AppColors.buttonText,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -338,7 +393,7 @@ class RecipeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '재료 개수',
+                      AppStrings.getIngredientCountSimple(locale),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -359,7 +414,7 @@ class RecipeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      '총 투입량',
+                      AppStrings.getTotalWeight(locale),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -380,7 +435,7 @@ class RecipeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '총 원가',
+                      AppStrings.getTotalCost(locale),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),

@@ -161,32 +161,6 @@ class _AiRecipePageState extends State<AiRecipePage> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () {
-                // 첫 번째 탭(AI 레시피 생성)으로 이동
-                if (mounted) {
-                  // 탭 전환을 위해 상위 위젯의 TabController에 접근
-                  final tabController = DefaultTabController.of(context);
-                  if (tabController != null) {
-                    tabController.animateTo(0);
-                  }
-                }
-              },
-              icon: const Icon(Icons.add),
-              label: Text(AppStrings.getAiRecipeGenerationButton(locale)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: AppColors.buttonText,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -394,7 +368,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
                             ),
                           ),
                           child: Text(
-                            '변환됨',
+                            AppStrings.getConverted(locale),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.success,
                               fontSize: 12,
@@ -537,13 +511,13 @@ class _AiRecipePageState extends State<AiRecipePage> {
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return '오늘';
+      return AppStrings.getToday(locale);
     } else if (difference.inDays == 1) {
-      return '어제';
+      return AppStrings.getYesterday(locale);
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}일 전';
+      return AppStrings.getDaysAgo(locale, difference.inDays);
     } else {
-      return '${date.month}월 ${date.day}일';
+      return AppStrings.getMonthDay(locale, date.month, date.day);
     }
   }
 }

@@ -230,6 +230,8 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   }
 
   Widget _buildRecipeList(RecipeState state) {
+    final currentLocale = context.watch<LocaleCubit>().state;
+
     if (state is RecipeLoading) {
       return const SizedBox(
         height: 200,
@@ -324,6 +326,8 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
               totalWeight: recipeInfo['totalWeight'],
               weightUnit: recipeInfo['weightUnit'],
               isSelected: isSelected,
+              recipe: recipe, // 실제 Recipe 객체 전달
+              locale: currentLocale, // 로컬화 지원
               onTap: () => _editRecipe(recipe),
               onEdit: () => _editRecipe(recipe),
               onDelete: () => _deleteRecipe(recipe),
@@ -443,7 +447,9 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('삭제 중 오류가 발생했습니다: $e'),
+                      content: Text(
+                        '${AppStrings.getDelete(currentLocale)} 중 오류가 발생했습니다: $e',
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -468,7 +474,12 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppStrings.getDeleteSelectedRecipes(currentLocale)),
-        content: Text('${_selectedRecipes.length}개의 레시피를 삭제하시겠습니까?'),
+        content: Text(
+          AppStrings.getDeleteSelectedRecipesConfirm(
+            currentLocale,
+            _selectedRecipes.length,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -486,7 +497,9 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('삭제 중 오류가 발생했습니다: $e'),
+                      content: Text(
+                        AppStrings.getDeleteError(currentLocale, e.toString()),
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );

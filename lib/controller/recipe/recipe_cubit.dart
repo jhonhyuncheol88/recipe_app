@@ -6,6 +6,7 @@ import '../../model/index.dart';
 import '../../model/recipe_ingredient.dart';
 import '../../service/recipe_cost_service.dart';
 import '../../service/sauce_cost_service.dart';
+import '../../service/ai_sales_analysis_service.dart';
 import 'recipe_state.dart';
 import '../../util/unit_converter.dart' as uc;
 import 'package:uuid/uuid.dart';
@@ -19,6 +20,7 @@ class RecipeCubit extends Cubit<RecipeState> {
   final AiRecipeRepository _aiRecipeRepository = AiRecipeRepository();
   late final SauceCostService _sauceCostService;
   late final RecipeCostService _recipeCostService;
+  late final AiSalesAnalysisService _aiSalesAnalysisService;
   final Uuid _uuid = const Uuid();
 
   RecipeCubit({
@@ -40,6 +42,7 @@ class RecipeCubit extends Cubit<RecipeState> {
       sauceRepository: _sauceRepository,
       sauceCostService: _sauceCostService,
     );
+    _aiSalesAnalysisService = AiSalesAnalysisService();
   }
 
   // 레시피 목록 로드
@@ -137,10 +140,43 @@ class RecipeCubit extends Cubit<RecipeState> {
     try {
       emit(const RecipeLoading());
 
+      // 기존 레시피 정보 조회
+      final existingRecipe = await _recipeRepository.getRecipeById(recipe.id);
+      if (existingRecipe == null) {
+        emit(const RecipeError('수정할 레시피를 찾을 수 없습니다.'));
+        return;
+      }
+
+      // 레시피 기본 정보 업데이트
       await _recipeRepository.updateRecipe(recipe);
+
+      // 기존 재료 관계를 새로운 것으로 교체
+      // 각 재료를 개별적으로 업데이트하거나 추가
+      for (final ingredient in recipe.ingredients) {
+        try {
+          // 기존 재료가 있는지 확인하고 업데이트, 없으면 추가
+          await _recipeRepository.addIngredientToRecipe(recipe.id, ingredient);
+        } catch (e) {
+          // 재료 추가 실패 시 로그만 남기고 계속 진행
+          print('재료 추가 실패: ${ingredient.ingredientId}, 오류: $e');
+        }
+      }
+
+      // 소스 관계는 별도로 관리되므로 여기서는 제거하지 않음
+      // 소스 추가/제거는 별도 메서드로 처리
+
+      // 레시피 원가 재계산
+      await _recalculateRecipeCost(recipe.id);
+
+      // 업데이트된 레시피 정보 조회
+      final updatedRecipe = await _recipeRepository.getRecipeById(recipe.id);
       final recipes = await _recipeRepository.getAllRecipes();
 
-      emit(RecipeUpdated(recipe: recipe, recipes: recipes));
+      if (updatedRecipe != null) {
+        emit(RecipeUpdated(recipe: updatedRecipe, recipes: recipes));
+      } else {
+        emit(RecipeUpdated(recipe: recipe, recipes: recipes));
+      }
     } catch (e) {
       emit(RecipeError('레시피 수정에 실패했습니다: $e'));
     }
@@ -850,6 +886,57 @@ class RecipeCubit extends Cubit<RecipeState> {
       return aiRecipe;
     } catch (e) {
       emit(RecipeError('AI 레시피 상세 정보를 불러오는데 실패했습니다: $e'));
+      return null;
+    }
+  }
+
+  // AI 판매 분석 수행
+  Future<Map<String, dynamic>?> performAiSalesAnalysis(
+    String recipeId, {
+    String? userQuery,
+    String? userLanguage,
+  }) async {
+    try {
+      // 🔴 수정: AI 분석 중에도 기존 레시피 상태 유지
+      // emit(const RecipeLoading()); // 제거
+
+      // 레시피 정보 조회
+      final recipe = await _recipeRepository.getRecipeById(recipeId);
+      if (recipe == null) {
+        emit(const RecipeError('레시피를 찾을 수 없습니다.'));
+        return null;
+      }
+
+      // 레시피에 사용된 재료들의 상세 정보 조회
+      final ingredients = <Ingredient>[];
+      for (final recipeIngredient in recipe.ingredients) {
+        final ingredient = await _ingredientRepository.getIngredientById(
+          recipeIngredient.ingredientId,
+        );
+        if (ingredient != null) {
+          ingredients.add(ingredient);
+        }
+      }
+
+      // AI 판매 분석 수행
+      final analysisResult = await _aiSalesAnalysisService.analyzeRecipeSales(
+        recipe,
+        ingredients,
+        userQuery: userQuery,
+        userLanguage: userLanguage,
+      );
+
+      // Analytics: AI 분석 사용 카운트 증가
+      try {
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'ai_sales_analysis',
+          parameters: {'recipe_id': recipeId},
+        );
+      } catch (_) {}
+
+      return analysisResult;
+    } catch (e) {
+      emit(RecipeError('AI 판매 분석에 실패했습니다: $e'));
       return null;
     }
   }

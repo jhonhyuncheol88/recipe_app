@@ -524,7 +524,12 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
         ),
         actions: [
           TextButton(
-            onPressed: _isLoading ? null : _saveRecipe,
+            onPressed: _isLoading
+                ? null
+                : () {
+                    _saveRecipe();
+                    // _saveRecipe 내부에서 성공 시 뒤로가기 처리됨
+                  },
             child: Text(
               AppStrings.getSave(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
@@ -1174,8 +1179,9 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
           if (!unitOptions.contains(unitId)) unitId = unitOptions.first;
           return AlertDialog(
             title: Text(AppStrings.getSelectIngredient(currentLocale)),
-            content: SizedBox(
+            content: Container(
               width: 480,
+              constraints: const BoxConstraints(maxHeight: 500),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1193,8 +1199,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                     }),
                   ),
                   const SizedBox(height: 8),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 260),
+                  Flexible(
                     child: ListView.builder(
                       shrinkWrap: true,
                       itemCount: filtered.length,
@@ -1367,6 +1372,11 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
             )
             .toList(),
       );
+
+      // 레시피 저장 성공 시 뒤로가기
+      if (mounted) {
+        context.pop();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

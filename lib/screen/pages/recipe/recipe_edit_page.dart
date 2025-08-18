@@ -17,6 +17,7 @@ import '../../../model/ingredient.dart';
 import '../../../model/index.dart';
 import '../../../model/tag.dart';
 import '../../../model/unit.dart';
+import 'package:uuid/uuid.dart';
 import '../../widget/index.dart';
 import '../../../data/index.dart';
 import '../../../service/sauce_cost_service.dart';
@@ -66,8 +67,18 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
         ? widget.recipe.tagIds.first
         : '';
 
-    // TODO: 레시피 재료들을 Ingredient 객체로 변환
+    // 레시피 재료들을 초기화
     _selectedIngredients = [];
+    _ingredientAmounts = {};
+    _ingredientUnitIds = {};
+    _ingredientCosts = {};
+
+    // 기존 재료 정보 복원
+    for (final ri in widget.recipe.ingredients) {
+      _ingredientAmounts[ri.ingredientId] = ri.amount;
+      _ingredientUnitIds[ri.ingredientId] = ri.unitId;
+      _ingredientCosts[ri.ingredientId] = ri.calculatedCost;
+    }
   }
 
   void _loadInitialData() {
@@ -308,7 +319,12 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
         ),
         actions: [
           TextButton(
-            onPressed: _isLoading ? null : _saveRecipe,
+            onPressed: _isLoading
+                ? null
+                : () {
+                    _saveRecipe();
+                    // _saveRecipe 내부에서 성공 시 뒤로가기 처리됨
+                  },
             child: Text(
               AppStrings.getSave(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
@@ -596,7 +612,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                               ),
                               const SizedBox(height: 8),
                               AppInputField(
-                                label: '투입량',
+                                label: AppStrings.getInputAmount(currentLocale),
                                 hint: '0',
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [
@@ -642,7 +658,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '원가',
+                                      AppStrings.getCost(currentLocale),
                                       style: AppTextStyles.bodySmall.copyWith(
                                         color: AppColors.textSecondary,
                                       ),
@@ -852,7 +868,9 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: AppInputField(
-                                  label: '투입량',
+                                  label: AppStrings.getInputAmount(
+                                    currentLocale,
+                                  ),
                                   hint: '0',
                                   keyboardType: TextInputType.number,
                                   inputFormatters: [
@@ -914,7 +932,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            '원가',
+                                            AppStrings.getCost(currentLocale),
                                             style: AppTextStyles.bodySmall
                                                 .copyWith(
                                                   color:
@@ -1119,87 +1137,95 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppStrings.getSelectIngredient(currentLocale)),
-        content: SizedBox(
+        content: Container(
           width: double.maxFinite,
-          height: 300,
-          child: ListView.builder(
-            itemCount: _availableIngredients.length,
-            itemBuilder: (context, index) {
-              final ingredient = _availableIngredients[index];
-              final isSelected = _selectedIngredients.any(
-                (i) => i.id == ingredient.id,
-              );
-              final unitPrice = _calculateUnitPrice(ingredient);
+          constraints: const BoxConstraints(maxHeight: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _availableIngredients.length,
+                  itemBuilder: (context, index) {
+                    final ingredient = _availableIngredients[index];
+                    final isSelected = _selectedIngredients.any(
+                      (i) => i.id == ingredient.id,
+                    );
+                    final unitPrice = _calculateUnitPrice(ingredient);
 
-              return Hero(
-                tag: 'ingredient_${ingredient.id}',
-                child: Material(
-                  color: Colors.transparent,
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: AppColors.accent.withOpacity(0.1),
-                      child: Text(
-                        ingredient.name[0],
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.w600,
+                    return Hero(
+                      tag: 'ingredient_${ingredient.id}',
+                      child: Material(
+                        color: Colors.transparent,
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: AppColors.accent.withOpacity(0.1),
+                            child: Text(
+                              ingredient.name[0],
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.accent,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            ingredient.name,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${NumberFormatter.formatCurrency(ingredient.purchasePrice, currentLocale)} / ${_formatNumber(ingredient.purchaseAmount)} ${_getUnitName(ingredient.purchaseUnitId)}',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              Text(
+                                '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale)}',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.accent,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: isSelected
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: AppColors.success,
+                                )
+                              : const Icon(
+                                  Icons.add_circle_outline,
+                                  color: AppColors.textSecondary,
+                                ),
+                          onTap: () {
+                            if (isSelected) {
+                              setState(() {
+                                _selectedIngredients.removeWhere(
+                                  (i) => i.id == ingredient.id,
+                                );
+                                _ingredientAmounts.remove(ingredient.id);
+                                _ingredientCosts.remove(ingredient.id);
+                                _calculateTotalCost();
+                              });
+                            } else {
+                              setState(() {
+                                _selectedIngredients.add(ingredient);
+                              });
+                            }
+                            Navigator.of(context).pop();
+                          },
                         ),
                       ),
-                    ),
-                    title: Text(
-                      ingredient.name,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${NumberFormatter.formatCurrency(ingredient.purchasePrice, currentLocale)} / ${_formatNumber(ingredient.purchaseAmount)} ${_getUnitName(ingredient.purchaseUnitId)}',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        Text(
-                          '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale)}',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.accent,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: isSelected
-                        ? const Icon(
-                            Icons.check_circle,
-                            color: AppColors.success,
-                          )
-                        : const Icon(
-                            Icons.add_circle_outline,
-                            color: AppColors.textSecondary,
-                          ),
-                    onTap: () {
-                      if (isSelected) {
-                        setState(() {
-                          _selectedIngredients.removeWhere(
-                            (i) => i.id == ingredient.id,
-                          );
-                          _ingredientAmounts.remove(ingredient.id);
-                          _ingredientCosts.remove(ingredient.id);
-                          _calculateTotalCost();
-                        });
-                      } else {
-                        setState(() {
-                          _selectedIngredients.add(ingredient);
-                        });
-                      }
-                      Navigator.of(context).pop();
-                    },
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+            ],
           ),
         ),
         actions: [
@@ -1262,7 +1288,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
               ),
               const SizedBox(height: 8),
               AppInputField(
-                label: '수량',
+                label: AppStrings.getQuantity(currentLocale),
                 hint: '0',
                 controller: amountController,
                 keyboardType: TextInputType.number,
@@ -1376,7 +1402,8 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
             ),
             const SizedBox(height: 16),
             AppInputField(
-              label: '투입량 (${_getUnitName(ingredient.purchaseUnitId)})',
+              label:
+                  '${AppStrings.getInputAmount(currentLocale)} (${_getUnitName(ingredient.purchaseUnitId)})',
               hint: '0',
               keyboardType: TextInputType.number,
               inputFormatters: [ThousandsSeparatorInputFormatter()],
@@ -1403,7 +1430,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '계산된 원가',
+                    AppStrings.getCalculatedCost(currentLocale),
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -1469,16 +1496,42 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
     });
 
     try {
+      // 선택된 재료들을 RecipeIngredient로 변환
+      final recipeIngredients = <RecipeIngredient>[];
+      for (final ingredient in _selectedIngredients) {
+        final amount = _ingredientAmounts[ingredient.id] ?? 0.0;
+        if (amount > 0) {
+          recipeIngredients.add(
+            RecipeIngredient(
+              id: const Uuid().v4(),
+              recipeId: widget.recipe.id,
+              ingredientId: ingredient.id,
+              amount: amount,
+              unitId:
+                  _ingredientUnitIds[ingredient.id] ??
+                  ingredient.purchaseUnitId,
+              calculatedCost: _ingredientCosts[ingredient.id] ?? 0.0,
+            ),
+          );
+        }
+      }
+
       final updatedRecipe = widget.recipe.copyWith(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         outputAmount: widget.recipe.outputAmount, // 기존 값 유지
         outputUnit: widget.recipe.outputUnit, // 기존 값 유지
+        ingredients: recipeIngredients, // 재료 정보 포함
         tagIds: _selectedTagId.isNotEmpty ? [_selectedTagId] : [],
         updatedAt: DateTime.now(),
       );
 
       await context.read<RecipeCubit>().updateRecipe(updatedRecipe);
+
+      // 레시피 수정 성공 시 뒤로가기
+      if (mounted) {
+        context.pop();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recipe_app/util/app_strings.dart';
+import '../controller/setting/locale_cubit.dart';
 import '../screen/pages/ingredient/ingredient_main_page.dart';
 import '../screen/pages/ingredient/ingredient_add_page.dart';
 import '../screen/pages/ingredient/ingredient_bulk_add_page.dart';
@@ -14,17 +16,16 @@ import '../model/index.dart';
 import '../screen/pages/settings_page.dart';
 import '../screen/pages/ai/ai_tabbar_page.dart';
 import '../screen/pages/ai/ai_recipe_detail_page.dart';
+import '../screen/pages/recipe/ai_sales_analysis_page.dart';
 import '../screen/pages/auth/login_screen.dart';
 import '../screen/pages/auth/account_info_page.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../util/app_locale.dart';
-import '../util/number_formatter.dart';
 
 import '../model/ingredient.dart';
 import '../model/recipe.dart';
-import '../screen/widget/index.dart';
 
 /// 앱 라우터 설정
 class AppRouter {
@@ -34,6 +35,7 @@ class AppRouter {
   static const String ai = '/ai';
   static const String aiRecipeManagement = '/ai/recipes';
   static const String aiRecipeDetail = '/ai/recipe/detail';
+  static const String aiSalesAnalysis = '/ai/sales-analysis';
   static const String settings = '/settings';
   static const String widgetExamples = '/widget-examples';
   static const String recipeCreate = '/recipe/create';
@@ -145,6 +147,35 @@ class AppRouter {
         },
       ),
 
+      // AI 판매 분석 페이지
+      GoRoute(
+        path: aiSalesAnalysis,
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>?;
+          final recipe = args?['recipe'] as Map<String, dynamic>?;
+          if (recipe == null) {
+            return const Scaffold(body: Center(child: Text('레시피 정보가 없습니다.')));
+          }
+
+          // 실제 레시피 데이터를 가져와서 사용
+          return AiSalesAnalysisPage(
+            recipe: Recipe(
+              id: recipe['id'] ?? '',
+              name: recipe['name'] ?? '',
+              description: recipe['description'] ?? '',
+              outputAmount: (recipe['outputAmount'] ?? 0).toDouble(),
+              outputUnit: recipe['outputUnit'] ?? '',
+              totalCost: (recipe['totalCost'] ?? 0).toDouble(),
+              imagePath: recipe['imagePath'],
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+              ingredients: recipe['ingredients'] ?? [],
+              tagIds: recipe['tagIds'] ?? [],
+            ),
+          );
+        },
+      ),
+
       // 영수증 스캔 페이지
       GoRoute(
         path: scanReceipt,
@@ -219,38 +250,42 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.accent,
-        unselectedItemColor: AppColors.textSecondary,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.inventory_2),
-            label: AppStrings.getIngredients(AppLocale.korea),
+    return BlocBuilder<LocaleCubit, AppLocale>(
+      builder: (context, currentLocale) {
+        return Scaffold(
+          body: IndexedStack(index: _currentIndex, children: _pages),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: AppColors.surface,
+            selectedItemColor: AppColors.accent,
+            unselectedItemColor: AppColors.textSecondary,
+            items: [
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.inventory_2),
+                label: AppStrings.getIngredients(currentLocale),
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.restaurant_menu),
+                label: AppStrings.getRecipes(currentLocale),
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.auto_awesome),
+                label: AppStrings.getAi(currentLocale),
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.settings),
+                label: AppStrings.getSettings(currentLocale),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.restaurant_menu),
-            label: AppStrings.getRecipes(AppLocale.korea),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.auto_awesome),
-            label: 'AI',
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.settings),
-            label: AppStrings.getSettings(AppLocale.korea),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -289,14 +324,22 @@ class ScanReceiptPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('영수증 스캔'),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-      ),
-      body: const Center(child: Text('영수증 스캔 기능은 추후 구현 예정입니다.')),
+    return BlocBuilder<LocaleCubit, AppLocale>(
+      builder: (context, currentLocale) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            title: Text(AppStrings.getScanReceipt(currentLocale)),
+            backgroundColor: AppColors.surface,
+            elevation: 0,
+          ),
+          body: Center(
+            child: Text(
+              AppStrings.getFeatureComingSoon(currentLocale, '영수증 스캔'),
+            ),
+          ),
+        );
+      },
     );
   }
 }

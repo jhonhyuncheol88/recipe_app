@@ -266,4 +266,70 @@ class NumberFormatter {
         : 'ml';
     return '${formatCurrency(unitPrice, locale)} / $baseSymbol';
   }
+
+  /// AI 분석 결과용 가격 포맷팅 (천 단위 구분자 포함)
+  static String formatAiPrice(dynamic value, AppLocale locale) {
+    if (value == null) return formatCurrency(0, locale);
+
+    final strValue = value.toString().trim();
+    if (strValue.isEmpty) return formatCurrency(0, locale);
+
+    // 이미 통화 기호가 포함되어 있으면 그대로 반환
+    if (strValue.contains('₩') ||
+        strValue.contains('¥') ||
+        strValue.contains('\$') ||
+        strValue.contains('€') ||
+        strValue.contains('원')) {
+      return strValue;
+    }
+
+    // 숫자만 있으면 천 단위 구분자와 함께 포맷팅
+    if (RegExp(r'^\d+(\.\d+)?$').hasMatch(strValue)) {
+      final number = double.tryParse(strValue);
+      if (number != null) {
+        return formatCurrency(number, locale);
+      }
+    }
+
+    return strValue;
+  }
+
+  /// AI 분석 결과용 퍼센트 포맷팅
+  static String formatAiPercentage(dynamic value, AppLocale locale) {
+    if (value == null) return formatPercent(0, locale);
+
+    final strValue = value.toString().trim();
+    if (strValue.isEmpty) return formatPercent(0, locale);
+
+    // 이미 "%"가 포함되어 있으면 그대로 반환
+    if (strValue.contains('%')) return strValue;
+
+    // 숫자만 있으면 퍼센트 포맷팅
+    if (RegExp(r'^\d+(\.\d+)?$').hasMatch(strValue)) {
+      final number = double.tryParse(strValue);
+      if (number != null) {
+        return formatPercent(number, locale);
+      }
+    }
+
+    return strValue;
+  }
+
+  /// AI 분석 결과용 숫자 포맷팅 (천 단위 구분자만)
+  static String formatAiNumber(dynamic value, AppLocale locale) {
+    if (value == null) return formatNumber(0, locale);
+
+    final strValue = value.toString().trim();
+    if (strValue.isEmpty) return formatNumber(0, locale);
+
+    // 숫자만 있으면 천 단위 구분자만 적용
+    if (RegExp(r'^\d+(\.\d+)?$').hasMatch(strValue)) {
+      final number = double.tryParse(strValue);
+      if (number != null) {
+        return formatNumber(number.round(), locale);
+      }
+    }
+
+    return strValue;
+  }
 }
