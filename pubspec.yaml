@@ -71,6 +71,7 @@ dependencies:
   timezone: ^0.10.1
   app_settings: ^5.1.1
   fluttertoast: ^8.2.8
+  logger: ^2.0.2+1
   
   # 환경 변수 관리
   flutter_dotenv: ^5.1.0
@@ -94,6 +95,9 @@ dependencies:
   # AI 및 ML
   flutter_gemini: ^2.0.5
   google_generative_ai: ^0.4.7
+  
+  # 광고
+  google_mobile_ads: ^4.0.0
 
 
   flutter_launcher_icons: ^0.14.4

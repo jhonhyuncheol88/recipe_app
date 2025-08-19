@@ -9,10 +9,14 @@ import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/ingredient/ingredient_state.dart';
 import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/ad/ad_cubit.dart';
 import '../../../model/ingredient.dart';
 import '../../../model/tag.dart';
 import '../../../service/gemini_service.dart';
+import '../../../service/admob_service.dart';
 import '../../../router/router_helper.dart';
+import '../../widget/ai_analysis_ad_dialog.dart';
+import 'package:logger/logger.dart';
 
 import 'dart:math';
 
@@ -27,6 +31,8 @@ class AiMainPage extends StatefulWidget {
 
 class _AiMainPageState extends State<AiMainPage> {
   final GeminiService _geminiService = GeminiService();
+  late final Logger _logger;
+  late final AdCubit _adCubit;
   List<Ingredient> _selectedIngredients = [];
   bool _isGeneratingRecipe = false;
   Map<String, dynamic>? _generatedRecipe;
@@ -35,10 +41,34 @@ class _AiMainPageState extends State<AiMainPage> {
   @override
   void initState() {
     super.initState();
-    // 재료 로드
+
+    // Logger 초기화
+    _logger = Logger(
+      printer: PrettyPrinter(
+        methodCount: 0,
+        errorMethodCount: 8,
+        lineLength: 120,
+        colors: true,
+        printEmojis: true,
+        printTime: true,
+      ),
+    );
+
+    // AdCubit 초기화
+    _adCubit = AdCubit();
+
+    // AdMobService에 AdCubit 설정
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<IngredientCubit>().loadIngredients();
+      // AdMobService에 AdCubit 설정
+      AdMobService.instance.setAdCubit(_adCubit);
     });
+  }
+
+  @override
+  void dispose() {
+    _adCubit.close();
+    super.dispose();
   }
 
   @override
@@ -354,37 +384,59 @@ class _AiMainPageState extends State<AiMainPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _isGeneratingRecipe
-                        ? null
-                        : () => _generateRecipe(locale),
-                    icon: _isGeneratingRecipe
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.auto_awesome),
-                    label: Text(
-                      _isGeneratingRecipe
-                          ? AppStrings.getGeneratingRecipe(locale)
-                          : AppStrings.getAiRecipeGenerationButton(locale),
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.bold,
+                if (_isGeneratingRecipe)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: null,
+                      icon: const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      label: Text(
+                        AppStrings.getGeneratingRecipe(locale),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: AppColors.buttonText,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      foregroundColor: AppColors.buttonText,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    child: BlocBuilder<AdCubit, AdState>(
+                      bloc: _adCubit,
+                      builder: (context, adState) {
+                        // 광고 시청 완료 상태일 때 레시피 생성 실행
+                        if (adState is AdWatched) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _adCubit.reset(); // 상태 초기화
+                            _generateRecipe(locale);
+                          });
+                        }
+
+                        return AiAnalysisButton(
+                          onAnalysisRequested: null, // 광고 상태 변화로 처리하므로 null
+                          buttonText: AppStrings.getAiRecipeGenerationButton(
+                            locale,
+                          ),
+                          icon: Icons.auto_awesome,
+                          dialogTitle: 'AI 레시피 생성',
+                          dialogMessage: 'AI 레시피 생성은 광고 시청 후 진행해드려요!',
+                          dialogDescription: '광고 시청 후 AI가 창의적인 레시피를 생성합니다.',
+                        );
+                      },
                     ),
                   ),
-                ),
               ],
             ),
         ],
@@ -646,49 +698,117 @@ class _AiMainPageState extends State<AiMainPage> {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isGeneratingRecipe
-                      ? null
-                      : () => _generateDifferentStyleRecipe(locale),
-                  icon: const Icon(Icons.restaurant),
-                  label: Text(
-                    AppStrings.getKoreanStyle(locale),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.accent,
-                    side: BorderSide(color: AppColors.accent),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
+                child: _isGeneratingRecipe
+                    ? OutlinedButton.icon(
+                        onPressed: null,
+                        icon: const Icon(Icons.restaurant),
+                        label: Text(
+                          AppStrings.getKoreanStyle(locale),
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.accent,
+                          side: BorderSide(color: AppColors.accent),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      )
+                    : SizedBox(
+                        width: double.infinity,
+                        child: AiAnalysisButton(
+                          onAnalysisRequested: () {
+                            print(
+                              'AiAnalysisButton onAnalysisRequested 콜백 실행됨 (한식 스타일)',
+                            );
+                            _logger.i(
+                              'AiAnalysisButton onAnalysisRequested 콜백 실행됨 (한식 스타일)',
+                            );
+                            print('_generateDifferentStyleRecipe 메서드 호출 시작');
+                            _logger.i(
+                              '_generateDifferentStyleRecipe 메서드 호출 시작',
+                            );
+                            try {
+                              _generateDifferentStyleRecipe(locale);
+                              print('_generateDifferentStyleRecipe 메서드 호출 성공');
+                            } catch (e) {
+                              print(
+                                '_generateDifferentStyleRecipe 메서드 호출 중 오류: $e',
+                              );
+                            }
+                            _logger.i(
+                              '_generateDifferentStyleRecipe 메서드 호출 완료',
+                            );
+                            print('_generateDifferentStyleRecipe 메서드 호출 완료');
+                          },
+                          buttonText: AppStrings.getKoreanStyle(locale),
+                          icon: Icons.restaurant,
+                          isOutlined: true,
+                          dialogTitle: 'AI 레시피 생성',
+                          dialogMessage: 'AI 레시피 생성은 광고 시청 후 진행해드려요!',
+                          dialogDescription: '광고 시청 후 AI가 한식 스타일의 레시피를 생성합니다.',
+                        ),
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isGeneratingRecipe
-                      ? null
-                      : () => _generateDifferentStyleRecipe(locale),
-                  icon: const Icon(Icons.auto_awesome),
-                  label: Text(
-                    AppStrings.getFusionStyle(locale),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.accent,
-                    side: BorderSide(color: AppColors.accent),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
+                child: _isGeneratingRecipe
+                    ? OutlinedButton.icon(
+                        onPressed: null,
+                        icon: const Icon(Icons.auto_awesome),
+                        label: Text(
+                          AppStrings.getFusionStyle(locale),
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.accent,
+                          side: BorderSide(color: AppColors.accent),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      )
+                    : SizedBox(
+                        width: double.infinity,
+                        child: AiAnalysisButton(
+                          onAnalysisRequested: () {
+                            print(
+                              'AiAnalysisButton onAnalysisRequested 콜백 실행됨 (퓨전 스타일)',
+                            );
+                            _logger.i(
+                              'AiAnalysisButton onAnalysisRequested 콜백 실행됨 (퓨전 스타일)',
+                            );
+                            print('_generateDifferentStyleRecipe 메서드 호출 시작');
+                            _logger.i(
+                              '_generateDifferentStyleRecipe 메서드 호출 시작',
+                            );
+                            try {
+                              _generateDifferentStyleRecipe(locale);
+                              print('_generateDifferentStyleRecipe 메서드 호출 성공');
+                            } catch (e) {
+                              print(
+                                '_generateDifferentStyleRecipe 메서드 호출 중 오류: $e',
+                              );
+                            }
+                            _logger.i(
+                              '_generateDifferentStyleRecipe 메서드 호출 완료',
+                            );
+                            print('_generateDifferentStyleRecipe 메서드 호출 완료');
+                          },
+                          buttonText: AppStrings.getFusionStyle(locale),
+                          icon: Icons.auto_awesome,
+                          isOutlined: true,
+                          dialogTitle: 'AI 레시피 생성',
+                          dialogMessage: 'AI 레시피 생성은 광고 시청 후 진행해드려요!',
+                          dialogDescription: '광고 시청 후 AI가 퓨전 스타일의 레시피를 생성합니다.',
+                        ),
+                      ),
               ),
             ],
           ),
@@ -789,7 +909,15 @@ class _AiMainPageState extends State<AiMainPage> {
   }
 
   Future<void> _generateRecipe(AppLocale locale) async {
-    if (_selectedIngredients.isEmpty) return;
+    _logger.i('_generateRecipe 호출됨');
+    _logger.d('선택된 재료 개수: ${_selectedIngredients.length}');
+    _logger.d('선택된 재료들: ${_selectedIngredients.map((e) => e.name).toList()}');
+    print('_generateRecipe 메서드 시작 - 재료 개수: ${_selectedIngredients.length}');
+
+    if (_selectedIngredients.isEmpty) {
+      _logger.w('선택된 재료가 없어서 레시피 생성 중단');
+      return;
+    }
 
     setState(() {
       _isGeneratingRecipe = true;
@@ -798,18 +926,23 @@ class _AiMainPageState extends State<AiMainPage> {
     });
 
     try {
+      _logger.i('Gemini 서비스 호출 시작');
       final recipe = await _geminiService.generateRecipeFromIngredients(
         _selectedIngredients,
         servings: 2,
         cookingTime: 30,
       );
+      _logger.i('Gemini 서비스 호출 완료');
 
+      _logger.i('레시피 생성 완료, 상태 업데이트 중');
       setState(() {
         _generatedRecipe = recipe;
         _isGeneratingRecipe = false;
       });
+      _logger.i('상태 업데이트 완료');
 
       // AI 레시피 자동 저장
+      _logger.i('AI 레시피 자동 저장 시작');
       _saveAiRecipe(recipe, locale);
 
       // 누락된 재료 분석
@@ -831,7 +964,17 @@ class _AiMainPageState extends State<AiMainPage> {
   }
 
   Future<void> _generateDifferentStyleRecipe(AppLocale locale) async {
-    if (_selectedIngredients.isEmpty) return;
+    _logger.i('_generateDifferentStyleRecipe 호출됨');
+    _logger.d('선택된 재료 개수: ${_selectedIngredients.length}');
+    _logger.d('선택된 재료들: ${_selectedIngredients.map((e) => e.name).toList()}');
+    print(
+      '_generateDifferentStyleRecipe 메서드 시작 - 재료 개수: ${_selectedIngredients.length}',
+    );
+
+    if (_selectedIngredients.isEmpty) {
+      _logger.w('선택된 재료가 없어서 레시피 생성 중단');
+      return;
+    }
 
     setState(() {
       _isGeneratingRecipe = true;
@@ -850,15 +993,19 @@ class _AiMainPageState extends State<AiMainPage> {
         cuisineTypes: randomCuisineTypes,
       );
 
+      _logger.i('다양한 스타일 레시피 생성 완료, 상태 업데이트 중');
       setState(() {
         _generatedRecipe = recipe;
         _isGeneratingRecipe = false;
       });
+      _logger.i('상태 업데이트 완료');
 
       // AI 레시피 자동 저장
+      _logger.i('AI 레시피 자동 저장 시작');
       _saveAiRecipe(recipe, locale);
 
       // 누락된 재료 분석
+      _logger.i('누락된 재료 분석 시작');
       _analyzeMissingIngredients(recipe);
     } catch (e) {
       setState(() {
@@ -908,7 +1055,9 @@ class _AiMainPageState extends State<AiMainPage> {
   }
 
   void _analyzeMissingIngredients(Map<String, dynamic> recipe) {
+    _logger.i('누락된 재료 분석 시작');
     try {
+      _logger.d('Gemini 서비스로 재료 분석 호출');
       final analysis = _geminiService.analyzeRecipeIngredients(
         recipe,
         _selectedIngredients,
@@ -924,9 +1073,9 @@ class _AiMainPageState extends State<AiMainPage> {
       });
 
       // 분석 결과 로그
-      print('재료 분석 결과: $analysis');
+      _logger.i('재료 분석 결과: $analysis');
     } catch (e) {
-      print('재료 분석 중 오류: $e');
+      _logger.e('재료 분석 중 오류: $e');
       // 기존 방식으로 폴백
       final recipeIngredients = recipe['ingredients'] as List? ?? [];
       final selectedIngredientNames = _selectedIngredients
@@ -986,7 +1135,7 @@ class _AiMainPageState extends State<AiMainPage> {
         );
       }
     } catch (e) {
-      print('AI 레시피 저장 중 오류: $e');
+      _logger.e('AI 레시피 저장 중 오류: $e');
       // 오류가 발생해도 사용자 경험에 영향을 주지 않음
     }
   }

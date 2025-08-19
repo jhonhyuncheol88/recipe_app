@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
 import '../../util/number_formatter.dart';
 import '../../util/app_locale.dart';
 import '../../util/app_strings.dart';
@@ -236,6 +237,7 @@ class RecipeCard extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onLongPress;
+  final VoidCallback? onAiAnalysis; // AI 분석 콜백 추가
   final Recipe? recipe; // 실제 Recipe 객체 추가
   final AppLocale locale; // 로컬화 지원 추가
 
@@ -252,6 +254,7 @@ class RecipeCard extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.onLongPress,
+    this.onAiAnalysis, // AI 분석 콜백 선택적 매개변수
     this.recipe, // Recipe 객체 선택적 매개변수
     required this.locale, // 로컬화 지원 필수 매개변수
   });
@@ -340,51 +343,31 @@ class RecipeCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // AI 분석 버튼
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // AI 분석 페이지로 이동
-                if (recipe != null) {
-                  // 실제 Recipe 객체가 있으면 사용
-                  RouterHelper.goToAiSalesAnalysis(context, {
-                    'id': recipe!.id,
-                    'name': recipe!.name,
-                    'description': recipe!.description,
-                    'outputAmount': recipe!.outputAmount,
-                    'outputUnit': recipe!.outputUnit,
-                    'totalCost': recipe!.totalCost,
-                    'imagePath': recipe!.imagePath,
-                    'ingredients': recipe!.ingredients,
-                    'tagIds': recipe!.tagIds,
-                  });
-                } else {
-                  // 기존 방식으로 데이터 전달
-                  RouterHelper.goToAiSalesAnalysis(context, {
-                    'id': 'temp',
-                    'name': name,
-                    'description': description,
-                    'outputAmount': 0,
-                    'outputUnit': '',
-                    'totalCost': totalCost,
-                    'imagePath': null,
-                    'ingredients': [],
-                    'tagIds': [],
-                  });
-                }
-              },
-              icon: const Icon(Icons.analytics, size: 16),
-              label: Text(AppStrings.getAnalyzeWithAi(locale)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: AppColors.buttonText,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+          if (onAiAnalysis != null)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: onAiAnalysis,
+                icon: const Icon(Icons.analytics, size: 20),
+                label: Text(
+                  AppStrings.getAnalyzeWithAi(locale),
+                  style: AppTextStyles.buttonMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: AppColors.buttonText,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
             ),
-          ),
           const SizedBox(height: 12),
           Row(
             children: [

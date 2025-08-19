@@ -21,6 +21,12 @@
 -keep class com.google.android.play.core.splitinstall.** { *; }
 -keep class com.google.android.play.core.tasks.** { *; }
 
+# AdMob 관련 규칙
+-keep class com.google.android.gms.ads.** { *; }
+-keep class com.google.android.gms.ads.identifier.** { *; }
+-keep class com.google.android.gms.ads.formats.** { *; }
+-keep class com.google.android.gms.ads.mediation.** { *; }
+
 
 
 # 앱 모델 클래스 보호

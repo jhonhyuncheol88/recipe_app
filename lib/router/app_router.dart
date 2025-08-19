@@ -23,6 +23,7 @@ import '../screen/pages/auth/account_info_page.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../util/app_locale.dart';
+import '../screen/widget/admob_banner_widget.dart';
 
 import '../model/ingredient.dart';
 import '../model/recipe.dart';
@@ -151,28 +152,12 @@ class AppRouter {
       GoRoute(
         path: aiSalesAnalysis,
         builder: (context, state) {
-          final args = state.extra as Map<String, dynamic>?;
-          final recipe = args?['recipe'] as Map<String, dynamic>?;
+          final recipe = state.extra as Recipe?;
           if (recipe == null) {
             return const Scaffold(body: Center(child: Text('레시피 정보가 없습니다.')));
           }
 
-          // 실제 레시피 데이터를 가져와서 사용
-          return AiSalesAnalysisPage(
-            recipe: Recipe(
-              id: recipe['id'] ?? '',
-              name: recipe['name'] ?? '',
-              description: recipe['description'] ?? '',
-              outputAmount: (recipe['outputAmount'] ?? 0).toDouble(),
-              outputUnit: recipe['outputUnit'] ?? '',
-              totalCost: (recipe['totalCost'] ?? 0).toDouble(),
-              imagePath: recipe['imagePath'],
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-              ingredients: recipe['ingredients'] ?? [],
-              tagIds: recipe['tagIds'] ?? [],
-            ),
-          );
+          return AiSalesAnalysisPage(recipe: recipe);
         },
       ),
 
@@ -254,34 +239,42 @@ class _HomePageState extends State<HomePage> {
       builder: (context, currentLocale) {
         return Scaffold(
           body: IndexedStack(index: _currentIndex, children: _pages),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: AppColors.surface,
-            selectedItemColor: AppColors.accent,
-            unselectedItemColor: AppColors.textSecondary,
-            items: [
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.inventory_2),
-                label: AppStrings.getIngredients(currentLocale),
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 하단 네비게이션 바
+              BottomNavigationBar(
+                currentIndex: _currentIndex,
+                onTap: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: AppColors.surface,
+                selectedItemColor: AppColors.accent,
+                unselectedItemColor: AppColors.textSecondary,
+                items: [
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.inventory_2),
+                    label: AppStrings.getIngredients(currentLocale),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.restaurant_menu),
+                    label: AppStrings.getRecipes(currentLocale),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.auto_awesome),
+                    label: AppStrings.getAi(currentLocale),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.settings),
+                    label: AppStrings.getSettings(currentLocale),
+                  ),
+                ],
               ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.restaurant_menu),
-                label: AppStrings.getRecipes(currentLocale),
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.auto_awesome),
-                label: AppStrings.getAi(currentLocale),
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.settings),
-                label: AppStrings.getSettings(currentLocale),
-              ),
+              // 배너 광고 (네비게이션 바 밑에)
+              const AdMobBannerWidget(),
             ],
           ),
         );

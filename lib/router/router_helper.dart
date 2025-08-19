@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'app_router.dart';
+import '../model/recipe.dart';
 
 /// 라우터 헬퍼 클래스
 class RouterHelper {
@@ -47,9 +48,9 @@ class RouterHelper {
   /// AI 판매 분석 페이지로 이동
   static void goToAiSalesAnalysis(
     BuildContext context,
-    Map<String, dynamic> recipe,
+    Recipe recipe,
   ) {
-    context.push(AppRouter.aiSalesAnalysis, extra: {'recipe': recipe});
+    context.push(AppRouter.aiSalesAnalysis, extra: recipe);
   }
 
   /// 재료 추가 페이지로 이동

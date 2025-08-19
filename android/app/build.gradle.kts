@@ -114,4 +114,7 @@ dependencies {
     
     // Google Play Billing 라이브러리 (최신 버전)
     implementation("com.android.billingclient:billing:6.1.0")
+    
+    // AdMob 라이브러리
+    implementation("com.google.android.gms:play-services-ads:22.6.0")
 }

@@ -10,6 +10,7 @@ import '../../../controller/recipe/recipe_state.dart';
 import '../../../model/recipe.dart';
 import '../../../model/tag.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../router/router_helper.dart';
 
 /// 레시피 메인 페이지
 class RecipeMainPage extends StatefulWidget {
@@ -332,6 +333,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
               onEdit: () => _editRecipe(recipe),
               onDelete: () => _deleteRecipe(recipe),
               onLongPress: () => _toggleRecipeSelection(recipe.id),
+              onAiAnalysis: () => _startAiAnalysis(recipe), // AI 분석 콜백 추가
             ),
           );
         },
@@ -517,4 +519,13 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   }
 
   // 삭제 예정 함수 제거 (미사용)
+
+  /// AI 분석 시작
+  void _startAiAnalysis(Recipe recipe) {
+    print('_startAiAnalysis 호출됨 - Recipe: ${recipe.name}');
+    print('_startAiAnalysis 호출됨 - Recipe ID: ${recipe.id}');
+
+    // AI 판매 분석 페이지로 이동 (RouterHelper 사용)
+    RouterHelper.goToAiSalesAnalysis(context, recipe);
+  }
 }

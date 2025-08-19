@@ -12,6 +12,7 @@ import 'data/index.dart';
 import 'service/sauce_cost_service.dart';
 import 'service/recipe_cost_service.dart';
 import 'service/sauce_expiry_service.dart';
+import 'service/admob_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'service/notification_service.dart';
@@ -29,6 +30,10 @@ void main() async {
   final firebaseAnalytics = FirebaseAnalytics.instance;
   await firebaseAnalytics.setAnalyticsCollectionEnabled(true);
   await firebaseAnalytics.logAppOpen();
+
+  // AdMob 초기화
+  await AdMobService.instance.initialize();
+
   runApp(const MyApp());
 }
 

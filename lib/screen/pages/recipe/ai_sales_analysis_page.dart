@@ -6,18 +6,20 @@ import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/number_formatter.dart';
+import '../../../service/admob_service.dart';
 import '../../../controller/recipe/recipe_cubit.dart';
-import '../../../controller/recipe/recipe_state.dart';
+import '../../../controller/ad/ad_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../model/recipe.dart';
 import '../../widget/ai_sales_analysis_widget.dart';
 import '../../widget/index.dart';
+import '../../widget/ai_analysis_ad_dialog.dart';
 
 /// AI 판매 분석 페이지
 class AiSalesAnalysisPage extends StatefulWidget {
-  final Recipe recipe;
+  final Recipe? recipe;
 
-  const AiSalesAnalysisPage({super.key, required this.recipe});
+  const AiSalesAnalysisPage({super.key, this.recipe});
 
   @override
   State<AiSalesAnalysisPage> createState() => _AiSalesAnalysisPageState();
@@ -26,13 +28,35 @@ class AiSalesAnalysisPage extends StatefulWidget {
 class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
   final TextEditingController _specialRequestController =
       TextEditingController();
+  late final AdCubit _adCubit;
   Map<String, dynamic>? _analysisResult;
   bool _isAnalyzing = false;
   String? _errorMessage;
 
   @override
+  void initState() {
+    super.initState();
+
+    // Recipe 객체 확인 로그
+    print('AiSalesAnalysisPage initState - Recipe: ${widget.recipe}');
+    print(
+      'AiSalesAnalysisPage initState - Recipe name: ${widget.recipe?.name}',
+    );
+    print('AiSalesAnalysisPage initState - Recipe id: ${widget.recipe?.id}');
+
+    // AdCubit 초기화
+    _adCubit = AdCubit();
+
+    // AdMobService에 AdCubit 설정
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AdMobService.instance.setAdCubit(_adCubit);
+    });
+  }
+
+  @override
   void dispose() {
     _specialRequestController.dispose();
+    _adCubit.close();
     // 🔴 추가: 페이지 종료 시 레시피 목록 새로고침
     // AI 분석 후 뒤로가기 시 레시피 상태 복원
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -47,6 +71,21 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
   Future<void> _startAnalysis() async {
     if (_isAnalyzing) return;
 
+    print('_startAnalysis 호출됨 - Recipe: ${widget.recipe}');
+    print('_startAnalysis 호출됨 - Recipe name: ${widget.recipe?.name}');
+    print('_startAnalysis 호출됨 - Recipe ID: ${widget.recipe?.id}');
+    print('_startAnalysis - 광고 시청 후 분석 시작');
+
+    // Recipe 객체가 없으면 분석할 수 없음
+    if (widget.recipe == null) {
+      print('Recipe 객체가 null입니다. 분석을 중단합니다.');
+      setState(() {
+        _errorMessage = '레시피 정보를 찾을 수 없습니다.';
+        _isAnalyzing = false;
+      });
+      return;
+    }
+
     setState(() {
       _isAnalyzing = true;
       _errorMessage = null;
@@ -56,7 +95,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     try {
       final currentLocale = context.read<LocaleCubit>().state;
       final result = await context.read<RecipeCubit>().performAiSalesAnalysis(
-        widget.recipe.id,
+        widget.recipe!.id,
         userQuery: _specialRequestController.text.trim().isEmpty
             ? null
             : _specialRequestController.text.trim(),
@@ -136,16 +175,16 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.recipe.name,
+              widget.recipe?.name ?? '레시피 이름 없음',
               style: AppTextStyles.headline4.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            if (widget.recipe.description.isNotEmpty) ...[
+            if (widget.recipe?.description.isNotEmpty == true) ...[
               const SizedBox(height: 8),
               Text(
-                widget.recipe.description,
+                widget.recipe!.description,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -159,7 +198,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
                     Icons.attach_money,
                     AppStrings.getTotalCost(locale),
                     NumberFormatter.formatCurrency(
-                      widget.recipe.totalCost.toDouble(),
+                      (widget.recipe?.totalCost ?? 0).toDouble(),
                       locale,
                     ),
                   ),
@@ -169,7 +208,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
                     Icons.restaurant,
                     AppStrings.getIngredientCountSimple(locale),
                     NumberFormatter.formatQuantity(
-                      widget.recipe.ingredients.length,
+                      widget.recipe?.ingredients.length ?? 0,
                       locale,
                     ),
                   ),
@@ -251,15 +290,41 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
 
   /// 분석 시작 버튼
   Widget _buildAnalysisButton(AppLocale locale) {
+    if (_isAnalyzing) {
+      return SizedBox(
+        width: double.infinity,
+        child: AppButton(
+          text: AppStrings.getAnalyzing(locale),
+          type: AppButtonType.primary,
+          onPressed: null,
+          isLoading: true,
+        ),
+      );
+    }
+
     return SizedBox(
       width: double.infinity,
-      child: AppButton(
-        text: _isAnalyzing
-            ? AppStrings.getAnalyzing(locale)
-            : AppStrings.getStartAnalysis(locale),
-        type: AppButtonType.primary,
-        onPressed: _isAnalyzing ? null : _startAnalysis,
-        isLoading: _isAnalyzing,
+      child: BlocBuilder<AdCubit, AdState>(
+        bloc: _adCubit,
+        builder: (context, adState) {
+          // 광고 시청 완료 상태일 때 AI 분석 실행
+          if (adState is AdWatched) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _adCubit.reset(); // 상태 초기화
+              _startAnalysis();
+            });
+          }
+
+          return AiAnalysisButton(
+            onAnalysisRequested: null, // 광고 상태 변화로 처리하므로 null
+            buttonText: AppStrings.getStartAnalysis(locale),
+            icon: Icons.analytics,
+            dialogTitle: 'AI 판매 분석',
+            dialogMessage: 'AI 판매 분석은 광고 시청 후 진행해드려요!',
+            dialogDescription:
+                '광고 시청 후 AI가 레시피의 판매 전략을 분석하여 최적의 가격과 마케팅 방안을 제안합니다.',
+          );
+        },
       ),
     );
   }
