@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +20,8 @@ import '../screen/pages/ai/ai_recipe_detail_page.dart';
 import '../screen/pages/recipe/ai_sales_analysis_page.dart';
 import '../screen/pages/auth/login_screen.dart';
 import '../screen/pages/auth/account_info_page.dart';
+import '../screen/pages/ocr/ocr_main_page.dart';
+import '../screen/pages/ocr/ocr_result_page.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -27,6 +30,7 @@ import '../screen/widget/admob_banner_widget.dart';
 
 import '../model/ingredient.dart';
 import '../model/recipe.dart';
+import '../model/ocr_result.dart';
 
 /// 앱 라우터 설정
 class AppRouter {
@@ -47,6 +51,8 @@ class AppRouter {
   static const String ingredientDetail = '/ingredient/detail';
   static const String recipeDetail = '/recipe/detail';
   static const String scanReceipt = '/scan-receipt';
+  static const String ocr = '/ocr';
+  static const String ocrResult = '/ocr/result';
   static const String sauces = '/sauces';
   static const String sauceEdit = '/sauce/edit';
   static const String login = '/login';
@@ -166,6 +172,30 @@ class AppRouter {
         path: scanReceipt,
         builder: (context, state) => const ScanReceiptPage(),
       ),
+
+      // OCR 메인 페이지
+      GoRoute(path: ocr, builder: (context, state) => const OcrMainPage()),
+
+      // OCR 결과 페이지
+      GoRoute(
+        path: ocrResult,
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>?;
+          final ingredients = args?['ingredients'] as List<Ingredient>? ?? [];
+          final imagePath = args?['imagePath'] as String?;
+          final ocrResult = args?['ocrResult'] as OcrResult?;
+
+          if (imagePath == null) {
+            return const Scaffold(body: Center(child: Text('이미지 정보가 없습니다.')));
+          }
+
+          return OcrResultPage(
+            ingredients: ingredients,
+            imageFile: File(imagePath),
+            ocrResult: ocrResult,
+          );
+        },
+      ),
     ],
 
     // 에러 페이지
@@ -273,8 +303,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
+              const SizedBox(height: 4),
               // 배너 광고 (네비게이션 바 밑에)
               const AdMobBannerWidget(),
+              // 배너 광고 하단 여백 추가 (잘림 방지)
+              const SizedBox(height: 20),
             ],
           ),
         );

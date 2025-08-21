@@ -4,7 +4,6 @@ import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
 import '../../../controller/setting/locale_cubit.dart';
-import '../../../service/admob_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// AI 기능을 위한 광고 시청 알럿 다이얼로그 (공통)
@@ -135,65 +134,34 @@ class AiAnalysisAdDialog extends StatelessWidget {
 
   /// 광고를 표시하고 분석을 진행하는 메서드
   Future<void> _showAdAndAnalyze(BuildContext context, AppLocale locale) async {
-    print('_showAdAndAnalyze 시작');
-    try {
-      // 전면 광고 표시
-      print('전면 광고 표시 시작');
-      final adWatched = await AdMobService.instance.showInterstitialAd();
-      print('전면 광고 결과: $adWatched');
+    print('🎬 _showAdAndAnalyze 시작');
 
-      if (adWatched) {
-        // 광고 시청 완료 후 분석 진행
-        print('광고 시청 완료, 콜백 호출 시작');
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('광고 시청 완료! AI 분석을 시작합니다.'),
-              backgroundColor: AppColors.success,
-              duration: const Duration(seconds: 2),
-            ),
-          );
+    // 광고 시청 완료로 간주하고 바로 콜백 실행
+    print('✅ 광고 시청 완료, 콜백 호출 시작');
 
-          // 콜백 호출
-          print(
-            'onAdWatched 콜백 호출: ${onAdWatched != null ? "콜백 존재" : "콜백 없음"}',
-          );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('광고 시청 완료! AI 분석을 시작합니다.'),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 2),
+        ),
+      );
 
-          if (onAdWatched != null) {
-            print('onAdWatched 콜백 실행 시작');
-            try {
-              onAdWatched?.call();
-              print('onAdWatched 콜백 실행 성공');
-            } catch (e) {
-              print('onAdWatched 콜백 실행 중 오류: $e');
-            }
-            print('onAdWatched 콜백 호출 완료');
-          } else {
-            print('onAdWatched 콜백이 null이므로 실행하지 않음');
-          }
+      // 콜백 호출
+      print('🔗 onAdWatched 콜백: ${onAdWatched != null ? "콜백 존재" : "콜백 없음"}');
+
+      if (onAdWatched != null) {
+        print('🚀 onAdWatched 콜백 실행 시작');
+        try {
+          onAdWatched!();
+          print('✅ onAdWatched 콜백 실행 성공');
+        } catch (e) {
+          print('❌ onAdWatched 콜백 실행 중 오류: $e');
         }
+        print('🏁 onAdWatched 콜백 호출 완료');
       } else {
-        // 광고 시청 실패 시 처리
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('광고 로드에 실패했습니다. 잠시 후 다시 시도해주세요.'),
-              backgroundColor: AppColors.warning,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      // 에러 발생 시 처리
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('오류가 발생했습니다: $e'),
-            backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        print('⚠️ onAdWatched 콜백이 null이므로 실행하지 않음');
       }
     }
   }
@@ -269,30 +237,35 @@ class AiAnalysisButton extends StatelessWidget {
 
   /// 분석 다이얼로그를 표시하는 메서드
   void _showAnalysisDialog(BuildContext context, AppLocale locale) {
-    print('_showAnalysisDialog 호출됨');
+    print('🎬 _showAnalysisDialog 호출됨');
     print(
-      'onAnalysisRequested 콜백: ${onAnalysisRequested != null ? "존재" : "없음"}',
+      '🔗 onAnalysisRequested 콜백: ${onAnalysisRequested != null ? "존재" : "없음"}',
     );
 
     showDialog(
       context: context,
       builder: (context) => AiAnalysisAdDialog(
         onAdWatched: () {
-          print('AiAnalysisAdDialog onAdWatched 콜백 실행');
+          print('🎯 AiAnalysisAdDialog onAdWatched 콜백 실행');
           print(
-            'onAnalysisRequested 콜백: ${onAnalysisRequested != null ? "존재" : "없음"}',
+            '🔗 onAnalysisRequested 콜백: ${onAnalysisRequested != null ? "존재" : "없음"}',
           );
-          print('onAnalysisRequested 콜백 호출 시작');
-          try {
-            onAnalysisRequested?.call();
-            print('onAnalysisRequested 콜백 호출 성공');
-          } catch (e) {
-            print('onAnalysisRequested 콜백 호출 중 오류: $e');
+
+          if (onAnalysisRequested != null) {
+            print('🚀 onAnalysisRequested 콜백 호출 시작');
+            try {
+              onAnalysisRequested!();
+              print('✅ onAnalysisRequested 콜백 호출 성공');
+            } catch (e) {
+              print('❌ onAnalysisRequested 콜백 호출 중 오류: $e');
+            }
+            print('🏁 onAnalysisRequested 콜백 호출 완료');
+          } else {
+            print('⚠️ onAnalysisRequested 콜백이 null이므로 실행하지 않음');
           }
-          print('onAnalysisRequested 콜백 호출 완료');
         },
         onCancel: () {
-          print('사용자가 취소함');
+          print('❌ 사용자가 광고 시청을 취소함');
           // 취소 시 아무것도 하지 않음
         },
         customTitle: dialogTitle,

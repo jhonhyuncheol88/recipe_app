@@ -965,6 +965,355 @@ class AppStrings {
     }
   }
 
+  // OCR 메인 화면 관련
+  static String getOcrMainTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '영수증 OCR';
+      case AppLocale.japan:
+        return 'レシートOCR';
+      case AppLocale.china:
+        return '收据OCR';
+      case AppLocale.usa:
+        return 'Receipt OCR';
+      case AppLocale.euro:
+        return 'Receipt OCR';
+    }
+  }
+
+  static String getSelectReceiptFromGallery(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '갤러리에서 영수증 선택';
+      case AppLocale.japan:
+        return 'ギャラリーからレシート選択';
+      case AppLocale.china:
+        return '从相册选择收据';
+      case AppLocale.usa:
+        return 'Select Receipt from Gallery';
+      case AppLocale.euro:
+        return 'Select Receipt from Gallery';
+    }
+  }
+
+  static String getOcrProcessing(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'OCR 처리 중...';
+      case AppLocale.japan:
+        return 'OCR処理中...';
+      case AppLocale.china:
+        return 'OCR处理中...';
+      case AppLocale.usa:
+        return 'Processing OCR...';
+      case AppLocale.euro:
+        return 'Processing OCR...';
+    }
+  }
+
+  static String getOcrCompleted(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'OCR 완료';
+      case AppLocale.japan:
+        return 'OCR完了';
+      case AppLocale.china:
+        return 'OCR完成';
+      case AppLocale.usa:
+        return 'OCR Completed';
+      case AppLocale.euro:
+        return 'OCR Completed';
+    }
+  }
+
+  static String getOcrFailed(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'OCR 실패';
+      case AppLocale.japan:
+        return 'OCR失敗';
+      case AppLocale.china:
+        return 'OCR失败';
+      case AppLocale.usa:
+        return 'OCR Failed';
+      case AppLocale.euro:
+        return 'OCR Failed';
+    }
+  }
+
+  static String getOcrFailedMessage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '텍스트 인식에 실패했습니다. 다시 시도해주세요.';
+      case AppLocale.japan:
+        return 'テキスト認識に失敗しました。再試行してください。';
+      case AppLocale.china:
+        return '文本识别失败，请重试。';
+      case AppLocale.usa:
+        return 'Text recognition failed. Please try again.';
+      case AppLocale.euro:
+        return 'Text recognition failed. Please try again.';
+    }
+  }
+
+  // OCR 결과 관련
+  static String getRecognizedText(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '인식된 텍스트';
+      case AppLocale.japan:
+        return '認識されたテキスト';
+      case AppLocale.china:
+        return '识别的文本';
+      case AppLocale.usa:
+        return 'Recognized Text';
+      case AppLocale.euro:
+        return 'Recognized Text';
+    }
+  }
+
+  static String getParsedIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '파싱된 재료';
+      case AppLocale.japan:
+        return '解析された材料';
+      case AppLocale.china:
+        return '解析的材料';
+      case AppLocale.usa:
+        return 'Parsed Ingredients';
+      case AppLocale.euro:
+        return 'Parsed Ingredients';
+    }
+  }
+
+  static String getConfirmAndSave(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '확인 및 저장';
+      case AppLocale.japan:
+        return '確認・保存';
+      case AppLocale.china:
+        return '确认并保存';
+      case AppLocale.usa:
+        return 'Confirm & Save';
+      case AppLocale.euro:
+        return 'Confirm & Save';
+    }
+  }
+
+  static String getSaveIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 저장';
+      case AppLocale.japan:
+        return '材料保存';
+      case AppLocale.china:
+        return '保存材料';
+      case AppLocale.usa:
+        return 'Save Ingredients';
+      case AppLocale.euro:
+        return 'Save Ingredients';
+    }
+  }
+
+  static String getIngredientsSaved(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료가 저장되었습니다';
+      case AppLocale.japan:
+        return '材料が保存されました';
+      case AppLocale.china:
+        return '材料已保存';
+      case AppLocale.usa:
+        return 'Ingredients saved successfully';
+      case AppLocale.euro:
+        return 'Ingredients saved successfully';
+    }
+  }
+
+  static String getSaveFailed(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '저장 실패';
+      case AppLocale.japan:
+        return '保存失敗';
+      case AppLocale.china:
+        return '保存失败';
+      case AppLocale.usa:
+        return 'Save Failed';
+      case AppLocale.euro:
+        return 'Save Failed';
+    }
+  }
+
+  static String getSaveFailedMessage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 저장에 실패했습니다. 다시 시도해주세요.';
+      case AppLocale.japan:
+        return '材料保存に失敗しました。再試行してください。';
+      case AppLocale.china:
+        return '保存材料失败，请重试。';
+      case AppLocale.usa:
+        return 'Failed to save ingredients. Please try again.';
+      case AppLocale.euro:
+        return 'Failed to save ingredients. Please try again.';
+    }
+  }
+
+  // 권한 관련
+  static String getGalleryPermissionRequired(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '갤러리 접근 권한이 필요합니다';
+      case AppLocale.japan:
+        return 'ギャラリーアクセス権限が必要です';
+      case AppLocale.china:
+        return '需要相册访问权限';
+      case AppLocale.usa:
+        return 'Gallery access permission required';
+      case AppLocale.euro:
+        return 'Gallery access permission required';
+    }
+  }
+
+  static String getPermissionDenied(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '권한이 거부되었습니다';
+      case AppLocale.japan:
+        return '権限が拒否されました';
+      case AppLocale.china:
+        return '权限被拒绝';
+      case AppLocale.usa:
+        return 'Permission denied';
+      case AppLocale.euro:
+        return 'Permission denied';
+    }
+  }
+
+  static String getOpenSettings(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '설정 열기';
+      case AppLocale.japan:
+        return '設定を開く';
+      case AppLocale.china:
+        return '打开设置';
+      case AppLocale.usa:
+        return 'Open Settings';
+      case AppLocale.euro:
+        return 'Open Settings';
+    }
+  }
+
+  // 파싱 관련
+  static String getParsingSummary(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '파싱 요약';
+      case AppLocale.japan:
+        return '解析サマリー';
+      case AppLocale.china:
+        return '解析摘要';
+      case AppLocale.usa:
+        return 'Parsing Summary';
+      case AppLocale.euro:
+        return 'Parsing Summary';
+    }
+  }
+
+  static String getTotalItems(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '총 항목 수';
+      case AppLocale.japan:
+        return '総項目数';
+      case AppLocale.china:
+        return '总项目数';
+      case AppLocale.usa:
+        return 'Total Items';
+      case AppLocale.euro:
+        return 'Total Items';
+    }
+  }
+
+  static String getTotalPrice(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '총 가격';
+      case AppLocale.japan:
+        return '総価格';
+      case AppLocale.china:
+        return '总价格';
+      case AppLocale.usa:
+        return 'Total Price';
+      case AppLocale.euro:
+        return 'Total Price';
+    }
+  }
+
+  static String getItemsWithoutPrice(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '가격 정보 없는 항목';
+      case AppLocale.japan:
+        return '価格情報なし項目';
+      case AppLocale.china:
+        return '无价格信息项目';
+      case AppLocale.usa:
+        return 'Items without Price';
+      case AppLocale.euro:
+        return 'Items without Price';
+    }
+  }
+
+  static String getEditIngredientInfo(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 정보 편집';
+      case AppLocale.japan:
+        return '材料情報編集';
+      case AppLocale.china:
+        return '编辑材料信息';
+      case AppLocale.usa:
+        return 'Edit Ingredient Info';
+      case AppLocale.euro:
+        return 'Edit Ingredient Info';
+    }
+  }
+
+  static String getNoIngredientsFound(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '인식된 재료가 없습니다';
+      case AppLocale.japan:
+        return '認識された材料がありません';
+      case AppLocale.china:
+        return '没有识别到材料';
+      case AppLocale.usa:
+        return 'No ingredients found';
+      case AppLocale.euro:
+        return 'No ingredients found';
+    }
+  }
+
+  static String getTryDifferentImage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '다른 이미지를 시도해보세요';
+      case AppLocale.japan:
+        return '別の画像を試してみてください';
+      case AppLocale.china:
+        return '请尝试其他图片';
+      case AppLocale.usa:
+        return 'Try a different image';
+      case AppLocale.euro:
+        return 'Try a different image';
+    }
+  }
+
   /// 알림 메시지
   static String getExpiryWarning(AppLocale locale) {
     switch (locale) {
@@ -5226,6 +5575,127 @@ class AppStrings {
         return 'Documents folder';
       case AppLocale.euro:
         return 'Documents folder';
+    }
+  }
+
+  // OCR 관련 추가 텍스트
+  static String getTips(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '팁';
+      case AppLocale.japan:
+        return 'ヒント';
+      case AppLocale.china:
+        return '提示';
+      case AppLocale.usa:
+        return 'Tips';
+      case AppLocale.euro:
+        return 'Tipps';
+    }
+  }
+
+  static String getTipClearPhoto(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '명확한 영수증 사진을 사용하세요';
+      case AppLocale.japan:
+        return '明確なレシート写真を使用してください';
+      case AppLocale.china:
+        return '请使用清晰的收据照片';
+      case AppLocale.usa:
+        return 'Use clear receipt photos';
+      case AppLocale.euro:
+        return 'Verwenden Sie klare Kassenbon-Fotos';
+    }
+  }
+
+  static String getTipGoodLighting(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '밝은 조명에서 촬영하세요';
+      case AppLocale.japan:
+        return '明るい照明で撮影してください';
+      case AppLocale.china:
+        return '请在明亮的光线下拍摄';
+      case AppLocale.usa:
+        return 'Take photos in good lighting';
+      case AppLocale.euro:
+        return 'Machen Sie Fotos bei gutem Licht';
+    }
+  }
+
+  static String getTipClearText(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '텍스트가 선명하게 보이는지 확인하세요';
+      case AppLocale.japan:
+        return 'テキストが鮮明に見えるか確認してください';
+      case AppLocale.china:
+        return '请确认文本是否清晰可见';
+      case AppLocale.usa:
+        return 'Make sure text is clearly visible';
+      case AppLocale.euro:
+        return 'Stellen Sie sicher, dass der Text klar sichtbar ist';
+    }
+  }
+
+  static String getPleaseWait(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '잠시만 기다려주세요...';
+      case AppLocale.japan:
+        return 'しばらくお待ちください...';
+      case AppLocale.china:
+        return '请稍等...';
+      case AppLocale.usa:
+        return 'Please wait a moment...';
+      case AppLocale.euro:
+        return 'Bitte warten Sie einen Moment...';
+    }
+  }
+
+  static String getReceiptImage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '영수증 이미지';
+      case AppLocale.japan:
+        return 'レシート画像';
+      case AppLocale.china:
+        return '收据图像';
+      case AppLocale.usa:
+        return 'Receipt Image';
+      case AppLocale.euro:
+        return 'Kassenbon-Bild';
+    }
+  }
+
+  static String getIngredientsToBeSaved(AppLocale locale, int count) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '$count개의 재료가 저장됩니다';
+      case AppLocale.japan:
+        return '$count個の材料が保存されます';
+      case AppLocale.china:
+        return '将保存$count个材料';
+      case AppLocale.usa:
+        return '$count ingredients will be saved';
+      case AppLocale.euro:
+        return '$count Zutaten werden gespeichert';
+    }
+  }
+
+  static String getSavingIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료를 저장하고 있습니다...';
+      case AppLocale.japan:
+        return '材料を保存しています...';
+      case AppLocale.china:
+        return '正在保存材料...';
+      case AppLocale.usa:
+        return 'Saving ingredients...';
+      case AppLocale.euro:
+        return 'Zutaten werden gespeichert...';
     }
   }
 }

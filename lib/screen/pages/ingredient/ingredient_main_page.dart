@@ -13,6 +13,7 @@ import '../../../model/ingredient.dart';
 import '../../../model/index.dart';
 import '../../../util/number_formatter.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../router/router_helper.dart';
 
 /// 재료 메인 페이지
 class IngredientMainPage extends StatefulWidget {
@@ -56,7 +57,30 @@ class _IngredientMainPageState extends State<IngredientMainPage>
         ),
         backgroundColor: AppColors.surface,
         elevation: 0,
-        actions: const [],
+        actions: [
+          TextButton.icon(
+            onPressed: () => RouterHelper.goToOcrMain(context),
+            icon: Icon(
+              Icons.receipt_long,
+              color: AppColors.textLight,
+              size: 20,
+            ),
+            label: Text(
+              AppStrings.getScanReceipt(currentLocale),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textLight,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              backgroundColor: AppColors.primary.withOpacity(0.1),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.accent,

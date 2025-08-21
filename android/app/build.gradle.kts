@@ -117,4 +117,10 @@ dependencies {
     
     // AdMob 라이브러리
     implementation("com.google.android.gms:play-services-ads:22.6.0")
+    
+    // ML Kit 다국어 텍스트 인식 모델들
+    implementation("com.google.mlkit:text-recognition-chinese:16.0.0")
+    implementation("com.google.mlkit:text-recognition-devanagari:16.0.0")
+    implementation("com.google.mlkit:text-recognition-japanese:16.0.0")
+    implementation("com.google.mlkit:text-recognition-korean:16.0.0")
 }

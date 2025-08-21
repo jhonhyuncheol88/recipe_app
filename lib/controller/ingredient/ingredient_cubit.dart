@@ -437,12 +437,15 @@ class IngredientCubit extends Cubit<IngredientState> {
       emit(const IngredientLoading());
 
       for (final item in scannedItems) {
-        if (item.isValid && item.name.isNotEmpty && item.price > 0) {
+        if (item.isValid &&
+            item.name.isNotEmpty &&
+            item.price != null &&
+            item.price! > 0) {
           try {
             final ingredient = Ingredient(
               id: _uuid.v4(),
               name: item.name,
-              purchasePrice: item.price,
+              purchasePrice: item.price ?? 0.0,
               purchaseAmount: item.quantity ?? 1.0,
               purchaseUnitId: item.unit ?? '개', // 기본값, 사용자가 수정 가능
               createdAt: DateTime.now(),
@@ -463,11 +466,67 @@ class IngredientCubit extends Cubit<IngredientState> {
     }
   }
 
+  // Gemini 분석 결과로부터 재료들을 일괄 추가
+  Future<void> addIngredientsFromGeminiAnalysis(
+    List<Map<String, dynamic>> geminiIngredients,
+  ) async {
+    try {
+      emit(const IngredientLoading());
+      int successCount = 0;
+
+      for (final ingredientData in geminiIngredients) {
+        try {
+          final name = ingredientData['name'] as String? ?? '';
+          final suggestedPrice =
+              ingredientData['suggested_price'] as double? ?? 0.0;
+          final suggestedAmount =
+              ingredientData['suggested_amount'] as double? ?? 0.0;
+          final suggestedUnit =
+              ingredientData['suggested_unit'] as String? ?? '개';
+          final category = ingredientData['category'] as String? ?? '기타';
+
+          if (name.isNotEmpty && suggestedPrice > 0 && suggestedAmount > 0) {
+            final ingredient = Ingredient(
+              id: _uuid.v4(),
+              name: name,
+              purchasePrice: suggestedPrice,
+              purchaseAmount: suggestedAmount,
+              purchaseUnitId: suggestedUnit,
+              createdAt: DateTime.now(),
+              tagIds: [], // 기본값, 사용자가 나중에 설정 가능
+            );
+
+            await _ingredientRepository.insertIngredient(ingredient);
+            successCount++;
+          }
+        } catch (e) {
+          // 개별 재료 추가 실패 시 무시
+          developer.log('Gemini 재료 추가 실패: $e', name: 'IngredientCubit');
+        }
+      }
+
+      if (successCount > 0) {
+        final ingredients = await _ingredientRepository.getAllIngredients();
+        emit(IngredientLoaded(ingredients: ingredients));
+        developer.log(
+          'Gemini 분석 결과로 $successCount개 재료 추가 완료',
+          name: 'IngredientCubit',
+        );
+      } else {
+        emit(IngredientError('추가할 수 있는 재료가 없습니다.'));
+      }
+    } catch (e) {
+      emit(IngredientError('Gemini 분석 결과 처리에 실패했습니다: $e'));
+    }
+  }
+
   // 누락된 재료들을 일괄 추가 페이지로 전달하기 위한 데이터 준비
-  List<Map<String, dynamic>> prepareMissingIngredientsForBulkAdd(List<String> missingIngredientNames) {
+  List<Map<String, dynamic>> prepareMissingIngredientsForBulkAdd(
+    List<String> missingIngredientNames,
+  ) {
     try {
       final ingredients = <Map<String, dynamic>>[];
-      
+
       for (final name in missingIngredientNames) {
         if (name.trim().isNotEmpty) {
           ingredients.add({
@@ -475,7 +534,7 @@ class IngredientCubit extends Cubit<IngredientState> {
           });
         }
       }
-      
+
       return ingredients;
     } catch (e) {
       developer.log('누락된 재료 데이터 준비 실패: $e', name: 'IngredientCubit');

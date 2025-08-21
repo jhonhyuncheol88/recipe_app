@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'app_locale.dart';
 import 'unit_converter.dart' as uc;
 
+// ThousandsSeparatorInputFormatter를 export
+export 'package:flutter/services.dart' show TextInputFormatter;
+
 /// 천 단위 구분자 입력 포맷터
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   @override
@@ -331,5 +334,28 @@ class NumberFormatter {
     }
 
     return strValue;
+  }
+
+  /// 가격 문자열을 double로 파싱 (천 단위 구분자, 통화 기호 제거)
+  static double? parsePrice(String priceText) {
+    if (priceText.isEmpty) return null;
+
+    // 통화 기호와 천 단위 구분자 제거
+    final cleanText = priceText
+        .replaceAll(RegExp(r'[₩¥\$€원]'), '')
+        .replaceAll(',', '')
+        .trim();
+
+    return double.tryParse(cleanText);
+  }
+
+  /// 수량 문자열을 double로 파싱
+  static double? parseAmount(String amountText) {
+    if (amountText.isEmpty) return null;
+
+    // 공백과 특수문자 제거
+    final cleanText = amountText.trim();
+
+    return double.tryParse(cleanText);
   }
 }

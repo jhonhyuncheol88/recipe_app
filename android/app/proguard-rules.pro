@@ -47,6 +47,12 @@
 -dontwarn com.google.android.play.core.**
 -dontwarn com.google.mlkit.vision.text.**
 
+# Google ML Kit 관련 경고 무시
+-dontwarn com.google.mlkit.**
+-keep class com.google.mlkit.** { *; }
+-dontwarn com.google.mlkit.common.**
+-keep class com.google.mlkit.common.** { *; }
+
 # 불필요한 로그 제거
 -assumenosideeffects class android.util.Log {
     public static *** d(...);

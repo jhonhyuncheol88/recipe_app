@@ -83,7 +83,7 @@ class OcrResult extends Equatable {
 
   // 총 금액 계산
   double get totalAmount {
-    return scannedItems.fold(0.0, (total, item) => total + item.price);
+    return scannedItems.fold(0.0, (total, item) => total + item.price!);
   }
 
   // 유효한 아이템 개수
@@ -108,21 +108,23 @@ class OcrResult extends Equatable {
 
 class ScannedItem extends Equatable {
   final String id;
-  final String name;
-  final double price;
-  final double? quantity;
-  final String? unit;
-  final bool isValid;
-  final String? confidence;
+  final String name;           // 재료명 (OCR에서 추출된 실제 텍스트)
+  final double? price;         // 가격 (사용자 입력용, null 가능)
+  final double? quantity;      // 수량 (사용자 입력용, null 가능)
+  final String? unit;          // 단위 (사용자 입력용, null 가능)
+  final bool isValid;          // 유효성 (재료명이 있으면 true)
+  final String? confidence;    // OCR 신뢰도
+  final String? originalOcrText; // 해당 재료와 관련된 OCR 원본 텍스트
 
   ScannedItem({
     required this.id,
     required this.name,
-    required this.price,
-    this.quantity,
-    this.unit,
+    this.price,                // 가격은 선택사항
+    this.quantity,             // 수량은 선택사항
+    this.unit,                 // 단위는 선택사항
     this.isValid = true,
     this.confidence,
+    this.originalOcrText,      // OCR 원본 텍스트 추가
   });
 
   // JSON 직렬화
@@ -135,6 +137,7 @@ class ScannedItem extends Equatable {
       'unit': unit,
       'is_valid': isValid,
       'confidence': confidence,
+      'original_ocr_text': originalOcrText,
     };
   }
 
@@ -143,11 +146,12 @@ class ScannedItem extends Equatable {
     return ScannedItem(
       id: json['id'],
       name: json['name'],
-      price: json['price'].toDouble(),
+      price: json['price']?.toDouble(),  // null 가능
       quantity: json['quantity']?.toDouble(),
       unit: json['unit'],
       isValid: json['is_valid'] ?? true,
       confidence: json['confidence'],
+      originalOcrText: json['original_ocr_text'],
     );
   }
 
@@ -160,6 +164,7 @@ class ScannedItem extends Equatable {
     String? unit,
     bool? isValid,
     String? confidence,
+    String? originalOcrText,
   }) {
     return ScannedItem(
       id: id ?? this.id,
@@ -169,23 +174,36 @@ class ScannedItem extends Equatable {
       unit: unit ?? this.unit,
       isValid: isValid ?? this.isValid,
       confidence: confidence ?? this.confidence,
+      originalOcrText: originalOcrText ?? this.originalOcrText,
     );
   }
 
-  // 아이템 유효성 검증
+  // 아이템 유효성 검증 (재료명만 있으면 유효)
   ScannedItem validate() {
-    return copyWith(isValid: name.isNotEmpty && price > 0);
+    return copyWith(isValid: name.isNotEmpty);
   }
 
-  // 단위당 가격 계산
+  // 단위당 가격 계산 (가격과 수량이 모두 있을 때만)
   double? get pricePerUnit {
-    if (quantity == null || quantity! <= 0) return null;
-    return price / quantity!;
+    if (price == null || quantity == null || quantity! <= 0) return null;
+    return price! / quantity!;
+  }
+
+  // 사용자 입력 완료 여부 확인
+  bool get isUserInputComplete {
+    return price != null && price! > 0 && 
+           quantity != null && quantity! > 0 && 
+           unit != null && unit!.isNotEmpty;
+  }
+
+  // OCR 원본 텍스트가 있는지 확인
+  bool get hasOriginalOcrText {
+    return originalOcrText != null && originalOcrText!.isNotEmpty;
   }
 
   @override
   String toString() {
-    return 'ScannedItem(id: $id, name: $name, price: $price, valid: $isValid)';
+    return 'ScannedItem(id: $id, name: $name, price: $price, quantity: $quantity, unit: $unit, valid: $isValid)';
   }
 
   @override
@@ -197,5 +215,6 @@ class ScannedItem extends Equatable {
     unit,
     isValid,
     confidence,
+    originalOcrText,
   ];
 }

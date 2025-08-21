@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'app_router.dart';
 import '../model/recipe.dart';
+import '../model/ingredient.dart';
+import '../model/ocr_result.dart';
 
 /// 라우터 헬퍼 클래스
 class RouterHelper {
@@ -46,10 +48,7 @@ class RouterHelper {
   }
 
   /// AI 판매 분석 페이지로 이동
-  static void goToAiSalesAnalysis(
-    BuildContext context,
-    Recipe recipe,
-  ) {
+  static void goToAiSalesAnalysis(BuildContext context, Recipe recipe) {
     context.push(AppRouter.aiSalesAnalysis, extra: recipe);
   }
 
@@ -138,6 +137,28 @@ class RouterHelper {
   /// 영수증 스캔 페이지로 이동
   static void goToScanReceipt(BuildContext context) {
     context.push(AppRouter.scanReceipt);
+  }
+
+  /// OCR 메인 페이지로 이동
+  static void goToOcrMain(BuildContext context) {
+    context.push(AppRouter.ocr);
+  }
+
+  /// OCR 결과 페이지로 이동
+  static void goToOcrResult(
+    BuildContext context, {
+    required List<Ingredient> ingredients,
+    required String imagePath,
+    OcrResult? ocrResult,
+  }) {
+    context.push(
+      AppRouter.ocrResult,
+      extra: {
+        'ingredients': ingredients,
+        'imagePath': imagePath,
+        'ocrResult': ocrResult,
+      },
+    );
   }
 
   /// 위젯 예시 페이지로 이동
