@@ -182,6 +182,60 @@ class _OcrResultPageState extends State<OcrResultPage> {
     });
   }
 
+  // 재료 삭제
+  void _removeIngredient(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('재료 삭제'),
+        content: Text(
+          '${index + 1}번째 재료 "${_editableIngredients[index]['name']}"를 삭제하시겠습니까?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _confirmRemoveIngredient(index);
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 재료 삭제 확인
+  void _confirmRemoveIngredient(int index) {
+    setState(() {
+      // 컨트롤러 정리
+      _nameControllers[index].dispose();
+      _priceControllers[index].dispose();
+      _amountControllers[index].dispose();
+
+      // 컨트롤러 목록에서 제거
+      _nameControllers.removeAt(index);
+      _priceControllers.removeAt(index);
+      _amountControllers.removeAt(index);
+
+      // 편집 가능한 재료 목록에서 제거
+      _editableIngredients.removeAt(index);
+    });
+
+    // 삭제 완료 메시지
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('재료가 삭제되었습니다.'),
+        backgroundColor: AppColors.success,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   bool _validateIngredients() {
     for (int i = 0; i < _editableIngredients.length; i++) {
       final ingredient = _editableIngredients[i];
@@ -1056,22 +1110,38 @@ class _OcrResultPageState extends State<OcrResultPage> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    ingredient['category'] ?? '기타',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w500,
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        ingredient['category'] ?? '기타',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    // 삭제 버튼
+                    IconButton(
+                      onPressed: () => _removeIngredient(index),
+                      icon: const Icon(Icons.delete_outline),
+                      color: AppColors.error,
+                      tooltip: '재료 삭제',
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.error.withOpacity(0.1),
+                        padding: const EdgeInsets.all(8),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -411,6 +411,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
   Widget _buildIngredientCard(Ingredient ingredient) {
     // 단위당 가격 계산
     final unitPrice = ingredient.purchasePrice / ingredient.purchaseAmount;
+    final currentLocale = context.watch<LocaleCubit>().state;
 
     return GestureDetector(
       onTap: () => _editIngredient(ingredient),
@@ -422,6 +423,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
         unit: ingredient.purchaseUnitId,
         unitPrice: unitPrice, // 단위당 가격 추가
         expiryDate: ingredient.expiryDate, // 유통기한 추가
+        locale: currentLocale, // 로컬화 지원 추가
       ),
     );
   }

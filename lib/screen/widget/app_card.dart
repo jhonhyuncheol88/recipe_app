@@ -74,6 +74,7 @@ class IngredientCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final AppLocale locale; // 로컬화 지원 추가
 
   const IngredientCard({
     super.key,
@@ -86,6 +87,7 @@ class IngredientCard extends StatelessWidget {
     this.onTap,
     this.onEdit,
     this.onDelete,
+    required this.locale, // 로컬화 지원 필수 매개변수
   });
 
   @override
@@ -174,7 +176,7 @@ class IngredientCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            '유통기한 없음',
+            AppStrings.getNoExpiryDate(locale),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.textLight,
               fontWeight: FontWeight.w500,
@@ -192,16 +194,16 @@ class IngredientCard extends StatelessWidget {
 
     if (daysUntilExpiry < 0) {
       statusColor = AppColors.expiryExpired;
-      statusText = '만료됨';
+      statusText = AppStrings.getExpired(locale);
     } else if (daysUntilExpiry <= 3) {
       statusColor = AppColors.expiryDanger;
-      statusText = '위험';
+      statusText = AppStrings.getDanger(locale);
     } else if (daysUntilExpiry <= 7) {
       statusColor = AppColors.expiryWarning;
-      statusText = '경고';
+      statusText = AppStrings.getWarning(locale);
     } else {
       statusColor = AppColors.expiryNormal;
-      statusText = '정상';
+      statusText = AppStrings.getNormal(locale);
     }
 
     return Row(
@@ -213,7 +215,7 @@ class IngredientCard extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Text(
-          '유통기한: ${expiryDate!.year}-${expiryDate!.month.toString().padLeft(2, '0')}-${expiryDate!.day.toString().padLeft(2, '0')} ($statusText)',
+          '${AppStrings.getExpiryDate(locale)}: ${expiryDate!.year}-${expiryDate!.month.toString().padLeft(2, '0')}-${expiryDate!.day.toString().padLeft(2, '0')} ($statusText)',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: statusColor,
             fontWeight: FontWeight.w500,
@@ -238,6 +240,7 @@ class RecipeCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onLongPress;
   final VoidCallback? onAiAnalysis; // AI 분석 콜백 추가
+  final VoidCallback? onViewQuick; // 레시피 바로보기 콜백 추가
   final Recipe? recipe; // 실제 Recipe 객체 추가
   final AppLocale locale; // 로컬화 지원 추가
 
@@ -255,6 +258,7 @@ class RecipeCard extends StatelessWidget {
     this.onDelete,
     this.onLongPress,
     this.onAiAnalysis, // AI 분석 콜백 선택적 매개변수
+    this.onViewQuick, // 레시피 바로보기 콜백 선택적 매개변수
     this.recipe, // Recipe 객체 선택적 매개변수
     required this.locale, // 로컬화 지원 필수 매개변수
   });
@@ -357,6 +361,34 @@ class RecipeCard extends StatelessWidget {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
+                  foregroundColor: AppColors.buttonText,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+
+          // 레시피 바로보기 버튼
+          if (onViewQuick != null)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: onViewQuick,
+                icon: const Icon(Icons.visibility, size: 20),
+                label: Text(
+                  AppStrings.getViewRecipeQuick(locale),
+                  style: AppTextStyles.buttonMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.buttonText,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,

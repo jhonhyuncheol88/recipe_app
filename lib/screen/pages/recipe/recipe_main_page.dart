@@ -5,6 +5,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../widget/index.dart';
+import '../../widget/recipe_quick_view_dialog.dart';
 import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/recipe/recipe_state.dart';
 import '../../../model/recipe.dart';
@@ -334,6 +335,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
               onDelete: () => _deleteRecipe(recipe),
               onLongPress: () => _toggleRecipeSelection(recipe.id),
               onAiAnalysis: () => _startAiAnalysis(recipe), // AI 분석 콜백 추가
+              onViewQuick: () => _viewRecipeQuick(recipe), // 레시피 바로보기 콜백 추가
             ),
           );
         },
@@ -527,5 +529,16 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
 
     // AI 판매 분석 페이지로 이동 (RouterHelper 사용)
     RouterHelper.goToAiSalesAnalysis(context, recipe);
+  }
+
+  /// 레시피 바로보기
+  void _viewRecipeQuick(Recipe recipe) {
+    showDialog(
+      context: context,
+      builder: (context) => RecipeQuickViewDialog(
+        recipe: recipe,
+        locale: context.read<LocaleCubit>().state,
+      ),
+    );
   }
 }

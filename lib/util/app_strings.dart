@@ -5698,4 +5698,186 @@ class AppStrings {
         return 'Zutaten werden gespeichert...';
     }
   }
+
+  /// 레시피 바로보기 관련
+  static String getViewRecipeQuick(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피로 바로보기';
+      case AppLocale.japan:
+        return 'レシピで確認';
+      case AppLocale.china:
+        return '快速查看食谱';
+      case AppLocale.usa:
+        return 'View Recipe Quick';
+      case AppLocale.euro:
+        return 'View Recipe Quick';
+    }
+  }
+
+  static String getRecipeMemo(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피 메모';
+      case AppLocale.japan:
+        return 'レシピメモ';
+      case AppLocale.china:
+        return '食谱备注';
+      case AppLocale.usa:
+        return 'Recipe Memo';
+      case AppLocale.euro:
+        return 'Recipe Memo';
+    }
+  }
+
+  static String getIngredientsAndAmounts(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 및 투입량';
+      case AppLocale.japan:
+        return '材料と投入量';
+      case AppLocale.china:
+        return '材料及投入量';
+      case AppLocale.usa:
+        return 'Ingredients & Amounts';
+      case AppLocale.euro:
+        return 'Ingredients & Amounts';
+    }
+  }
+
+  static String getMultiplier(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '배수';
+      case AppLocale.japan:
+        return '倍数';
+      case AppLocale.china:
+        return '倍数';
+      case AppLocale.usa:
+        return 'Multiplier';
+      case AppLocale.euro:
+        return 'Multiplier';
+    }
+  }
+
+  static String getMultiplierDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '배수를 조정하면 재료 투입량이 자동으로 계산됩니다';
+      case AppLocale.japan:
+        return '倍数を調整すると材料投入量が自動計算されます';
+      case AppLocale.china:
+        return '调整倍数后材料投入量将自动计算';
+      case AppLocale.usa:
+        return 'Adjust multiplier to automatically calculate ingredient amounts';
+      case AppLocale.euro:
+        return 'Adjust multiplier to automatically calculate ingredient amounts';
+    }
+  }
+
+  static String getNoMemo(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '메모가 없습니다';
+      case AppLocale.japan:
+        return 'メモがありません';
+      case AppLocale.china:
+        return '暂无备注';
+      case AppLocale.usa:
+        return 'No memo';
+      case AppLocale.euro:
+        return 'No memo';
+    }
+  }
+
+  static String getMultiplierRange(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '1배 ~ 50배 (정수 단위)';
+      case AppLocale.japan:
+        return '1倍 ~ 50倍 (整数単位)';
+      case AppLocale.china:
+        return '1倍 ~ 50倍 (整数单位)';
+      case AppLocale.usa:
+        return '1x ~ 50x (Integer units)';
+      case AppLocale.euro:
+        return '1x ~ 50x (Ganzzahlige Einheiten)';
+    }
+  }
+
+  /// 유통기한 관련
+  static String getNoExpiryDate(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '유통기한 없음';
+      case AppLocale.japan:
+        return '消費期限なし';
+      case AppLocale.china:
+        return '无保质期';
+      case AppLocale.usa:
+        return 'No expiry date';
+      case AppLocale.euro:
+        return 'Kein Verfallsdatum';
+    }
+  }
+
+  static String getExpired(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '만료됨';
+      case AppLocale.japan:
+        return '期限切れ';
+      case AppLocale.china:
+        return '已过期';
+      case AppLocale.usa:
+        return 'Expired';
+      case AppLocale.euro:
+        return 'Abgelaufen';
+    }
+  }
+
+  static String getDanger(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '위험';
+      case AppLocale.japan:
+        return '危険';
+      case AppLocale.china:
+        return '危险';
+      case AppLocale.usa:
+        return 'Danger';
+      case AppLocale.euro:
+        return 'Gefahr';
+    }
+  }
+
+  static String getWarning(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '경고';
+      case AppLocale.japan:
+        return '警告';
+      case AppLocale.china:
+        return '警告';
+      case AppLocale.usa:
+        return 'Warning';
+      case AppLocale.euro:
+        return 'Warnung';
+    }
+  }
+
+  static String getNormal(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '정상';
+      case AppLocale.japan:
+        return '正常';
+      case AppLocale.china:
+        return '正常';
+      case AppLocale.usa:
+        return 'Normal';
+      case AppLocale.euro:
+        return 'Normal';
+    }
+  }
 }
