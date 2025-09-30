@@ -424,8 +424,19 @@ class _AiMainPageState extends State<AiMainPage> {
                           });
                         }
 
+                        // 광고 실패 상태일 때도 레시피 생성 실행 (광고 없이 진행)
+                        if (adState is AdFailed) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _adCubit.reset(); // 상태 초기화
+                            _generateRecipe(locale);
+                          });
+                        }
+
                         return AiAnalysisButton(
-                          onAnalysisRequested: null, // 광고 상태 변화로 처리하므로 null
+                          onAnalysisRequested: () {
+                            // 🔴 수동으로 광고 시도 후 레시피 생성 진행
+                            _showAdAndGenerateRecipe(locale);
+                          },
                           buttonText: AppStrings.getAiRecipeGenerationButton(
                             locale,
                           ),
@@ -727,22 +738,28 @@ class _AiMainPageState extends State<AiMainPage> {
                             _logger.i(
                               'AiAnalysisButton onAnalysisRequested 콜백 실행됨 (한식 스타일)',
                             );
-                            print('_generateDifferentStyleRecipe 메서드 호출 시작');
+                            print(
+                              '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 시작',
+                            );
                             _logger.i(
-                              '_generateDifferentStyleRecipe 메서드 호출 시작',
+                              '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 시작',
                             );
                             try {
-                              _generateDifferentStyleRecipe(locale);
-                              print('_generateDifferentStyleRecipe 메서드 호출 성공');
+                              _showAdAndGenerateDifferentStyleRecipe(locale);
+                              print(
+                                '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 성공',
+                              );
                             } catch (e) {
                               print(
-                                '_generateDifferentStyleRecipe 메서드 호출 중 오류: $e',
+                                '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 중 오류: $e',
                               );
                             }
                             _logger.i(
-                              '_generateDifferentStyleRecipe 메서드 호출 완료',
+                              '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 완료',
                             );
-                            print('_generateDifferentStyleRecipe 메서드 호출 완료');
+                            print(
+                              '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 완료',
+                            );
                           },
                           buttonText: AppStrings.getKoreanStyle(locale),
                           icon: Icons.restaurant,
@@ -784,22 +801,28 @@ class _AiMainPageState extends State<AiMainPage> {
                             _logger.i(
                               'AiAnalysisButton onAnalysisRequested 콜백 실행됨 (퓨전 스타일)',
                             );
-                            print('_generateDifferentStyleRecipe 메서드 호출 시작');
+                            print(
+                              '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 시작',
+                            );
                             _logger.i(
-                              '_generateDifferentStyleRecipe 메서드 호출 시작',
+                              '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 시작',
                             );
                             try {
-                              _generateDifferentStyleRecipe(locale);
-                              print('_generateDifferentStyleRecipe 메서드 호출 성공');
+                              _showAdAndGenerateDifferentStyleRecipe(locale);
+                              print(
+                                '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 성공',
+                              );
                             } catch (e) {
                               print(
-                                '_generateDifferentStyleRecipe 메서드 호출 중 오류: $e',
+                                '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 중 오류: $e',
                               );
                             }
                             _logger.i(
-                              '_generateDifferentStyleRecipe 메서드 호출 완료',
+                              '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 완료',
                             );
-                            print('_generateDifferentStyleRecipe 메서드 호출 완료');
+                            print(
+                              '_showAdAndGenerateDifferentStyleRecipe 메서드 호출 완료',
+                            );
                           },
                           buttonText: AppStrings.getFusionStyle(locale),
                           icon: Icons.auto_awesome,
@@ -906,6 +929,60 @@ class _AiMainPageState extends State<AiMainPage> {
         ],
       ),
     );
+  }
+
+  /// 광고 표시 후 AI 레시피 생성 진행
+  Future<void> _showAdAndGenerateRecipe(AppLocale locale) async {
+    print('_showAdAndGenerateRecipe 호출됨 - 광고 시도 후 레시피 생성 진행');
+    _logger.i('_showAdAndGenerateRecipe 호출됨 - 광고 시도 후 레시피 생성 진행');
+
+    try {
+      // 전면 광고 표시 시도
+      final adResult = await AdMobService.instance.showInterstitialAd();
+      print('광고 표시 결과: $adResult');
+      _logger.i('광고 표시 결과: $adResult');
+
+      // 광고 성공/실패와 관계없이 AI 레시피 생성 진행
+      if (mounted) {
+        _generateRecipe(locale);
+      }
+    } catch (e) {
+      print('광고 표시 중 오류 발생: $e');
+      _logger.e('광고 표시 중 오류 발생: $e');
+      // 광고 오류 발생 시에도 AI 레시피 생성 진행
+      if (mounted) {
+        _generateRecipe(locale);
+      }
+    }
+  }
+
+  /// 광고 표시 후 다양한 스타일 AI 레시피 생성 진행
+  Future<void> _showAdAndGenerateDifferentStyleRecipe(AppLocale locale) async {
+    print(
+      '_showAdAndGenerateDifferentStyleRecipe 호출됨 - 광고 시도 후 다양한 스타일 레시피 생성 진행',
+    );
+    _logger.i(
+      '_showAdAndGenerateDifferentStyleRecipe 호출됨 - 광고 시도 후 다양한 스타일 레시피 생성 진행',
+    );
+
+    try {
+      // 전면 광고 표시 시도
+      final adResult = await AdMobService.instance.showInterstitialAd();
+      print('광고 표시 결과: $adResult');
+      _logger.i('광고 표시 결과: $adResult');
+
+      // 광고 성공/실패와 관계없이 다양한 스타일 AI 레시피 생성 진행
+      if (mounted) {
+        _generateDifferentStyleRecipe(locale);
+      }
+    } catch (e) {
+      print('광고 표시 중 오류 발생: $e');
+      _logger.e('광고 표시 중 오류 발생: $e');
+      // 광고 오류 발생 시에도 다양한 스타일 AI 레시피 생성 진행
+      if (mounted) {
+        _generateDifferentStyleRecipe(locale);
+      }
+    }
   }
 
   Future<void> _generateRecipe(AppLocale locale) async {

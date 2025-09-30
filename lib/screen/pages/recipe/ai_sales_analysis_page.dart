@@ -67,6 +67,28 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     super.dispose();
   }
 
+  /// 광고 표시 후 AI 분석 진행
+  Future<void> _showAdAndAnalyze() async {
+    print('_showAdAndAnalyze 호출됨 - 광고 시도 후 분석 진행');
+
+    try {
+      // 전면 광고 표시 시도
+      final adResult = await AdMobService.instance.showInterstitialAd();
+      print('광고 표시 결과: $adResult');
+
+      // 광고 성공/실패와 관계없이 AI 분석 진행
+      if (mounted) {
+        _startAnalysis();
+      }
+    } catch (e) {
+      print('광고 표시 중 오류 발생: $e');
+      // 광고 오류 발생 시에도 AI 분석 진행
+      if (mounted) {
+        _startAnalysis();
+      }
+    }
+  }
+
   /// AI 분석 시작
   Future<void> _startAnalysis() async {
     if (_isAnalyzing) return;
@@ -315,8 +337,19 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
             });
           }
 
+          // 광고 실패 상태일 때도 AI 분석 실행 (광고 없이 진행)
+          if (adState is AdFailed) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _adCubit.reset(); // 상태 초기화
+              _startAnalysis();
+            });
+          }
+
           return AiAnalysisButton(
-            onAnalysisRequested: null, // 광고 상태 변화로 처리하므로 null
+            onAnalysisRequested: () {
+              // 🔴 수동으로 광고 시도 후 분석 진행
+              _showAdAndAnalyze();
+            },
             buttonText: AppStrings.getStartAnalysis(locale),
             icon: Icons.analytics,
             dialogTitle: 'AI 판매 분석',

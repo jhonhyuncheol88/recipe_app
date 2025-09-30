@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recipe_app/util/app_strings.dart';
 import '../controller/setting/locale_cubit.dart';
+import '../controller/onboarding/onboarding_cubit.dart';
 import '../screen/pages/ingredient/ingredient_main_page.dart';
 import '../screen/pages/ingredient/ingredient_add_page.dart';
 import '../screen/pages/ingredient/ingredient_bulk_add_page.dart';
@@ -22,6 +23,7 @@ import '../screen/pages/auth/login_screen.dart';
 import '../screen/pages/auth/account_info_page.dart';
 import '../screen/pages/ocr/ocr_main_page.dart';
 import '../screen/pages/ocr/ocr_result_page.dart';
+import '../screen/pages/onboarding/onboarding_page.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -57,11 +59,47 @@ class AppRouter {
   static const String sauceEdit = '/sauce/edit';
   static const String login = '/login';
   static const String accountInfo = '/account-info';
+  static const String onboarding = '/onboarding';
 
   /// GoRouter 인스턴스 생성
   static GoRouter get router => GoRouter(
     initialLocation: home,
+    redirect: (context, state) {
+      try {
+        // 온보딩 상태 확인
+        final onboardingCubit = context.read<OnboardingCubit>();
+        final onboardingState = onboardingCubit.state;
+
+        // 로딩 중인 경우 리다이렉트하지 않음 (상태 확인 대기)
+        if (onboardingState is OnboardingLoading) {
+          return null;
+        }
+
+        // 온보딩이 완료되지 않았고, 온보딩 페이지가 아닌 경우 온보딩으로 리다이렉트
+        if (onboardingState is OnboardingNotCompleted &&
+            state.matchedLocation != onboarding) {
+          return onboarding;
+        }
+
+        // 온보딩이 완료되었고, 온보딩 페이지인 경우 홈으로 리다이렉트
+        if (onboardingState is OnboardingCompleted &&
+            state.matchedLocation == onboarding) {
+          return home;
+        }
+
+        return null;
+      } catch (e) {
+        // 에러 발생 시 기본적으로 홈으로 이동
+        return null;
+      }
+    },
     routes: [
+      // 온보딩 페이지
+      GoRoute(
+        path: onboarding,
+        builder: (context, state) => const OnboardingPage(),
+      ),
+
       // 홈 페이지 (탭 네비게이션)
       GoRoute(path: home, builder: (context, state) => const HomePage()),
 
@@ -303,11 +341,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
-              // 배너 광고 (네비게이션 바 밑에)
-              const AdMobBannerWidget(),
-              // 배너 광고 하단 여백 추가 (잘림 방지)
-              const SizedBox(height: 20),
             ],
           ),
         );

@@ -16,7 +16,7 @@ enum MenuType {
 
 /// AI 기반 판매 분석 서비스
 class AiSalesAnalysisService {
-  static const String _modelName = 'gemini-1.5-flash';
+  static const String _modelName = 'gemini-2.0-flash-exp';
   late final GenerativeModel _model;
 
   // 메뉴 타입별 목표 원가율 (제품 원가비중)

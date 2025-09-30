@@ -210,4 +210,14 @@ class RouterHelper {
   static Map<String, dynamic>? getExtraData(BuildContext context) {
     return GoRouterState.of(context).extra as Map<String, dynamic>?;
   }
+
+  /// 온보딩 완료 후 홈으로 이동
+  static void completeOnboarding(BuildContext context) {
+    context.go(AppRouter.home);
+  }
+
+  /// 온보딩 페이지로 이동
+  static void goToOnboarding(BuildContext context) {
+    context.push(AppRouter.onboarding);
+  }
 }

@@ -21,35 +21,35 @@ class AdCubit extends Cubit<AdState> {
   /// 광고 로딩 시작
   void startAdLoading() {
     _logger.i('광고 로딩 시작');
-    print('AdCubit: 광고 로딩 시작');
+    print('AdCubit: 광고 로딩 시작 - ${DateTime.now()}');
     emit(AdLoading());
   }
 
   /// 광고 로딩 완료
   void adLoaded() {
     _logger.i('광고 로딩 완료');
-    print('AdCubit: 광고 로딩 완료');
+    print('AdCubit: 광고 로딩 완료 - ${DateTime.now()}');
     emit(AdLoaded());
   }
 
   /// 광고 표시 시작
   void startAdShowing() {
     _logger.i('광고 표시 시작');
-    print('AdCubit: 광고 표시 시작');
+    print('AdCubit: 광고 표시 시작 - ${DateTime.now()}');
     emit(AdShowing());
   }
 
   /// 광고 시청 완료
   void adWatched() {
     _logger.i('광고 시청 완료');
-    print('AdCubit: 광고 시청 완료');
+    print('AdCubit: 광고 시청 완료 - ${DateTime.now()}');
     emit(AdWatched());
   }
 
   /// 광고 실패
   void adFailed(String error) {
     _logger.e('광고 실패: $error');
-    print('AdCubit: 광고 실패 - $error');
+    print('AdCubit: 광고 실패 - $error - ${DateTime.now()}');
     emit(AdFailed(error));
   }
 

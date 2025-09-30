@@ -6,7 +6,7 @@ import '../model/ingredient.dart';
 
 /// OCR 텍스트를 분석하여 재료명만 추출하고 Ingredient 모델에 맞는 JSON으로 변환하는 서비스
 class OcrGeminiService {
-  static const String _modelName = 'gemini-1.5-flash';
+  static const String _modelName = 'gemini-2.0-flash-exp';
   late final GenerativeModel _model;
 
   OcrGeminiService() {

@@ -20,6 +20,7 @@ import 'controller/auth/auth_bloc.dart';
 import 'controller/auth/auth_event.dart';
 import 'data/auth_repository.dart';
 import 'controller/ocr/ocr_cubit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -138,13 +139,14 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
+        // 온보딩 관련 Cubit (라우터에서 사용되므로 먼저 초기화)
+        BlocProvider<OnboardingCubit>(create: (context) => OnboardingCubit()),
+
         // 로케일 관련 BLoC
         BlocProvider<LocaleCubit>(create: (context) => LocaleCubit()),
 
         // OCR 관련 Cubit
-        BlocProvider<OcrCubit>(
-          create: (context) => OcrCubit(),
-        ),
+        BlocProvider<OcrCubit>(create: (context) => OcrCubit()),
 
         // Firebase 인증 관련 BLoC
         BlocProvider<AuthBloc>(
@@ -189,7 +191,10 @@ class _PermissionRequesterState extends State<PermissionRequester> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // OnboardingCubit 초기화를 위해 더 긴 지연 시간 설정
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // OnboardingCubit 초기화 완료 대기
+      await Future.delayed(const Duration(milliseconds: 500));
       _requestNotificationPermissionIfNeeded();
       _initializeNotificationService();
     });

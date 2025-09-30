@@ -28,7 +28,7 @@ class _AdMobBannerWidgetState extends State<AdMobBannerWidget> {
   Future<void> _loadBannerAd() async {
     try {
       final bannerAd = await AdMobService.instance.loadBannerAd();
-      if (bannerAd != null) {
+      if (bannerAd != null && mounted) {
         setState(() {
           _bannerAd = bannerAd;
           _isLoaded = true;
@@ -42,7 +42,7 @@ class _AdMobBannerWidgetState extends State<AdMobBannerWidget> {
   @override
   Widget build(BuildContext context) {
     if (!_isLoaded || _bannerAd == null) {
-      return const SizedBox.shrink(); // 광고가 로드되지 않았으면 공간을 차지하지 않음
+      return const SizedBox.shrink();
     }
 
     return Container(

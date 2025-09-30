@@ -5533,6 +5533,36 @@ class AppStrings {
     }
   }
 
+  static String getOnboarding(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '온보딩 다시보기';
+      case AppLocale.japan:
+        return 'オンボーディング再表示';
+      case AppLocale.china:
+        return '重新查看引导页';
+      case AppLocale.usa:
+        return 'View Onboarding Again';
+      case AppLocale.euro:
+        return 'View Onboarding Again';
+    }
+  }
+
+  static String getOnboardingDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '앱 사용법을 다시 확인할 수 있습니다';
+      case AppLocale.japan:
+        return 'アプリの使い方を再確認できます';
+      case AppLocale.china:
+        return '可以重新查看应用使用方法';
+      case AppLocale.usa:
+        return 'Review how to use the app';
+      case AppLocale.euro:
+        return 'Review how to use the app';
+    }
+  }
+
   static String getLoginRequired(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
@@ -5878,6 +5908,307 @@ class AppStrings {
         return 'Normal';
       case AppLocale.euro:
         return 'Normal';
+    }
+  }
+
+  /// 온보딩 관련 텍스트
+  static String getOnboardingWelcome(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피 원가를 까보자';
+      case AppLocale.japan:
+        return 'レストラン原価を簡単かつ正確に';
+      case AppLocale.china:
+        return '让餐厅成本计算变得简单准确';
+      case AppLocale.usa:
+        return 'Easy and Accurate Restaurant Cost Management';
+      case AppLocale.euro:
+        return 'Easy and Accurate Restaurant Cost Management';
+    }
+  }
+
+  static String getOnboardingSubtitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이미지만 촬영하면 식자재 자동 등록,\nAI 레시피 추천으로 수익 극대화';
+      case AppLocale.japan:
+        return '画像を撮影するだけで食材自動登録、\nAIレシピ提案で収益最大化';
+      case AppLocale.china:
+        return '只需拍照即可自动注册食材，\nAI食谱推荐实现收益最大化';
+      case AppLocale.usa:
+        return 'Just take a photo for automatic ingredient registration and \nAI recipe recommendations to maximize profits';
+      case AppLocale.euro:
+        return 'Just take a photo for automatic ingredient registration and \nAI recipe recommendations to maximize profits';
+    }
+  }
+
+  static String getOnboardingImageScan(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '식자재 이미지로 자동 등록';
+      case AppLocale.japan:
+        return '食材画像で自動登録';
+      case AppLocale.china:
+        return '食材图像自动注册';
+      case AppLocale.usa:
+        return 'Automatic Registration with Ingredient Images';
+      case AppLocale.euro:
+        return 'Automatic Registration with Ingredient Images';
+    }
+  }
+
+  static String getOnboardingImageScanSubtitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI로 정확한 식자재 인식';
+      case AppLocale.japan:
+        return 'AIで正確な食材認識';
+      case AppLocale.china:
+        return 'AI准确识别食材';
+      case AppLocale.usa:
+        return 'Accurate Ingredient Recognition with AI';
+      case AppLocale.euro:
+        return 'Accurate Ingredient Recognition with AI';
+    }
+  }
+
+  static String getOnboardingAiRecipe(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료로 창의적인 레시피 제안';
+      case AppLocale.japan:
+        return '保有材料で創造的なレシピ提案';
+      case AppLocale.china:
+        return '用现有食材提出创意食谱';
+      case AppLocale.usa:
+        return 'Creative Recipe Suggestions with Available Ingredients';
+      case AppLocale.euro:
+        return 'Creative Recipe Suggestions with Available Ingredients';
+    }
+  }
+
+  static String getOnboardingAiRecipeSubtitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'Gemini AI가 최적의 조합 제시';
+      case AppLocale.japan:
+        return 'Gemini AIが最適な組み合わせを提案';
+      case AppLocale.china:
+        return 'Gemini AI提供最佳组合';
+      case AppLocale.usa:
+        return 'Gemini AI Suggests Optimal Combinations';
+      case AppLocale.euro:
+        return 'Gemini AI Suggests Optimal Combinations';
+    }
+  }
+
+  static String getOnboardingCostCalculation(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '실시간 원가 계산 및 수익 분석';
+      case AppLocale.japan:
+        return 'リアルタイム原価計算と収益分析';
+      case AppLocale.china:
+        return '实时成本计算和收益分析';
+      case AppLocale.usa:
+        return 'Real-time Cost Calculation and Profit Analysis';
+      case AppLocale.euro:
+        return 'Real-time Cost Calculation and Profit Analysis';
+    }
+  }
+
+  static String getOnboardingCostCalculationSubtitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '업계 표준 원가율 적용';
+      case AppLocale.japan:
+        return '業界標準原価率適用';
+      case AppLocale.china:
+        return '应用行业标准成本率';
+      case AppLocale.usa:
+        return 'Industry Standard Cost Ratio Applied';
+      case AppLocale.euro:
+        return 'Industry Standard Cost Ratio Applied';
+    }
+  }
+
+  static String getOnboardingExpiryManagement(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '식자재별 유통기한 추적 및 알림';
+      case AppLocale.japan:
+        return '食材別消費期限追跡と通知';
+      case AppLocale.china:
+        return '按食材追踪保质期和通知';
+      case AppLocale.usa:
+        return 'Ingredient-specific Expiry Date Tracking and Notifications';
+      case AppLocale.euro:
+        return 'Ingredient-specific Expiry Date Tracking and Notifications';
+    }
+  }
+
+  static String getOnboardingExpiryManagementSubtitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '폐기 손실 방지로 수익 보호';
+      case AppLocale.japan:
+        return '廃棄ロス防止で収益保護';
+      case AppLocale.china:
+        return '防止废弃损失保护收益';
+      case AppLocale.usa:
+        return 'Prevent Waste Loss and Protect Profits';
+      case AppLocale.euro:
+        return 'Prevent Waste Loss and Protect Profits';
+    }
+  }
+
+  static String getOnboardingBefore(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '수작업으로 원가 계산하는 복잡한 과정';
+      case AppLocale.japan:
+        return '手作業で原価計算する複雑な過程';
+      case AppLocale.china:
+        return '手工计算成本的复杂过程';
+      case AppLocale.usa:
+        return 'Complex manual cost calculation process';
+      case AppLocale.euro:
+        return 'Complex manual cost calculation process';
+    }
+  }
+
+  static String getOnboardingAfter(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI로 자동화된 간단한 원가 관리';
+      case AppLocale.japan:
+        return 'AIで自動化された簡単な原価管理';
+      case AppLocale.china:
+        return 'AI自动化简单成本管理';
+      case AppLocale.usa:
+        return 'AI-automated simple cost management';
+      case AppLocale.euro:
+        return 'AI-automated simple cost management';
+    }
+  }
+
+  static String getOnboardingExample(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '삼겹살 500g + 양파 2개 + 소스 → AI 레시피 생성';
+      case AppLocale.japan:
+        return '豚バラ500g + 玉ねぎ2個 + ソース → AIレシピ生成';
+      case AppLocale.china:
+        return '五花肉500g + 洋葱2个 + 酱汁 → AI食谱生成';
+      case AppLocale.usa:
+        return 'Pork belly 500g + Onion 2pcs + Sauce → AI Recipe Generation';
+      case AppLocale.euro:
+        return 'Pork belly 500g + Onion 2pcs + Sauce → AI Recipe Generation';
+    }
+  }
+
+  static String getOnboardingCostExample(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '총 원가 8,500원 → 추천 판매가 24,000원';
+      case AppLocale.japan:
+        return '総原価8,500円 → 推奨販売価格24,000円';
+      case AppLocale.china:
+        return '总成本8,500元 → 推荐售价24,000元';
+      case AppLocale.usa:
+        return 'Total cost 8,500 won → Recommended selling price 24,000 won';
+      case AppLocale.euro:
+        return 'Total cost 8,500 won → Recommended selling price 24,000 won';
+    }
+  }
+
+  static String getOnboardingExpiryExample(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '유통기한 3일 전 알림 → 폐기 손실 0원, 수익 보호';
+      case AppLocale.japan:
+        return '消費期限3日前通知 → 廃棄ロス0円、収益保護';
+      case AppLocale.china:
+        return '保质期前3天通知 → 废弃损失0元，收益保护';
+      case AppLocale.usa:
+        return 'Notification 3 days before expiry → Zero waste loss, profit protection';
+      case AppLocale.euro:
+        return 'Notification 3 days before expiry → Zero waste loss, profit protection';
+    }
+  }
+
+  static String getOnboardingTargetCostRatio(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '목표 원가율 설정';
+      case AppLocale.japan:
+        return '目標原価率設定';
+      case AppLocale.china:
+        return '设置目标成本率';
+      case AppLocale.usa:
+        return 'Set Target Cost Ratio';
+      case AppLocale.euro:
+        return 'Set Target Cost Ratio';
+    }
+  }
+
+  static String getOnboardingIngredientCategory(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '주요 취급 식자재 카테고리';
+      case AppLocale.japan:
+        return '主要取扱食材カテゴリー';
+      case AppLocale.china:
+        return '主要经营食材类别';
+      case AppLocale.usa:
+        return 'Main Ingredient Categories';
+      case AppLocale.euro:
+        return 'Main Ingredient Categories';
+    }
+  }
+
+  static String getOnboardingStart(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '원까 시작하기';
+      case AppLocale.japan:
+        return 'ウォンカを始めよう';
+      case AppLocale.china:
+        return '开始使用元卡';
+      case AppLocale.usa:
+        return 'Start Wonka';
+      case AppLocale.euro:
+        return 'Start Wonka';
+    }
+  }
+
+  static String getOnboardingSkip(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '건너뛰기';
+      case AppLocale.japan:
+        return 'スキップ';
+      case AppLocale.china:
+        return '跳过';
+      case AppLocale.usa:
+        return 'Skip';
+      case AppLocale.euro:
+        return 'Skip';
+    }
+  }
+
+  static String getOnboardingNext(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '다음';
+      case AppLocale.japan:
+        return '次へ';
+      case AppLocale.china:
+        return '下一步';
+      case AppLocale.usa:
+        return 'Next';
+      case AppLocale.euro:
+        return 'Next';
     }
   }
 }

@@ -765,7 +765,7 @@ class RecipeCubit extends Cubit<RecipeState> {
         creativityScore: aiRecipeData['creativity_score'],
         generatedAt: DateTime.now(),
         sourceIngredients: sourceIngredients,
-        aiModel: 'gemini-1.5-flash',
+        aiModel: 'gemini-2.0-flash-exp',
         promptVersion: '1.0',
       );
 

@@ -7,7 +7,7 @@ import '../model/unit.dart';
 
 /// Gemini AI 서비스를 통한 레시피 생성 및 이미지 분석
 class GeminiService {
-  static const String _modelName = 'gemini-1.5-flash';
+  static const String _modelName = 'gemini-2.0-flash-exp';
   late final GenerativeModel _model;
   late final GenerativeModel _visionModel;
 
@@ -34,7 +34,7 @@ class GeminiService {
     );
 
     _visionModel = GenerativeModel(
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash-exp',
       apiKey: apiKey,
       generationConfig: GenerationConfig(
         temperature: 0.3,

@@ -26,6 +26,9 @@ export 'notification/notification_permission_cubit.dart';
 // 설정/로케일 관련
 export 'setting/locale_cubit.dart';
 
+// 온보딩 관련
+export 'onboarding/onboarding_cubit.dart';
+
 // Firebase 인증 관련
 export 'auth/auth_event.dart';
 export 'auth/auth_state.dart';
