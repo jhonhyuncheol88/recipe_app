@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -54,100 +55,47 @@ class AdMobService {
     }
   }
 
-  /// 배너 광고 ID 가져오기 (안드로이드 전용)
-  String getBannerAdUnitId() {
-    _logger.d('배너 광고 ID 요청 - kDebugMode: $kDebugMode');
-
-    // 디버그 모드에서는 테스트 광고 ID 사용
-    if (kDebugMode) {
-      _logger.d('디버그 모드: 테스트 배너 광고 ID 사용');
-      final testId =
-          dotenv.env['ADMOB_TEST_BANNER_ID'] ??
-          'ca-app-pub-3940256099942544/6300978111';
-      _logger.d('안드로이드 테스트 배너 ID: $testId');
-      return testId;
-    }
-
-    // 릴리즈 모드에서는 실제 광고 ID만 사용
-    _logger.d('릴리즈 모드: 실제 배너 광고 ID 사용');
-    final prodId = dotenv.env['ADMOB_ANDROID_BANNER_ID'];
-    if (prodId == null || prodId.isEmpty) {
-      _logger.e('프로덕션 배너 광고 ID가 설정되지 않음');
-      throw Exception('프로덕션 배너 광고 ID가 설정되지 않았습니다. .env 파일을 확인해주세요.');
-    }
-    _logger.d('안드로이드 프로덕션 배너 ID: $prodId');
-    return prodId;
-  }
-
-  /// 배너 광고 생성
-  BannerAd createBannerAd() {
-    return BannerAd(
-      adUnitId: getBannerAdUnitId(),
-      size: AdSize.banner,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          _logger.i('배너 광고가 로드되었습니다. ID: ${ad.adUnitId}');
-        },
-        onAdFailedToLoad: (ad, error) {
-          _logger.e('배너 광고 로드 실패: ${error.message}');
-          ad.dispose();
-        },
-        onAdOpened: (ad) {
-          _logger.d('배너 광고가 열렸습니다.');
-        },
-        onAdClosed: (ad) {
-          _logger.d('배너 광고가 닫혔습니다.');
-        },
-      ),
-    );
-  }
-
-  /// 배너 광고 로드
-  Future<BannerAd?> loadBannerAd() async {
-    _logger.d('배너 광고 로드 시작');
-    try {
-      final bannerAd = createBannerAd();
-      _logger.d('배너 광고 생성 완료, 로드 중...');
-
-      // 로드 시작
-      await bannerAd.load();
-      _logger.i('배너 광고 로드 성공');
-      return bannerAd;
-    } catch (e) {
-      _logger.e('배너 광고 로드 중 오류 발생: $e');
-      return null;
-    }
-  }
-
-  /// 앱 ID 가져오기 (안드로이드 전용)
+  /// 앱 ID 가져오기 (Android/iOS)
   String getAppId() {
-    _logger.d('안드로이드 앱 ID 요청');
-    final appId = dotenv.env['ADMOB_ANDROID_APP_ID'];
+    _logger.d('${Platform.operatingSystem} 앱 ID 요청');
+    final envKey =
+        Platform.isAndroid ? 'ADMOB_ANDROID_APP_ID' : 'ADMOB_IOS_APP_ID';
+    final appId = dotenv.env[envKey];
     if (appId == null || appId.isEmpty) {
-      _logger.e('안드로이드 앱 ID가 설정되지 않음');
-      throw Exception('안드로이드 앱 ID가 설정되지 않았습니다. .env 파일을 확인해주세요.');
+      _logger.e('$envKey가 설정되지 않음');
+      throw Exception('$envKey가 설정되지 않았습니다. .env 파일을 확인해주세요.');
     }
-    _logger.d('안드로이드 앱 ID: $appId');
+    _logger.d('${Platform.operatingSystem} 앱 ID: $appId');
     return appId;
   }
 
-  /// 전면 광고 ID 가져오기 (안드로이드 전용)
+  /// 전면 광고 ID 가져오기 (Android/iOS)
   String getInterstitialAdUnitId() {
-    _logger.d('전면 광고 ID 요청 - kDebugMode: $kDebugMode');
+    _logger.d(
+        '전면 광고 ID 요청 - kDebugMode: $kDebugMode, Platform: ${Platform.operatingSystem}');
 
     // 디버그 모드에서는 테스트 광고 ID 사용
     if (kDebugMode) {
       _logger.d('디버그 모드: 테스트 전면 광고 ID 사용');
-      const testId = 'ca-app-pub-3940256099942544/1033173712';
-      _logger.d('안드로이드 테스트 전면 광고 ID: $testId');
+      // Android와 iOS 테스트 ID
+      final testId = Platform.isAndroid
+          ? 'ca-app-pub-3940256099942544/1033173712' // Android 테스트 전면
+          : 'ca-app-pub-3940256099942544/4411468910'; // iOS 테스트 전면
+      _logger.d('${Platform.operatingSystem} 테스트 전면 광고 ID: $testId');
       return testId;
     }
 
     // 릴리즈 모드에서는 실제 광고 ID 사용
     _logger.d('릴리즈 모드: 실제 전면 광고 ID 사용');
-    const prodId = 'ca-app-pub-4185436454716322/5021111245';
-    _logger.d('안드로이드 프로덕션 전면 광고 ID: $prodId');
+    final envKey = Platform.isAndroid
+        ? 'ADMOB_ANDROID_FORWARD_ID'
+        : 'ADMOB_IOS_FORWARD_ID';
+    final prodId = dotenv.env[envKey];
+    if (prodId == null || prodId.isEmpty) {
+      _logger.e('프로덕션 전면 광고 ID가 설정되지 않음 ($envKey)');
+      throw Exception('프로덕션 전면 광고 ID가 설정되지 않았습니다. .env 파일에서 $envKey를 확인해주세요.');
+    }
+    _logger.d('${Platform.operatingSystem} 프로덕션 전면 광고 ID: $prodId');
     return prodId;
   }
 
@@ -241,8 +189,12 @@ class AdMobService {
             print('AdMobService: 전면 광고가 닫혔습니다.');
             ad.dispose();
 
-            // AdCubit 상태 업데이트
-            _adCubit?.adWatched();
+            // AdCubit 상태 업데이트 (mounted 체크)
+            try {
+              _adCubit?.adWatched();
+            } catch (e) {
+              _logger.w('AdCubit 상태 업데이트 실패 (이미 close됨): $e');
+            }
 
             // 광고가 닫힌 후에 true 반환
             if (!completer.isCompleted) {
@@ -262,8 +214,12 @@ class AdMobService {
             print('AdMobService: 전면 광고 표시 실패 - ${error.message}');
             ad.dispose();
 
-            // AdCubit 상태 업데이트
-            _adCubit?.adFailed(error.message);
+            // AdCubit 상태 업데이트 (mounted 체크)
+            try {
+              _adCubit?.adFailed(error.message);
+            } catch (e) {
+              _logger.w('AdCubit 상태 업데이트 실패 (이미 close됨): $e');
+            }
 
             if (!completer.isCompleted) {
               completer.complete(false);

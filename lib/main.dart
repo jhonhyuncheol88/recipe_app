@@ -13,30 +13,132 @@ import 'service/sauce_cost_service.dart';
 import 'service/recipe_cost_service.dart';
 import 'service/sauce_expiry_service.dart';
 import 'service/admob_service.dart';
+import 'service/initial_data_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'service/notification_service.dart';
-import 'controller/auth/auth_bloc.dart';
-import 'controller/auth/auth_event.dart';
-import 'data/auth_repository.dart';
 import 'controller/ocr/ocr_cubit.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:logger/logger.dart';
+import 'dart:io' show Platform;
+import 'firebase_options.dart';
 
 void main() async {
+  final logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 2,
+      errorMethodCount: 8,
+      lineLength: 120,
+      colors: true,
+      printEmojis: true,
+    ),
+  );
+
+  logger.i('🚀 앱 시작 - WidgetsFlutterBinding 초기화');
   WidgetsFlutterBinding.ensureInitialized();
+  logger.i('✅ WidgetsFlutterBinding 초기화 완료');
 
-  // 환경 변수 로드 - assets에서 로드
-  await dotenv.load();
+  // 전역 에러 캡처(런타임 예외로 인한 조기 종료 방지)
+  FlutterError.onError = (FlutterErrorDetails details) {
+    logger.e('FlutterError: \\n${details.exceptionAsString()}');
+    FlutterError.presentError(details);
+  };
+  WidgetsBinding.instance.platformDispatcher.onError =
+      (Object error, StackTrace stack) {
+    logger.e('Uncaught error: $error');
+    logger.e('Stack: $stack');
+    return true; // 에러를 처리했다고 알림(프로세스 종료 방지)
+  };
 
-  await Firebase.initializeApp();
-  final firebaseAnalytics = FirebaseAnalytics.instance;
-  await firebaseAnalytics.setAnalyticsCollectionEnabled(true);
-  await firebaseAnalytics.logAppOpen();
+  // 필수 초기화는 실패해도 앱 실행을 계속함
+  await _safePreRunInitialization(logger);
 
-  // AdMob 초기화
-  await AdMobService.instance.initialize();
-
+  logger.i('🎨 MyApp 실행');
   runApp(const MyApp());
+  logger.i('✅ 앱 실행 완료');
+
+  // 프레임 이후(위젯 트리 준비 후) 추가 초기화 수행
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    await _postAppInitialization(logger);
+    await _initializeInitialData(logger);
+  });
+}
+
+Future<void> _safePreRunInitialization(Logger logger) async {
+  // .env 로드(없어도 앱 실행 계속)
+  try {
+    logger.i('🔧 환경 변수 로드 시작');
+    await dotenv.load();
+    logger.i('✅ 환경 변수 로드 완료');
+  } catch (e) {
+    logger.e('⚠️ .env 로드 실패(무시하고 계속): $e');
+  }
+
+  // Firebase 초기화(권장: 플랫폼 옵션 사용)
+  try {
+    logger.i('🔥 Firebase 초기화 시작');
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    logger.i('✅ Firebase 초기화 완료');
+  } catch (e) {
+    logger.e('❌ Firebase 초기화 실패(앱은 계속 실행): $e');
+  }
+
+  // Analytics 설정(실패 무시)
+  try {
+    logger.i('📊 Firebase Analytics 설정 시작');
+    final firebaseAnalytics = FirebaseAnalytics.instance;
+    await firebaseAnalytics.setAnalyticsCollectionEnabled(true);
+    await firebaseAnalytics.logAppOpen();
+    logger.i('✅ Firebase Analytics 설정 완료');
+  } catch (e) {
+    logger.e('⚠️ Analytics 설정 실패(무시): $e');
+  }
+}
+
+Future<void> _postAppInitialization(Logger logger) async {
+  // Android에서만 AdMob 초기화(실패 무시)
+  if (Platform.isAndroid) {
+    logger.i('📱 AdMob 초기화 시도 (Android, post-frame)');
+    try {
+      await AdMobService.instance.initialize();
+      logger.i('✅ AdMob 초기화 완료');
+    } catch (e) {
+      logger.e('⚠️ AdMob 초기화 실패(무시): $e');
+    }
+  } else {
+    logger.i('ℹ️ iOS에서는 AdMob을 초기화하지 않습니다');
+  }
+}
+
+Future<void> _initializeInitialData(Logger logger) async {
+  try {
+    logger.i('📦 초기 데이터 체크 시작');
+
+    // Repository 생성
+    final ingredientRepo = IngredientRepository();
+    final recipeRepo = RecipeRepository();
+    final unitRepo = UnitRepository();
+
+    final initialDataService = InitialDataService(
+      ingredientRepository: ingredientRepo,
+      recipeRepository: recipeRepo,
+      unitRepository: unitRepo,
+    );
+
+    // 초기 데이터가 이미 삽입되었는지 확인
+    final isInserted = await initialDataService.isInitialDataInserted();
+
+    if (!isInserted) {
+      logger.i('📦 초기 데이터 없음 - 삽입 시작');
+      await initialDataService.insertInitialData();
+      logger.i('✅ 초기 데이터 삽입 완료');
+    } else {
+      logger.i('✅ 초기 데이터 이미 존재');
+    }
+  } catch (e) {
+    logger.e('⚠️ 초기 데이터 초기화 실패(무시): $e');
+    // 실패해도 앱 실행은 계속
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -186,8 +288,6 @@ class PermissionRequester extends StatefulWidget {
 }
 
 class _PermissionRequesterState extends State<PermissionRequester> {
-  bool _askedOnce = false;
-
   @override
   void initState() {
     super.initState();
@@ -195,36 +295,33 @@ class _PermissionRequesterState extends State<PermissionRequester> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // OnboardingCubit 초기화 완료 대기
       await Future.delayed(const Duration(milliseconds: 500));
-      _requestNotificationPermissionIfNeeded();
       _initializeNotificationService();
     });
   }
 
-  Future<void> _requestNotificationPermissionIfNeeded() async {
-    if (_askedOnce) return;
-    _askedOnce = true;
-    try {
-      final status = await Permission.notification.status;
-      if (!status.isGranted) {
-        await Permission.notification.request();
-      }
-    } catch (_) {
-      // ignore errors
-    }
-  }
+  // NotificationService는 권한 요청 없이 초기화만 수행합니다
+  // 실제 권한 요청은 PermissionRequestPage에서 PermissionService를 통해 이루어집니다
 
   @override
   Widget build(BuildContext context) => widget.child;
 
   Future<void> _initializeNotificationService() async {
     try {
+      if (!mounted) return;
       final service = context.read<NotificationService>();
-      await service.initialize();
+
+      // iOS에서는 네이티브 권한 팝업 표시
+      print('🔔 알림 서비스 초기화 및 권한 요청');
+      await service.initialize(requestIOSPermission: true);
+
       if (!mounted) return;
       final notifCubit = context.read<ExpiryNotificationCubit>();
       if (notifCubit.notificationsEnabled) {
         await notifCubit.loadExpiryNotifications();
       }
-    } catch (_) {}
+    } catch (e) {
+      // 초기화 실패를 조용히 무시 (디버그 모드에서만 로그)
+      debugPrint('Notification service initialization failed: $e');
+    }
   }
 }

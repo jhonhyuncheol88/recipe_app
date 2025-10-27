@@ -28,11 +28,11 @@ class RecipeCubit extends Cubit<RecipeState> {
     required IngredientRepository ingredientRepository,
     required UnitRepository unitRepository,
     required TagRepository tagRepository,
-  }) : _recipeRepository = recipeRepository,
-       _ingredientRepository = ingredientRepository,
-       _unitRepository = unitRepository,
-       _tagRepository = tagRepository,
-       super(const RecipeInitial()) {
+  })  : _recipeRepository = recipeRepository,
+        _ingredientRepository = ingredientRepository,
+        _unitRepository = unitRepository,
+        _tagRepository = tagRepository,
+        super(const RecipeInitial()) {
     _sauceCostService = SauceCostService(
       sauceRepository: _sauceRepository,
       ingredientRepository: _ingredientRepository,
@@ -759,8 +759,8 @@ class RecipeCubit extends Cubit<RecipeState> {
             ? List<String>.from(aiRecipeData['tips'])
             : null,
         nutritionalInfo: aiRecipeData['nutritional_info_per_serving'],
-        estimatedCost: (aiRecipeData['estimated_cost']?['amount'] ?? 0.0)
-            .toDouble(),
+        estimatedCost:
+            (aiRecipeData['estimated_cost']?['amount'] ?? 0.0).toDouble(),
         tags: List<String>.from(aiRecipeData['tags'] ?? []),
         creativityScore: aiRecipeData['creativity_score'],
         generatedAt: DateTime.now(),
@@ -806,7 +806,11 @@ class RecipeCubit extends Cubit<RecipeState> {
       final latestRecipe = recipes.first;
       await _aiRecipeRepository.markAsConverted(aiRecipeId, latestRecipe.id);
 
-      emit(AiRecipeConverted(aiRecipe: aiRecipe, recipe: latestRecipe));
+      emit(AiRecipeConverted(
+        aiRecipe: aiRecipe,
+        recipe: latestRecipe,
+        recipes: recipes,
+      ));
     } catch (e) {
       emit(RecipeError('AI 레시피 변환에 실패했습니다: $e'));
     }

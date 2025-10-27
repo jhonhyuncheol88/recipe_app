@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 /// 광고 상태를 관리하는 Cubit
 class AdCubit extends Cubit<AdState> {
   late final Logger _logger;
+  bool _isClosed = false;
 
   AdCubit() : super(AdInitial()) {
     _logger = Logger(
@@ -18,8 +19,11 @@ class AdCubit extends Cubit<AdState> {
     );
   }
 
+  bool get isClosed => _isClosed;
+
   /// 광고 로딩 시작
   void startAdLoading() {
+    if (_isClosed) return;
     _logger.i('광고 로딩 시작');
     print('AdCubit: 광고 로딩 시작 - ${DateTime.now()}');
     emit(AdLoading());
@@ -27,6 +31,7 @@ class AdCubit extends Cubit<AdState> {
 
   /// 광고 로딩 완료
   void adLoaded() {
+    if (_isClosed) return;
     _logger.i('광고 로딩 완료');
     print('AdCubit: 광고 로딩 완료 - ${DateTime.now()}');
     emit(AdLoaded());
@@ -34,6 +39,7 @@ class AdCubit extends Cubit<AdState> {
 
   /// 광고 표시 시작
   void startAdShowing() {
+    if (_isClosed) return;
     _logger.i('광고 표시 시작');
     print('AdCubit: 광고 표시 시작 - ${DateTime.now()}');
     emit(AdShowing());
@@ -41,6 +47,7 @@ class AdCubit extends Cubit<AdState> {
 
   /// 광고 시청 완료
   void adWatched() {
+    if (_isClosed) return;
     _logger.i('광고 시청 완료');
     print('AdCubit: 광고 시청 완료 - ${DateTime.now()}');
     emit(AdWatched());
@@ -48,6 +55,7 @@ class AdCubit extends Cubit<AdState> {
 
   /// 광고 실패
   void adFailed(String error) {
+    if (_isClosed) return;
     _logger.e('광고 실패: $error');
     print('AdCubit: 광고 실패 - $error - ${DateTime.now()}');
     emit(AdFailed(error));
@@ -55,9 +63,17 @@ class AdCubit extends Cubit<AdState> {
 
   /// 광고 상태 초기화
   void reset() {
+    if (_isClosed) return;
     _logger.d('광고 상태 초기화');
     print('AdCubit: 광고 상태 초기화');
     emit(AdInitial());
+  }
+
+  @override
+  Future<void> close() {
+    _isClosed = true;
+    _logger.d('AdCubit close 호출');
+    return super.close();
   }
 
   @override

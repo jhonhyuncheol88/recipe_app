@@ -6211,4 +6211,381 @@ class AppStrings {
         return 'Next';
     }
   }
+
+  // 권한 요청 페이지
+  static String getPermissionSetup(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '권한 설정';
+      case AppLocale.japan:
+        return '権限設定';
+      case AppLocale.china:
+        return '权限设置';
+      case AppLocale.usa:
+        return 'Permission Setup';
+      case AppLocale.euro:
+        return 'Permission Setup';
+    }
+  }
+
+  static String getNotificationPermissionTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '알림 권한';
+      case AppLocale.japan:
+        return '通知権限';
+      case AppLocale.china:
+        return '通知权限';
+      case AppLocale.usa:
+        return 'Notification Permission';
+      case AppLocale.euro:
+        return 'Notification Permission';
+    }
+  }
+
+  static String getNotificationPermissionDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '식자재 유통기한이 다가오면\n알림을 보내드립니다';
+      case AppLocale.japan:
+        return '食材の賞味期限が近づくと\n通知をお送りします';
+      case AppLocale.china:
+        return '食材保质期临近时\n向您发送通知';
+      case AppLocale.usa:
+        return 'We\'ll send you notifications\nwhen ingredients expire soon';
+      case AppLocale.euro:
+        return 'We\'ll send you notifications\nwhen ingredients expire soon';
+    }
+  }
+
+  static String getCameraPermissionTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '카메라 권한';
+      case AppLocale.japan:
+        return 'カメラ権限';
+      case AppLocale.china:
+        return '相机权限';
+      case AppLocale.usa:
+        return 'Camera Permission';
+      case AppLocale.euro:
+        return 'Camera Permission';
+    }
+  }
+
+  static String getCameraPermissionDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '영수증을 촬영하여\n식자재를 빠르게 등록할 수 있습니다';
+      case AppLocale.japan:
+        return 'レシートを撮影して\n食材を素早く登録できます';
+      case AppLocale.china:
+        return '拍摄收据\n快速登记食材';
+      case AppLocale.usa:
+        return 'Take photos of receipts to\nquickly add ingredients';
+      case AppLocale.euro:
+        return 'Take photos of receipts to\nquickly add ingredients';
+    }
+  }
+
+  static String getGalleryPermissionTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '사진 라이브러리 권한';
+      case AppLocale.japan:
+        return '写真ライブラリ権限';
+      case AppLocale.china:
+        return '照片库权限';
+      case AppLocale.usa:
+        return 'Photo Library Permission';
+      case AppLocale.euro:
+        return 'Photo Library Permission';
+    }
+  }
+
+  static String getGalleryPermissionDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '사진에서 영수증을 선택하여\n식자재를 빠르게 등록할 수 있습니다';
+      case AppLocale.japan:
+        return '写真からレシートを選択して\n食材を素早く登録できます';
+      case AppLocale.china:
+        return '从照片中选择收据\n快速登记食材';
+      case AppLocale.usa:
+        return 'Select receipts from photos to\nquickly add ingredients';
+      case AppLocale.euro:
+        return 'Select receipts from photos to\nquickly add ingredients';
+    }
+  }
+
+  static String getPermissionBenefitTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이 권한으로 가능한 기능';
+      case AppLocale.japan:
+        return 'この権限で可能な機能';
+      case AppLocale.china:
+        return '该权限可实现的功能';
+      case AppLocale.usa:
+        return 'Available features';
+      case AppLocale.euro:
+        return 'Available features';
+    }
+  }
+
+  static String getExpiryNotificationBenefit(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '유통기한 알림';
+      case AppLocale.japan:
+        return '賞味期限通知';
+      case AppLocale.china:
+        return '保质期通知';
+      case AppLocale.usa:
+        return 'Expiry notifications';
+      case AppLocale.euro:
+        return 'Expiry notifications';
+    }
+  }
+
+  static String getImportantUpdatesBenefit(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '중요한 업데이트 알림';
+      case AppLocale.japan:
+        return '重要な更新通知';
+      case AppLocale.china:
+        return '重要更新通知';
+      case AppLocale.usa:
+        return 'Important updates';
+      case AppLocale.euro:
+        return 'Important updates';
+    }
+  }
+
+  static String getPersonalizedNotificationBenefit(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '개인 맞춤 알림';
+      case AppLocale.japan:
+        return 'パーソナライズされた通知';
+      case AppLocale.china:
+        return '个性化通知';
+      case AppLocale.usa:
+        return 'Personalized notifications';
+      case AppLocale.euro:
+        return 'Personalized notifications';
+    }
+  }
+
+  static String getReceiptOcrBenefit(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '영수증 OCR 인식';
+      case AppLocale.japan:
+        return 'レシートOCR認識';
+      case AppLocale.china:
+        return '收据OCR识别';
+      case AppLocale.usa:
+        return 'Receipt OCR recognition';
+      case AppLocale.euro:
+        return 'Receipt OCR recognition';
+    }
+  }
+
+  static String getIngredientPhotosBenefit(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '식자재 사진 촬영';
+      case AppLocale.japan:
+        return '食材写真撮影';
+      case AppLocale.china:
+        return '食材拍照';
+      case AppLocale.usa:
+        return 'Take ingredient photos';
+      case AppLocale.euro:
+        return 'Take ingredient photos';
+    }
+  }
+
+  static String getQuickRegistrationBenefit(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '빠른 식자재 등록';
+      case AppLocale.japan:
+        return '食材の素早い登録';
+      case AppLocale.china:
+        return '快速登记食材';
+      case AppLocale.usa:
+        return 'Quick ingredient registration';
+      case AppLocale.euro:
+        return 'Quick ingredient registration';
+    }
+  }
+
+  static String getChangeLaterInfo(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '나중에 설정에서 언제든지 변경할 수 있습니다';
+      case AppLocale.japan:
+        return '設定でいつでも変更できます';
+      case AppLocale.china:
+        return '可随时在设置中更改';
+      case AppLocale.usa:
+        return 'You can change this anytime in settings';
+      case AppLocale.euro:
+        return 'You can change this anytime in settings';
+    }
+  }
+
+  static String getAllowPermission(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '권한 허용';
+      case AppLocale.japan:
+        return '権限を許可';
+      case AppLocale.china:
+        return '允许权限';
+      case AppLocale.usa:
+        return 'Allow Permission';
+      case AppLocale.euro:
+        return 'Allow Permission';
+    }
+  }
+
+  static String getSkipForNow(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '나중에 하기';
+      case AppLocale.japan:
+        return '後で行う';
+      case AppLocale.china:
+        return '稍后进行';
+      case AppLocale.usa:
+        return 'Skip for now';
+      case AppLocale.euro:
+        return 'Skip for now';
+    }
+  }
+
+  static String getPermissionDeniedTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '권한이 거부되었습니다';
+      case AppLocale.japan:
+        return '権限が拒否されました';
+      case AppLocale.china:
+        return '权限被拒绝';
+      case AppLocale.usa:
+        return 'Permission Denied';
+      case AppLocale.euro:
+        return 'Permission Denied';
+    }
+  }
+
+  static String getPermissionDeniedMessage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '일부 기능이 제한될 수 있습니다.\n설정에서 언제든지 권한을 변경할 수 있습니다.';
+      case AppLocale.japan:
+        return '一部の機能が制限される可能性があります。\n設定でいつでも権限を変更できます。';
+      case AppLocale.china:
+        return '部分功能可能受限。\n可随时在设置中更改权限。';
+      case AppLocale.usa:
+        return 'Some features may be limited.\nYou can change permissions anytime in settings.';
+      case AppLocale.euro:
+        return 'Some features may be limited.\nYou can change permissions anytime in settings.';
+    }
+  }
+
+  // 설정 페이지용 문자열
+  static String getAllowed(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '허용됨';
+      case AppLocale.japan:
+        return '許可済み';
+      case AppLocale.china:
+        return '已允许';
+      case AppLocale.usa:
+        return 'Allowed';
+      case AppLocale.euro:
+        return 'Allowed';
+    }
+  }
+
+  static String getDenied(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '거부됨';
+      case AppLocale.japan:
+        return '拒否済み';
+      case AppLocale.china:
+        return '已拒绝';
+      case AppLocale.usa:
+        return 'Denied';
+      case AppLocale.euro:
+        return 'Denied';
+    }
+  }
+
+  static String getCameraPermissionAlreadyGranted(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '카메라 권한이 이미 허용되어 있습니다';
+      case AppLocale.japan:
+        return 'カメラ権限は既に許可されています';
+      case AppLocale.china:
+        return '相机权限已允许';
+      case AppLocale.usa:
+        return 'Camera permission already granted';
+      case AppLocale.euro:
+        return 'Camera permission already granted';
+    }
+  }
+
+  static String getCameraPermissionGranted(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '카메라 권한이 허용되었습니다';
+      case AppLocale.japan:
+        return 'カメラ権限が許可されました';
+      case AppLocale.china:
+        return '相机权限已允许';
+      case AppLocale.usa:
+        return 'Camera permission granted';
+      case AppLocale.euro:
+        return 'Camera permission granted';
+    }
+  }
+
+  static String getCameraPermissionDenied(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '카메라 권한이 거부되었습니다';
+      case AppLocale.japan:
+        return 'カメラ権限が拒否されました';
+      case AppLocale.china:
+        return '相机权限已拒绝';
+      case AppLocale.usa:
+        return 'Camera permission denied';
+      case AppLocale.euro:
+        return 'Camera permission denied';
+    }
+  }
+
+  static String getCameraPermissionPermanentlyDenied(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '카메라 권한이 영구적으로 거부되었습니다.\n설정 앱에서 권한을 허용해주세요.';
+      case AppLocale.japan:
+        return 'カメラ権限が永続的に拒否されました。\n設定アプリで権限を許可してください。';
+      case AppLocale.china:
+        return '相机权限已被永久拒绝。\n请在设置应用中允许权限。';
+      case AppLocale.usa:
+        return 'Camera permission permanently denied.\nPlease allow permission in the Settings app.';
+      case AppLocale.euro:
+        return 'Camera permission permanently denied.\nPlease allow permission in the Settings app.';
+    }
+  }
 }

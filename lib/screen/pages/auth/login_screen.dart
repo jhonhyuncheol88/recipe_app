@@ -88,67 +88,11 @@ class LoginScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 60),
 
-                  // Google 로그인 버튼
-                  BlocListener<AuthBloc, AuthState>(
-                    listener: (context, state) {
-                      if (state is AuthFailure) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${AppStrings.getLoginFailure(AppLocale.korea)}: ${state.error}',
-                            ),
-                            backgroundColor: AppColors.error,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        );
-                      } else if (state is Authenticated) {
-                        // 로그인 성공 시 홈 페이지로 이동
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (context.mounted) {
-                            context.go('/');
-                          }
-                        });
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          context.read<AuthBloc>().add(GoogleSignInRequested());
-                        },
-                        icon: Icon(
-                          Icons.login,
-                          color: AppColors.buttonText,
-                          size: 24,
-                        ),
-                        label: Text(
-                          AppStrings.getGoogleLoginButton(AppLocale.korea),
-                          style: AppTextStyles.buttonLarge,
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.buttonPrimary,
-                          foregroundColor: AppColors.buttonText,
-                          elevation: 2,
-                          shadowColor: AppColors.shadow,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 40),
-
-                  // 추가 정보
+                  // 로그인 기능이 필요한 경우 여기에 추가하세요
                   Text(
-                    AppStrings.getGoogleAccountLogin(AppLocale.korea),
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textLight,
+                    '로그인 기능이 준비 중입니다.',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),

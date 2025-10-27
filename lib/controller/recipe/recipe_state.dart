@@ -194,12 +194,12 @@ class RecipeIngredientAmountUpdated extends RecipeState {
 
   @override
   List<Object?> get props => [
-    recipe,
-    ingredientId,
-    newAmount,
-    newCalculatedCost,
-    recipes,
-  ];
+        recipe,
+        ingredientId,
+        newAmount,
+        newCalculatedCost,
+        recipes,
+      ];
 }
 
 // 원가별 정렬된 레시피
@@ -293,11 +293,16 @@ class AiRecipeSaved extends RecipeState {
 class AiRecipeConverted extends RecipeState {
   final AiRecipe aiRecipe;
   final Recipe recipe;
+  final List<Recipe> recipes;
 
-  const AiRecipeConverted({required this.aiRecipe, required this.recipe});
+  const AiRecipeConverted({
+    required this.aiRecipe,
+    required this.recipe,
+    required this.recipes,
+  });
 
   @override
-  List<Object?> get props => [aiRecipe, recipe];
+  List<Object?> get props => [aiRecipe, recipe, recipes];
 }
 
 // AI 레시피 목록 로드 성공

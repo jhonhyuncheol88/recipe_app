@@ -14,7 +14,6 @@ import '../../../service/permission_service.dart';
 import '../../widget/app_button.dart' show AppButton, AppButtonType;
 import '../../widget/app_card.dart';
 
-import '../../../model/ingredient.dart';
 import '../../../router/router_helper.dart';
 
 class OcrMainPage extends StatefulWidget {
@@ -332,18 +331,7 @@ class _OcrMainPageState extends State<OcrMainPage> {
   Future<void> _selectImageFromGallery(BuildContext context) async {
     print('📱 _selectImageFromGallery 시작');
     try {
-      // 권한 확인
-      print('🔐 갤러리 권한 확인 중...');
-      final hasPermission = await PermissionService.requestGalleryPermission();
-      print('🔐 권한 상태: $hasPermission');
-
-      if (!hasPermission) {
-        print('❌ 권한 없음 - 권한 다이얼로그 표시');
-        _showPermissionDialog(context);
-        return;
-      }
-
-      // 이미지 선택
+      // image_picker가 자동으로 iOS 네이티브 권한 팝업을 표시함
       print('🖼️ 이미지 선택 다이얼로그 표시 중...');
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.gallery,
@@ -357,45 +345,57 @@ class _OcrMainPageState extends State<OcrMainPage> {
         final imageFile = File(image.path);
         // OCR 처리 시작
         print('🚀 OCR 처리 시작');
+        if (!mounted) return;
         context.read<OcrCubit>().processImage(imageFile);
       } else {
         print('❌ 이미지 선택 취소됨');
       }
     } catch (e) {
       print('❌ 이미지 선택 중 오류: $e');
-      if (mounted) {
-        _showErrorDialog(
-          context,
-          '이미지 선택 중 오류가 발생했습니다: $e',
-          context.read<LocaleCubit>().state,
-        );
+
+      // 권한 거부 관련 에러 처리
+      if (e.toString().contains('permission') ||
+          e.toString().contains('권한') ||
+          e.toString().contains('not authorized')) {
+        print('🔐 권한 관련 오류 - 권한 다이얼로그 표시');
+        if (!mounted) return;
+        await _showPermissionDialog(context);
+      } else {
+        if (mounted) {
+          _showErrorDialog(
+            context,
+            '이미지 선택 중 오류가 발생했습니다: $e',
+            context.read<LocaleCubit>().state,
+          );
+        }
       }
     }
   }
 
-  void _showPermissionDialog(BuildContext context) {
+  Future<void> _showPermissionDialog(BuildContext context) async {
     final locale = context.read<LocaleCubit>().state;
 
-    showDialog(
+    final shouldOpenSettings = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppStrings.getGalleryPermissionRequired(locale)),
         content: Text(AppStrings.getPermissionDenied(locale)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(context).pop(false),
             child: Text(AppStrings.getCancel(locale)),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              PermissionService.openAppSettings();
-            },
+            onPressed: () => Navigator.of(context).pop(true),
             child: Text(AppStrings.getOpenSettings(locale)),
           ),
         ],
       ),
     );
+
+    if (shouldOpenSettings == true) {
+      PermissionService.openAppSettings();
+    }
   }
 
   void _showErrorDialog(

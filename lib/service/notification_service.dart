@@ -15,18 +15,20 @@ class NotificationService {
   static const String _channelDescription = '재료/소스 유통기한 알림 채널';
 
   /// 알림 초기화. 탭 콜백을 전달하면 알림 탭 시 호출됩니다.
+  /// iOS에서 권한을 요청하려면 requestIOSPermission을 true로 설정하세요.
   Future<void> initialize({
     Future<void> Function(String? payload)? onTap,
+    bool requestIOSPermission = true, // iOS에서 권한 요청 여부
   }) async {
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings iosSettings =
+    final DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings(
-          requestAlertPermission: true,
-          requestBadgePermission: true,
-          requestSoundPermission: true,
-        );
-    const InitializationSettings settings = InitializationSettings(
+      requestAlertPermission: requestIOSPermission,
+      requestBadgePermission: requestIOSPermission,
+      requestSoundPermission: requestIOSPermission,
+    );
+    final InitializationSettings settings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
     );
@@ -56,10 +58,8 @@ class NotificationService {
       description: _channelDescription,
       importance: Importance.high,
     );
-    final androidPlugin = _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(channel);
   }
 
@@ -119,7 +119,6 @@ class NotificationService {
       tzTime,
       _details(),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-
       payload: payload,
     );
   }
@@ -151,7 +150,6 @@ class NotificationService {
       next,
       _details(),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-
       matchDateTimeComponents: DateTimeComponents.time,
       payload: payload,
     );

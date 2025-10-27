@@ -29,11 +29,11 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
 
   // 필터 옵션: 기본 태그(`tag.dart`) 기반으로 구성
   List<String> get _filterOptions => [
-    '전체',
-    ...DefaultTags.recipeTagsFor(
-      context.read<LocaleCubit>().state,
-    ).map((t) => t.name),
-  ];
+        '전체',
+        ...DefaultTags.recipeTagsFor(
+          context.read<LocaleCubit>().state,
+        ).map((t) => t.name),
+      ];
 
   @override
   void initState() {
@@ -189,9 +189,8 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
                 selectedColor: AppColors.accent.withOpacity(0.2),
                 checkmarkColor: AppColors.accent,
                 labelStyle: AppTextStyles.bodySmall.copyWith(
-                  color: isSelected
-                      ? AppColors.accent
-                      : AppColors.textSecondary,
+                  color:
+                      isSelected ? AppColors.accent : AppColors.textSecondary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
@@ -298,7 +297,12 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       recipes = state.recipes;
     } else if (state is RecipeCostRecalculated) {
       recipes = state.recipes;
+    } else if (state is AiRecipeConverted) {
+      // AI 레시피를 일반 레시피로 변환한 후 레시피 목록 업데이트
+      recipes = state.recipes;
     }
+    // Note: AiRecipeSaved는 AI 레시피를 저장하는 것이지 일반 레시피를 생성하는 것이 아닙니다.
+    // AI 레시피는 별도 관리되므로 여기서는 처리하지 않습니다.
 
     if (recipes.isEmpty) {
       return const SizedBox(height: 200, child: RecipeEmptyState());
@@ -375,15 +379,15 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       // 기본 태그 목록에서 이름으로 id 찾기 후 Cubit에 위임
       final tag = DefaultTags.recipeTagsFor(context.read<LocaleCubit>().state)
           .firstWhere(
-            (t) => t.name == filter,
-            orElse: () => Tag(
-              id: '',
-              name: '',
-              color: '#000000',
-              type: TagType.recipe,
-              createdAt: DateTime.now(),
-            ),
-          );
+        (t) => t.name == filter,
+        orElse: () => Tag(
+          id: '',
+          name: '',
+          color: '#000000',
+          type: TagType.recipe,
+          createdAt: DateTime.now(),
+        ),
+      );
       if (tag.id.isNotEmpty) {
         context.read<RecipeCubit>().filterRecipesByTag(tag.id);
       }

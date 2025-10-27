@@ -5,9 +5,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
-// 권한 확인/요청은 Cubit에서만 처리
-
-// 권한 요청/저장은 이 화면에서 처리하지 않습니다
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -18,7 +15,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../controller/index.dart';
 import '../../controller/auth/auth_bloc.dart';
 import '../../controller/auth/auth_state.dart';
-import '../../controller/auth/auth_event.dart';
 import '../../data/index.dart';
 import '../../router/router_helper.dart';
 import 'package:go_router/go_router.dart';
@@ -112,8 +108,8 @@ class _SettingsPageState extends State<SettingsPage> {
             value: notifCubit.notificationsEnabled,
             onChanged: (value) {
               context.read<ExpiryNotificationCubit>().setNotificationsEnabled(
-                value,
-              );
+                    value,
+                  );
             },
             activeColor: AppColors.accent,
           ),
@@ -128,8 +124,8 @@ class _SettingsPageState extends State<SettingsPage> {
               value: notifCubit.warningEnabled,
               onChanged: (value) {
                 context.read<ExpiryNotificationCubit>().setWarningEnabled(
-                  value,
-                );
+                      value,
+                    );
               },
               activeColor: AppColors.warning,
             ),
@@ -156,8 +152,8 @@ class _SettingsPageState extends State<SettingsPage> {
               value: notifCubit.expiredEnabled,
               onChanged: (value) {
                 context.read<ExpiryNotificationCubit>().setExpiredEnabled(
-                  value,
-                );
+                      value,
+                    );
               },
               activeColor: AppColors.error,
             ),
@@ -374,9 +370,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       );
                     }
 
-                    final timestamp = DateTime.now()
-                        .toIso8601String()
-                        .replaceAll(':', '-');
+                    final timestamp =
+                        DateTime.now().toIso8601String().replaceAll(':', '-');
                     final outPath = p.join(
                       targetDir.path,
                       'recipe_app_export_$timestamp.db',
@@ -429,9 +424,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       'recipe_app.db',
                     );
                     final tmpDir = await getTemporaryDirectory();
-                    final timestamp = DateTime.now()
-                        .toIso8601String()
-                        .replaceAll(':', '-');
+                    final timestamp =
+                        DateTime.now().toIso8601String().replaceAll(':', '-');
                     final tmpPath = p.join(
                       tmpDir.path,
                       'recipe_app_export_$timestamp.db',

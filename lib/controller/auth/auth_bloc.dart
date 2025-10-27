@@ -10,10 +10,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   StreamSubscription<User?>? _authStateSubscription;
 
   AuthBloc({required AuthRepository authRepository})
-    : _authRepository = authRepository,
-      super(AuthInitial()) {
+      : _authRepository = authRepository,
+        super(AuthInitial()) {
     on<AppStarted>(_onAppStarted);
-    on<GoogleSignInRequested>(_onGoogleSignInRequested);
     on<SignOutRequested>(_onSignOutRequested);
 
     // Firebase 인증 상태 변화 감지
@@ -31,25 +30,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onAppStarted(AppStarted event, Emitter<AuthState> emit) async {
     // 앱 시작 시 초기 인증 상태 확인
     // authStateChanges 스트림이 자동으로 처리
-  }
-
-  Future<void> _onGoogleSignInRequested(
-    GoogleSignInRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(AuthLoading());
-    try {
-      final user = await _authRepository.signInWithGoogle();
-      if (user != null) {
-        emit(Authenticated(user));
-      } else {
-        // 사용자가 로그인을 취소한 경우
-        emit(Unauthenticated());
-      }
-    } catch (e) {
-      print('Google 로그인 오류: $e'); // 디버깅용 로그
-      emit(AuthFailure(e.toString()));
-    }
   }
 
   Future<void> _onSignOutRequested(

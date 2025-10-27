@@ -28,7 +28,6 @@ import '../screen/pages/onboarding/onboarding_page.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../util/app_locale.dart';
-import '../screen/widget/admob_banner_widget.dart';
 
 import '../model/ingredient.dart';
 import '../model/recipe.dart';
@@ -63,224 +62,235 @@ class AppRouter {
 
   /// GoRouter 인스턴스 생성
   static GoRouter get router => GoRouter(
-    initialLocation: home,
-    redirect: (context, state) {
-      try {
-        // 온보딩 상태 확인
-        final onboardingCubit = context.read<OnboardingCubit>();
-        final onboardingState = onboardingCubit.state;
+        initialLocation: home,
+        redirect: (context, state) async {
+          try {
+            // 온보딩 상태 확인
+            final onboardingCubit = context.read<OnboardingCubit>();
+            final onboardingState = onboardingCubit.state;
 
-        // 로딩 중인 경우 리다이렉트하지 않음 (상태 확인 대기)
-        if (onboardingState is OnboardingLoading) {
-          return null;
-        }
+            // 로딩 중인 경우 리다이렉트하지 않음 (상태 확인 대기)
+            if (onboardingState is OnboardingLoading) {
+              return null;
+            }
 
-        // 온보딩이 완료되지 않았고, 온보딩 페이지가 아닌 경우 온보딩으로 리다이렉트
-        if (onboardingState is OnboardingNotCompleted &&
-            state.matchedLocation != onboarding) {
-          return onboarding;
-        }
+            // 온보딩이 완료되지 않았고, 온보딩 페이지가 아닌 경우 온보딩으로 리다이렉트
+            if (onboardingState is OnboardingNotCompleted &&
+                state.matchedLocation != onboarding) {
+              return onboarding;
+            }
 
-        // 온보딩이 완료되었고, 온보딩 페이지인 경우 홈으로 리다이렉트
-        if (onboardingState is OnboardingCompleted &&
-            state.matchedLocation == onboarding) {
-          return home;
-        }
+            // 온보딩이 완료되면 바로 메인 페이지로 이동
+            if (onboardingState is OnboardingCompleted) {
+              if (state.matchedLocation == onboarding) {
+                return home;
+              }
+            }
 
-        return null;
-      } catch (e) {
-        // 에러 발생 시 기본적으로 홈으로 이동
-        return null;
-      }
-    },
-    routes: [
-      // 온보딩 페이지
-      GoRoute(
-        path: onboarding,
-        builder: (context, state) => const OnboardingPage(),
-      ),
-
-      // 홈 페이지 (탭 네비게이션)
-      GoRoute(path: home, builder: (context, state) => const HomePage()),
-
-      // 재료 관련 라우트
-      GoRoute(
-        path: ingredients,
-        builder: (context, state) => const IngredientMainPage(),
-      ),
-      GoRoute(
-        path: ingredientAdd,
-        builder: (context, state) {
-          final args = state.extra as Map<String, dynamic>?;
-          final preFilledIngredientName =
-              args?['preFilledIngredientName'] as String?;
-          return IngredientAddPage(
-            preFilledIngredientName: preFilledIngredientName,
-          );
-        },
-      ),
-      GoRoute(
-        path: ingredientBulkAdd,
-        builder: (context, state) => const IngredientBulkAddPage(),
-      ),
-      GoRoute(
-        path: ingredientEdit,
-        builder: (context, state) {
-          final ingredient = state.extra as Ingredient?;
-          return IngredientEditPage(ingredient: ingredient!);
-        },
-      ),
-
-      // 레시피 관련 라우트
-      GoRoute(
-        path: recipes,
-        builder: (context, state) => const RecipeMainPage(),
-      ),
-      // 소스 관련 라우트
-      GoRoute(path: sauces, builder: (context, state) => const SauceMainPage()),
-      GoRoute(
-        path: sauceEdit,
-        builder: (context, state) {
-          final sauce = state.extra as Sauce?;
-          return SauceEditPage(sauce: sauce!);
-        },
-      ),
-      GoRoute(
-        path: recipeCreate,
-        builder: (context, state) {
-          final args = state.extra as Map<String, dynamic>?;
-          return RecipeAddPage(
-            selectedIngredients:
-                args?['selectedIngredients'] as List<Ingredient>?,
-            selectedSauces: args?['selectedSauces'] as List<Sauce>?,
-          );
-        },
-      ),
-      GoRoute(
-        path: recipeEdit,
-        builder: (context, state) {
-          final recipe = state.extra as Recipe?;
-          return RecipeEditPage(recipe: recipe!);
-        },
-      ),
-
-      // 설정 페이지
-      GoRoute(
-        path: settings,
-        builder: (context, state) => const SettingsPage(),
-      ),
-
-      // 로그인 페이지
-      GoRoute(path: login, builder: (context, state) => LoginScreen()),
-
-      // 계정 정보 페이지
-      GoRoute(
-        path: accountInfo,
-        builder: (context, state) => const AccountInfoPage(),
-      ),
-
-      // AI 페이지 (탭바 페이지)
-      GoRoute(path: ai, builder: (context, state) => const AiTabbarPage()),
-
-      // AI 레시피 상세 페이지
-      GoRoute(
-        path: aiRecipeDetail,
-        builder: (context, state) {
-          final args = state.extra as Map<String, dynamic>?;
-          final aiRecipeId = args?['aiRecipeId'] as String? ?? '';
-          return AiRecipeDetailPage(aiRecipeId: aiRecipeId);
-        },
-      ),
-
-      // AI 판매 분석 페이지
-      GoRoute(
-        path: aiSalesAnalysis,
-        builder: (context, state) {
-          final recipe = state.extra as Recipe?;
-          if (recipe == null) {
-            return const Scaffold(body: Center(child: Text('레시피 정보가 없습니다.')));
+            return null;
+          } catch (e) {
+            // 에러 발생 시 기본적으로 홈으로 이동
+            return null;
           }
-
-          return AiSalesAnalysisPage(recipe: recipe);
         },
-      ),
+        routes: [
+          // 온보딩 페이지
+          GoRoute(
+            path: onboarding,
+            builder: (context, state) => const OnboardingPage(),
+          ),
 
-      // 영수증 스캔 페이지
-      GoRoute(
-        path: scanReceipt,
-        builder: (context, state) => const ScanReceiptPage(),
-      ),
+          // 홈 페이지 (탭 네비게이션)
+          GoRoute(path: home, builder: (context, state) => const HomePage()),
 
-      // OCR 메인 페이지
-      GoRoute(path: ocr, builder: (context, state) => const OcrMainPage()),
+          // 재료 관련 라우트
+          GoRoute(
+            path: ingredients,
+            builder: (context, state) => const IngredientMainPage(),
+          ),
+          GoRoute(
+            path: ingredientAdd,
+            builder: (context, state) {
+              final args = state.extra as Map<String, dynamic>?;
+              final preFilledIngredientName =
+                  args?['preFilledIngredientName'] as String?;
+              return IngredientAddPage(
+                preFilledIngredientName: preFilledIngredientName,
+              );
+            },
+          ),
+          GoRoute(
+            path: ingredientBulkAdd,
+            builder: (context, state) => const IngredientBulkAddPage(),
+          ),
+          GoRoute(
+            path: ingredientEdit,
+            builder: (context, state) {
+              final ingredient = state.extra as Ingredient?;
+              return IngredientEditPage(ingredient: ingredient!);
+            },
+          ),
 
-      // OCR 결과 페이지
-      GoRoute(
-        path: ocrResult,
-        builder: (context, state) {
-          final args = state.extra as Map<String, dynamic>?;
-          final ingredients = args?['ingredients'] as List<Ingredient>? ?? [];
-          final imagePath = args?['imagePath'] as String?;
-          final ocrResult = args?['ocrResult'] as OcrResult?;
+          // 레시피 관련 라우트
+          GoRoute(
+            path: recipes,
+            builder: (context, state) => const RecipeMainPage(),
+          ),
+          // 소스 관련 라우트
+          GoRoute(
+              path: sauces, builder: (context, state) => const SauceMainPage()),
+          GoRoute(
+            path: sauceEdit,
+            builder: (context, state) {
+              final sauce = state.extra as Sauce?;
+              return SauceEditPage(sauce: sauce!);
+            },
+          ),
+          GoRoute(
+            path: recipeCreate,
+            builder: (context, state) {
+              final args = state.extra as Map<String, dynamic>?;
+              return RecipeAddPage(
+                selectedIngredients:
+                    args?['selectedIngredients'] as List<Ingredient>?,
+                selectedSauces: args?['selectedSauces'] as List<Sauce>?,
+              );
+            },
+          ),
+          GoRoute(
+            path: recipeEdit,
+            builder: (context, state) {
+              final recipe = state.extra as Recipe?;
+              return RecipeEditPage(recipe: recipe!);
+            },
+          ),
 
-          if (imagePath == null) {
-            return const Scaffold(body: Center(child: Text('이미지 정보가 없습니다.')));
-          }
+          // 설정 페이지
+          GoRoute(
+            path: settings,
+            builder: (context, state) => const SettingsPage(),
+          ),
 
-          return OcrResultPage(
-            ingredients: ingredients,
-            imageFile: File(imagePath),
-            ocrResult: ocrResult,
-          );
-        },
-      ),
-    ],
+          // 로그인 페이지
+          GoRoute(path: login, builder: (context, state) => LoginScreen()),
 
-    // 에러 페이지
-    errorBuilder: (context, state) => Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(AppStrings.getPageNotFoundTitle(AppLocale.korea)),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 64, color: AppColors.error),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.getPageNotFoundTitle(AppLocale.korea),
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              AppStrings.getPageNotFoundSubtitle(AppLocale.korea),
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.go(home),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.buttonPrimary,
-                foregroundColor: AppColors.buttonText,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          // 계정 정보 페이지
+          GoRoute(
+            path: accountInfo,
+            builder: (context, state) => const AccountInfoPage(),
+          ),
+
+          // AI 페이지 (탭바 페이지)
+          GoRoute(path: ai, builder: (context, state) => const AiTabbarPage()),
+
+          // AI 레시피 상세 페이지
+          GoRoute(
+            path: aiRecipeDetail,
+            builder: (context, state) {
+              final args = state.extra as Map<String, dynamic>?;
+              final aiRecipeId = args?['aiRecipeId'] as String? ?? '';
+              return AiRecipeDetailPage(aiRecipeId: aiRecipeId);
+            },
+          ),
+
+          // AI 판매 분석 페이지
+          GoRoute(
+            path: aiSalesAnalysis,
+            builder: (context, state) {
+              final recipe = state.extra as Recipe?;
+              if (recipe == null) {
+                return const Scaffold(
+                    body: Center(child: Text('레시피 정보가 없습니다.')));
+              }
+
+              return AiSalesAnalysisPage(recipe: recipe);
+            },
+          ),
+
+          // 영수증 스캔 페이지
+          GoRoute(
+            path: scanReceipt,
+            builder: (context, state) => const ScanReceiptPage(),
+          ),
+
+          // OCR 메인 페이지
+          GoRoute(path: ocr, builder: (context, state) => const OcrMainPage()),
+
+          // OCR 결과 페이지
+          GoRoute(
+            path: ocrResult,
+            builder: (context, state) {
+              final args = state.extra as Map<String, dynamic>?;
+              final ingredients =
+                  args?['ingredients'] as List<Ingredient>? ?? [];
+              final imagePath = args?['imagePath'] as String?;
+              final ocrResult = args?['ocrResult'] as OcrResult?;
+
+              if (imagePath == null) {
+                return const Scaffold(
+                    body: Center(child: Text('이미지 정보가 없습니다.')));
+              }
+
+              return OcrResultPage(
+                ingredients: ingredients,
+                imageFile: File(imagePath),
+                ocrResult: ocrResult,
+              );
+            },
+          ),
+        ],
+
+        // 에러 페이지
+        errorBuilder: (context, state) => Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            title: Text(AppStrings.getPageNotFoundTitle(AppLocale.korea)),
+            backgroundColor: AppColors.surface,
+            elevation: 0,
+          ),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 64, color: AppColors.error),
+                const SizedBox(height: 16),
+                Text(
+                  AppStrings.getPageNotFoundTitle(AppLocale.korea),
+                  style: Theme.of(
+                    context,
+                  )
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(color: AppColors.textPrimary),
                 ),
-              ),
-              child: Text(AppStrings.getBackToHome(AppLocale.korea)),
+                const SizedBox(height: 8),
+                Text(
+                  AppStrings.getPageNotFoundSubtitle(AppLocale.korea),
+                  style: Theme.of(
+                    context,
+                  )
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: AppColors.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => context.go(home),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.buttonPrimary,
+                    foregroundColor: AppColors.buttonText,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(AppStrings.getBackToHome(AppLocale.korea)),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
-    ),
-  );
+      );
 }
 
 /// 홈 페이지 (탭 네비게이션)
