@@ -38,8 +38,8 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   @override
   void initState() {
     super.initState();
-    // 페이지 로드 시 레시피 목록 가져오기
-    context.read<RecipeCubit>().loadRecipes();
+    print('RecipeMainPage initState 호출');
+    // Tab navigation에서 탭 변경 시 loadRecipes()를 호출하므로 여기서는 호출하지 않음
   }
 
   @override
@@ -231,7 +231,8 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   }
 
   Widget _buildRecipeList(RecipeState state) {
-    final currentLocale = context.watch<LocaleCubit>().state;
+    // LocaleCubit은 최상위에서 이미 watch하고 있으므로 여기서 다시 watch할 필요 없음
+    final currentLocale = context.read<LocaleCubit>().state;
 
     if (state is RecipeLoading) {
       return const SizedBox(

@@ -338,6 +338,21 @@ class AppStrings {
     }
   }
 
+  static String getSearchIngredientHint(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 검색...';
+      case AppLocale.japan:
+        return '材料を検索...';
+      case AppLocale.china:
+        return '搜索材料...';
+      case AppLocale.usa:
+        return 'Search ingredient...';
+      case AppLocale.euro:
+        return 'Search ingredient...';
+    }
+  }
+
   /// 레시피 삭제 관련
   static String getDeleteRecipe(AppLocale locale) {
     switch (locale) {
@@ -6212,6 +6227,96 @@ class AppStrings {
     }
   }
 
+  static String getOnboardingReady(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '준비 완료!';
+      case AppLocale.japan:
+        return '準備完了！';
+      case AppLocale.china:
+        return '准备就绪！';
+      case AppLocale.usa:
+        return 'Ready!';
+      case AppLocale.euro:
+        return 'Ready!';
+    }
+  }
+
+  static String getOnboardingReadyMessage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이제 원까와 함께 식당 경영을 시작해보세요!';
+      case AppLocale.japan:
+        return 'ワンカと一緒にレストラン経営を始めましょう！';
+      case AppLocale.china:
+        return '现在开始使用元卡进行餐厅管理吧！';
+      case AppLocale.usa:
+        return 'Start managing your restaurant with Wonka!';
+      case AppLocale.euro:
+        return 'Start managing your restaurant with Wonka!';
+    }
+  }
+
+  static String getOnboardingOptionalSettings(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '선택 설정 (선택사항)';
+      case AppLocale.japan:
+        return '選択設定（オプション）';
+      case AppLocale.china:
+        return '可选设置';
+      case AppLocale.usa:
+        return 'Optional Settings';
+      case AppLocale.euro:
+        return 'Optional Settings';
+    }
+  }
+
+  static String getOnboardingMainFeatures(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '주요 기능';
+      case AppLocale.japan:
+        return '主な機能';
+      case AppLocale.china:
+        return '主要功能';
+      case AppLocale.usa:
+        return 'Main Features';
+      case AppLocale.euro:
+        return 'Main Features';
+    }
+  }
+
+  static String getOnboardingBeforeAfter(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'Before & After';
+      case AppLocale.japan:
+        return 'Before & After';
+      case AppLocale.china:
+        return 'Before & After';
+      case AppLocale.usa:
+        return 'Before & After';
+      case AppLocale.euro:
+        return 'Before & After';
+    }
+  }
+
+  static String getOnboardingUsageExample(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '사용 예시';
+      case AppLocale.japan:
+        return '使用例';
+      case AppLocale.china:
+        return '使用示例';
+      case AppLocale.usa:
+        return 'Usage Example';
+      case AppLocale.euro:
+        return 'Usage Example';
+    }
+  }
+
   // 권한 요청 페이지
   static String getPermissionSetup(AppLocale locale) {
     switch (locale) {
@@ -6586,6 +6691,159 @@ class AppStrings {
         return 'Camera permission permanently denied.\nPlease allow permission in the Settings app.';
       case AppLocale.euro:
         return 'Camera permission permanently denied.\nPlease allow permission in the Settings app.';
+    }
+  }
+
+  /// AI 레시피 생성 다이얼로그 텍스트
+  static String getAiRecipeDialogTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 생성';
+      case AppLocale.japan:
+        return 'AIレシピ生成';
+      case AppLocale.china:
+        return 'AI食谱生成';
+      case AppLocale.usa:
+        return 'AI Recipe Generation';
+      case AppLocale.euro:
+        return 'AI Recipe Generation';
+    }
+  }
+
+  static String getAiRecipeDialogMessage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 레시피 생성은 광고 시청 후 진행해드려요!';
+      case AppLocale.japan:
+        return 'AIレシピ生成は広告視聴後に進めさせていただきます！';
+      case AppLocale.china:
+        return 'AI食谱生成将在观看广告后为您进行！';
+      case AppLocale.usa:
+        return 'AI recipe generation will proceed after watching an ad!';
+      case AppLocale.euro:
+        return 'AI recipe generation will proceed after watching an ad!';
+    }
+  }
+
+  static String getAiRecipeDialogDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '광고 시청 후 AI가 창의적인 레시피를 생성합니다.';
+      case AppLocale.japan:
+        return '広告視聴後、AIが創造的なレシピを生成します。';
+      case AppLocale.china:
+        return '观看广告后，AI将生成创意食谱。';
+      case AppLocale.usa:
+        return 'After watching an ad, AI will generate creative recipes.';
+      case AppLocale.euro:
+        return 'After watching an ad, AI will generate creative recipes.';
+    }
+  }
+
+  static String getKoreanStyleRecipeDialogDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '광고 시청 후 AI가 한식 스타일의 레시피를 생성합니다.';
+      case AppLocale.japan:
+        return '広告視聴後、AIが韓国料理スタイルのレシピを生成します。';
+      case AppLocale.china:
+        return '观看广告后，AI将生成韩餐风格的食谱。';
+      case AppLocale.usa:
+        return 'After watching an ad, AI will generate Korean style recipes.';
+      case AppLocale.euro:
+        return 'After watching an ad, AI will generate Korean style recipes.';
+    }
+  }
+
+  static String getFusionStyleRecipeDialogDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '광고 시청 후 AI가 퓨전 스타일의 레시피를 생성합니다.';
+      case AppLocale.japan:
+        return '広告視聴後、AIがフュージョンスタイルのレシピを生成します。';
+      case AppLocale.china:
+        return '观看广告后，AI将生成融合风格的食谱。';
+      case AppLocale.usa:
+        return 'After watching an ad, AI will generate fusion style recipes.';
+      case AppLocale.euro:
+        return 'After watching an ad, AI will generate fusion style recipes.';
+    }
+  }
+
+  /// AI 판매 분석 다이얼로그 텍스트
+  static String getAiSalesAnalysisDialogTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 판매 분석';
+      case AppLocale.japan:
+        return 'AI販売分析';
+      case AppLocale.china:
+        return 'AI销售分析';
+      case AppLocale.usa:
+        return 'AI Sales Analysis';
+      case AppLocale.euro:
+        return 'AI Sales Analysis';
+    }
+  }
+
+  static String getAiSalesAnalysisDialogMessage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'AI 판매 분석은 광고 시청 후 진행해드려요!';
+      case AppLocale.japan:
+        return 'AI販売分析は広告視聴後に進めさせていただきます！';
+      case AppLocale.china:
+        return 'AI销售分析将在观看广告后为您进行！';
+      case AppLocale.usa:
+        return 'AI sales analysis will proceed after watching an ad!';
+      case AppLocale.euro:
+        return 'AI sales analysis will proceed after watching an ad!';
+    }
+  }
+
+  static String getAiSalesAnalysisDialogDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '광고 시청 후 AI가 레시피의 판매 전략을 분석하여 최적의 가격과 마케팅 방안을 제안합니다.';
+      case AppLocale.japan:
+        return '広告視聴後、AIがレシピの販売戦略を分析し、最適な価格とマーケティング方法を提案します。';
+      case AppLocale.china:
+        return '观看广告后，AI将分析食谱的销售策略，建议最优价格和营销方案。';
+      case AppLocale.usa:
+        return 'After watching an ad, AI will analyze the recipe\'s sales strategy and suggest optimal pricing and marketing approaches.';
+      case AppLocale.euro:
+        return 'After watching an ad, AI will analyze the recipe\'s sales strategy and suggest optimal pricing and marketing approaches.';
+    }
+  }
+
+  /// 광고 다이얼로그 관련 텍스트
+  static String getWatchAd(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '광고 시청하기';
+      case AppLocale.japan:
+        return '広告を視聴';
+      case AppLocale.china:
+        return '观看广告';
+      case AppLocale.usa:
+        return 'Watch Ad';
+      case AppLocale.euro:
+        return 'Watch Ad';
+    }
+  }
+
+  static String getAdLoadFailed(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '광고 로드에 실패했습니다. 잠시 후 다시 시도해주세요.';
+      case AppLocale.japan:
+        return '広告の読み込みに失敗しました。しばらくしてからもう一度お試しください。';
+      case AppLocale.china:
+        return '广告加载失败。请稍后再试。';
+      case AppLocale.usa:
+        return 'Failed to load ad. Please try again later.';
+      case AppLocale.euro:
+        return 'Failed to load ad. Please try again later.';
     }
   }
 }

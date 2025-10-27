@@ -117,12 +117,12 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     try {
       final currentLocale = context.read<LocaleCubit>().state;
       final result = await context.read<RecipeCubit>().performAiSalesAnalysis(
-        widget.recipe!.id,
-        userQuery: _specialRequestController.text.trim().isEmpty
-            ? null
-            : _specialRequestController.text.trim(),
-        userLanguage: currentLocale.name,
-      );
+            widget.recipe!.id,
+            userQuery: _specialRequestController.text.trim().isEmpty
+                ? null
+                : _specialRequestController.text.trim(),
+            userLanguage: currentLocale.name,
+          );
 
       if (result != null) {
         setState(() {
@@ -352,10 +352,10 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
             },
             buttonText: AppStrings.getStartAnalysis(locale),
             icon: Icons.analytics,
-            dialogTitle: 'AI 판매 분석',
-            dialogMessage: 'AI 판매 분석은 광고 시청 후 진행해드려요!',
+            dialogTitle: AppStrings.getAiSalesAnalysisDialogTitle(locale),
+            dialogMessage: AppStrings.getAiSalesAnalysisDialogMessage(locale),
             dialogDescription:
-                '광고 시청 후 AI가 레시피의 판매 전략을 분석하여 최적의 가격과 마케팅 방안을 제안합니다.',
+                AppStrings.getAiSalesAnalysisDialogDescription(locale),
           );
         },
       ),
@@ -373,7 +373,6 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
             children: [
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
-
               Text(
                 '${AppStrings.getAnalyzing(locale)}...',
                 style: AppTextStyles.bodySmall.copyWith(

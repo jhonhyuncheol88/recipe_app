@@ -66,10 +66,10 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 8),
             _buildNotificationSettings(currentLocale),
 
-            const SizedBox(height: 32),
-            _buildSectionTitle(AppStrings.getAccountSettings(currentLocale)),
-            const SizedBox(height: 8),
-            _buildAccountSettings(currentLocale),
+            // const SizedBox(height: 32),
+            // _buildSectionTitle(AppStrings.getAccountSettings(currentLocale)),
+            // const SizedBox(height: 8),
+            // _buildAccountSettings(currentLocale),
 
             const SizedBox(height: 32),
             _buildSectionTitle(AppStrings.getAppSettings(currentLocale)),
@@ -172,44 +172,44 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildAccountSettings(AppLocale locale) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        if (state is Authenticated) {
-          return Column(
-            children: [
-              SettingsListTile(
-                title: AppStrings.getSignedInAs(locale),
-                subtitle: state.user.displayName ?? state.user.email ?? '',
-                icon: Icons.account_circle,
-                trailing: Icon(
-                  Icons.chevron_right,
-                  color: AppColors.textSecondary,
-                  size: 20,
-                ),
-                onTap: () {
-                  RouterHelper.goToAccountInfo(context);
-                },
-              ),
-            ],
-          );
-        } else {
-          return Column(
-            children: [
-              SettingsListTile(
-                title: AppStrings.getNotSignedIn(locale),
-                subtitle: AppStrings.getLoginRequired(locale),
-                icon: Icons.account_circle_outlined,
-                onTap: () {
-                  RouterHelper.goToAccountInfo(context);
-                },
-              ),
-            ],
-          );
-        }
-      },
-    );
-  }
+  // Widget _buildAccountSettings(AppLocale locale) {
+  //   return BlocBuilder<AuthBloc, AuthState>(
+  //     builder: (context, state) {
+  //       if (state is Authenticated) {
+  //         return Column(
+  //           children: [
+  //             SettingsListTile(
+  //               title: AppStrings.getSignedInAs(locale),
+  //               subtitle: state.user.displayName ?? state.user.email ?? '',
+  //               icon: Icons.account_circle,
+  //               trailing: Icon(
+  //                 Icons.chevron_right,
+  //                 color: AppColors.textSecondary,
+  //                 size: 20,
+  //               ),
+  //               onTap: () {
+  //                 RouterHelper.goToAccountInfo(context);
+  //               },
+  //             ),
+  //           ],
+  //         );
+  //       } else {
+  //         return Column(
+  //           children: [
+  //             SettingsListTile(
+  //               title: AppStrings.getNotSignedIn(locale),
+  //               subtitle: AppStrings.getLoginRequired(locale),
+  //               icon: Icons.account_circle_outlined,
+  //               onTap: () {
+  //                 RouterHelper.goToAccountInfo(context);
+  //               },
+  //             ),
+  //           ],
+  //         );
+  //       }
+  //     },
+  //   );
+  // }
 
   Widget _buildAppSettings(AppLocale locale) {
     return Column(
@@ -288,9 +288,9 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             for (final loc in [
               AppLocale.korea,
-              AppLocale.japan,
-              AppLocale.china,
               AppLocale.usa,
+              AppLocale.china,
+              AppLocale.japan,
             ])
               _buildLanguageOption(loc.displayName, loc),
           ],

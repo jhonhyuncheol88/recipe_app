@@ -47,11 +47,11 @@ class _OnboardingPageState extends State<OnboardingPage>
 
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: _animationController,
-            curve: Curves.easeOutCubic,
-          ),
-        );
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
 
     _gradientAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _gradientController, curve: Curves.easeInOut),
@@ -383,7 +383,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                     ),
                   ),
                   child: Text(
-                    '주요 기능',
+                    AppStrings.getOnboardingMainFeatures(locale),
                     style: AppTextStyles.headline3.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
@@ -507,9 +507,7 @@ class _OnboardingPageState extends State<OnboardingPage>
             ),
             child: Icon(icon, color: color, size: 32),
           ),
-
           const SizedBox(height: 20),
-
           Expanded(
             child: Text(
               title,
@@ -520,7 +518,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                 height: 1.3,
               ),
               textAlign: TextAlign.center,
-              maxLines: 4, // 최대 줄 수 증가
+              maxLines: 6, // 최대 줄 수 증가 (영어 대응)
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -566,7 +564,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                     ),
                   ),
                   child: Text(
-                    'Before & After',
+                    AppStrings.getOnboardingBeforeAfter(locale),
                     style: AppTextStyles.headline3.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
@@ -650,16 +648,14 @@ class _OnboardingPageState extends State<OnboardingPage>
                       child: Column(
                         children: [
                           Text(
-                            '사용 예시',
+                            AppStrings.getOnboardingUsageExample(locale),
                             style: AppTextStyles.bodyLarge.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
                               fontSize: 18,
                             ),
                           ),
-
                           const SizedBox(height: 20),
-
                           Text(
                             AppStrings.getOnboardingExample(locale),
                             style: AppTextStyles.bodyMedium.copyWith(
@@ -669,9 +665,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                             ),
                             textAlign: TextAlign.center,
                           ),
-
                           const SizedBox(height: 16),
-
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -694,9 +688,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                               textAlign: TextAlign.center,
                             ),
                           ),
-
                           const SizedBox(height: 12),
-
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -781,9 +773,7 @@ class _OnboardingPageState extends State<OnboardingPage>
             ),
             child: Icon(icon, color: color, size: 32),
           ),
-
           const SizedBox(width: 20),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -796,9 +786,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                     fontSize: 18,
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
                 Text(
                   content,
                   style: AppTextStyles.bodyMedium.copyWith(
@@ -875,7 +863,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                 const SizedBox(height: 40),
 
                 Text(
-                  '준비 완료!',
+                  AppStrings.getOnboardingReady(locale),
                   style: AppTextStyles.headline1.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
@@ -907,7 +895,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                     ),
                   ),
                   child: Text(
-                    '이제 원까와 함께 식당 경영을 시작해보세요!',
+                    AppStrings.getOnboardingReadyMessage(locale),
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: Colors.white,
                       height: 1.5,
@@ -941,24 +929,20 @@ class _OnboardingPageState extends State<OnboardingPage>
                   child: Column(
                     children: [
                       Text(
-                        '선택 설정 (선택사항)',
+                        AppStrings.getOnboardingOptionalSettings(locale),
                         style: AppTextStyles.bodyLarge.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 18,
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
                       _buildSettingOption(
                         icon: Icons.percent,
                         title: AppStrings.getOnboardingTargetCostRatio(locale),
                         subtitle: '30%, 35%, 40% 등',
                       ),
-
                       const SizedBox(height: 16),
-
                       _buildSettingOption(
                         icon: Icons.category,
                         title: AppStrings.getOnboardingIngredientCategory(
@@ -1042,9 +1026,7 @@ class _OnboardingPageState extends State<OnboardingPage>
             ),
             child: Icon(icon, color: Colors.white, size: 20),
           ),
-
           const SizedBox(width: 16),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1056,9 +1038,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 const SizedBox(height: 4),
-
                 Text(
                   subtitle,
                   style: AppTextStyles.bodySmall.copyWith(

@@ -20,6 +20,22 @@ enum AppLocale {
   final String displayName;
   final String flag;
 
+  /// 네이티브 언어 이름 (민족어로 표기)
+  String get nativeName {
+    switch (this) {
+      case AppLocale.korea:
+        return '한국어';
+      case AppLocale.japan:
+        return '日本語';
+      case AppLocale.china:
+        return '中文';
+      case AppLocale.usa:
+        return 'English';
+      case AppLocale.euro:
+        return 'Deutsch';
+    }
+  }
+
   /// Locale 객체 생성
   Locale get locale => Locale(languageCode, countryCode);
 

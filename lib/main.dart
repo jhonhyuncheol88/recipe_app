@@ -3,6 +3,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'router/index.dart';
 import 'theme/app_theme.dart';
 import 'util/app_strings.dart';
@@ -113,6 +114,22 @@ Future<void> _postAppInitialization(Logger logger) async {
 Future<void> _initializeInitialData(Logger logger) async {
   try {
     logger.i('📦 초기 데이터 체크 시작');
+
+    // 1. 언어 선택 여부 확인
+    final prefs = await SharedPreferences.getInstance();
+    final languageSelected = prefs.getBool('language_selected') ?? false;
+    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+
+    // 언어가 선택되지 않았거나 온보딩이 완료되지 않았으면 초기 데이터 삽입하지 않음
+    if (!languageSelected) {
+      logger.i('⏳ 언어 선택 대기 중 - 초기 데이터 삽입 스킵');
+      return;
+    }
+
+    if (!onboardingCompleted) {
+      logger.i('⏳ 온보딩 대기 중 - 초기 데이터 삽입 스킵');
+      return;
+    }
 
     // Repository 생성
     final ingredientRepo = IngredientRepository();

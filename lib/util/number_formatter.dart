@@ -47,17 +47,17 @@ class NumberFormatter {
     AppLocale.japan: NumberFormat.currency(
       locale: 'ja_JP',
       symbol: '¥',
-      decimalDigits: 0,
+      decimalDigits: 0, // 엔은 정수로만 표시
     ),
     AppLocale.china: NumberFormat.currency(
       locale: 'zh_CN',
       symbol: '¥',
-      decimalDigits: 2,
+      decimalDigits: 2, // 위안은 소수점 2자리
     ),
     AppLocale.usa: NumberFormat.currency(
       locale: 'en_US',
       symbol: '\$',
-      decimalDigits: 2,
+      decimalDigits: 2, // 달러는 소수점 2자리
     ),
     AppLocale.euro: NumberFormat.currency(
       locale: 'de_DE',
@@ -110,7 +110,7 @@ class NumberFormatter {
     return _percentFormatters[locale]?.format(percent) ?? '${percent}%';
   }
 
-  /// 가격 포맷팅 (원화는 정수, 달러는 소수점 2자리)
+  /// 가격 포맷팅 (원화는 정수, 달러는 소수점 2자리, 위안은 소수점 2자리, 엔은 정수)
   static String formatPrice(double price, AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
@@ -123,19 +123,20 @@ class NumberFormatter {
         return NumberFormat.currency(
           locale: 'ja_JP',
           symbol: '¥',
-          decimalDigits: 0,
+          decimalDigits: 0, // 엔은 정수로만 표시
         ).format(price);
       case AppLocale.china:
         return NumberFormat.currency(
           locale: 'zh_CN',
           symbol: '¥',
-          decimalDigits: 2,
+          decimalDigits: 2, // 위안은 소수점 2자리
+          customPattern: '¥#,##0.00', // 천 단위 구분자 사용
         ).format(price);
       case AppLocale.usa:
         return NumberFormat.currency(
           locale: 'en_US',
           symbol: '\$',
-          decimalDigits: 2,
+          decimalDigits: 2, // 달러는 소수점 2자리
         ).format(price);
       case AppLocale.euro:
         return NumberFormat.currency(
@@ -250,8 +251,8 @@ class NumberFormatter {
     final label = unitType == uc.UnitType.count
         ? '개당'
         : unitType == uc.UnitType.weight
-        ? 'g당'
-        : 'ml당';
+            ? 'g당'
+            : 'ml당';
     return '$label ${formatCurrency(unitPrice, locale)}';
   }
 
@@ -265,8 +266,8 @@ class NumberFormatter {
     final baseSymbol = unitType == uc.UnitType.count
         ? '개'
         : unitType == uc.UnitType.weight
-        ? 'g'
-        : 'ml';
+            ? 'g'
+            : 'ml';
     return '${formatCurrency(unitPrice, locale)} / $baseSymbol';
   }
 

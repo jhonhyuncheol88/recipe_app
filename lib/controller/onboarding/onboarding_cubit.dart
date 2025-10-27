@@ -1,14 +1,29 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../data/ingredient_repository.dart';
+import '../../data/recipe_repository.dart';
+import '../../data/unit_repository.dart';
+import '../../service/initial_data_service.dart';
+import 'package:logger/logger.dart';
 
 part 'onboarding_state.dart';
 part 'onboarding_event.dart';
 
 class OnboardingCubit extends Cubit<OnboardingState> {
   static const String _prefsKey = 'onboarding_completed';
+  late final Logger _logger;
 
   OnboardingCubit() : super(OnboardingLoading()) {
+    _logger = Logger(
+      printer: PrettyPrinter(
+        methodCount: 0,
+        errorMethodCount: 8,
+        lineLength: 120,
+        colors: true,
+        printEmojis: true,
+      ),
+    );
     _checkOnboardingStatus();
   }
 
@@ -39,9 +54,55 @@ class OnboardingCubit extends Cubit<OnboardingState> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_prefsKey, true);
 
+      // 온보딩 완료 후 초기 데이터 삽입
+      await _insertInitialDataIfNeeded();
+
       emit(OnboardingCompleted());
     } catch (e) {
       emit(OnboardingError('온보딩 완료 처리 중 오류가 발생했습니다: $e'));
+    }
+  }
+
+  /// 초기 데이터 삽입 (필요한 경우)
+  Future<void> _insertInitialDataIfNeeded() async {
+    try {
+      _logger.i('📦 온보딩 완료 후 초기 데이터 체크 시작');
+
+      // Repository 생성
+      final ingredientRepo = IngredientRepository();
+      final recipeRepo = RecipeRepository();
+      final unitRepo = UnitRepository();
+
+      final initialDataService = InitialDataService(
+        ingredientRepository: ingredientRepo,
+        recipeRepository: recipeRepo,
+        unitRepository: unitRepo,
+      );
+
+      // 초기 데이터가 이미 삽입되었는지 확인
+      final isInserted = await initialDataService.isInitialDataInserted();
+
+      if (!isInserted) {
+        _logger.i('📦 초기 데이터 없음 - 삽입 시작 (언어: ${await _getSelectedLanguage()})');
+        await initialDataService.insertInitialData();
+        _logger.i('✅ 초기 데이터 삽입 완료');
+      } else {
+        _logger.i('✅ 초기 데이터 이미 존재');
+      }
+    } catch (e) {
+      _logger.e('⚠️ 초기 데이터 삽입 실패: $e');
+      // 실패해도 온보딩 완료는 계속 진행
+    }
+  }
+
+  /// 선택된 언어 가져오기
+  Future<String> _getSelectedLanguage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final localeCode = prefs.getString('app_locale_code') ?? 'ko_KR';
+      return localeCode;
+    } catch (e) {
+      return 'ko_KR';
     }
   }
 

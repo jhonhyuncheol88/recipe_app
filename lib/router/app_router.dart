@@ -2,9 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:recipe_app/util/app_strings.dart';
 import '../controller/setting/locale_cubit.dart';
-import '../controller/onboarding/onboarding_cubit.dart';
+import '../controller/recipe/recipe_cubit.dart';
+import '../controller/ingredient/ingredient_cubit.dart';
 import '../screen/pages/ingredient/ingredient_main_page.dart';
 import '../screen/pages/ingredient/ingredient_add_page.dart';
 import '../screen/pages/ingredient/ingredient_bulk_add_page.dart';
@@ -24,6 +26,7 @@ import '../screen/pages/auth/account_info_page.dart';
 import '../screen/pages/ocr/ocr_main_page.dart';
 import '../screen/pages/ocr/ocr_result_page.dart';
 import '../screen/pages/onboarding/onboarding_page.dart';
+import '../screen/pages/language_selection_page.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -58,6 +61,7 @@ class AppRouter {
   static const String sauceEdit = '/sauce/edit';
   static const String login = '/login';
   static const String accountInfo = '/account-info';
+  static const String languageSelection = '/language-selection';
   static const String onboarding = '/onboarding';
 
   /// GoRouter 인스턴스 생성
@@ -65,26 +69,31 @@ class AppRouter {
         initialLocation: home,
         redirect: (context, state) async {
           try {
-            // 온보딩 상태 확인
-            final onboardingCubit = context.read<OnboardingCubit>();
-            final onboardingState = onboardingCubit.state;
+            // 언어 선택 상태 확인 (SharedPreferences)
+            final prefs = await SharedPreferences.getInstance();
+            final languageSelected =
+                prefs.getBool('language_selected') ?? false;
+            final onboardingCompleted =
+                prefs.getBool('onboarding_completed') ?? false;
 
-            // 로딩 중인 경우 리다이렉트하지 않음 (상태 확인 대기)
-            if (onboardingState is OnboardingLoading) {
-              return null;
+            // 언어가 선택되지 않은 경우 언어 선택 페이지로
+            if (!languageSelected &&
+                state.matchedLocation != languageSelection) {
+              return languageSelection;
             }
 
-            // 온보딩이 완료되지 않았고, 온보딩 페이지가 아닌 경우 온보딩으로 리다이렉트
-            if (onboardingState is OnboardingNotCompleted &&
-                state.matchedLocation != onboarding) {
+            // 언어가 선택되었고 온보딩이 완료되지 않은 경우 온보딩으로
+            if (languageSelected &&
+                !onboardingCompleted &&
+                state.matchedLocation != onboarding &&
+                state.matchedLocation != languageSelection &&
+                state.matchedLocation != home) {
               return onboarding;
             }
 
-            // 온보딩이 완료되면 바로 메인 페이지로 이동
-            if (onboardingState is OnboardingCompleted) {
-              if (state.matchedLocation == onboarding) {
-                return home;
-              }
+            // 온보딩 완료 후 홈으로
+            if (onboardingCompleted && state.matchedLocation == onboarding) {
+              return home;
             }
 
             return null;
@@ -94,6 +103,12 @@ class AppRouter {
           }
         },
         routes: [
+          // 언어 선택 페이지
+          GoRoute(
+            path: languageSelection,
+            builder: (context, state) => const LanguageSelectionPage(),
+          ),
+
           // 온보딩 페이지
           GoRoute(
             path: onboarding,
@@ -327,6 +342,18 @@ class _HomePageState extends State<HomePage> {
                   setState(() {
                     _currentIndex = index;
                   });
+
+                  // 탭 변경 시 해당 페이지 데이터 새로고침
+                  if (index == 1) {
+                    // 레시피 탭
+                    context.read<RecipeCubit>().loadRecipes();
+                  } else if (index == 0) {
+                    // 재료 탭
+                    context.read<IngredientCubit>().loadIngredients();
+                  } else if (index == 2) {
+                    // AI 탭 - AI 레시피 목록 로드
+                    context.read<RecipeCubit>().loadAiRecipes();
+                  }
                 },
                 type: BottomNavigationBarType.fixed,
                 backgroundColor: AppColors.surface,
@@ -357,34 +384,6 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-}
-
-Widget _buildInfoRow(String label, String value) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
-    child: Row(
-      children: [
-        SizedBox(
-          width: 80,
-          child: Text(
-            label,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
 }
 
 /// 영수증 스캔 페이지 (임시)

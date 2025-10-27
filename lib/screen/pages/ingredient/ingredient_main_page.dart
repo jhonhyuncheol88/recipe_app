@@ -133,7 +133,8 @@ class _IngredientMainPageState extends State<IngredientMainPage>
               });
             },
             decoration: InputDecoration(
-              hintText: '재료 검색...',
+              hintText: AppStrings.getSearchIngredientHint(
+                  context.watch<LocaleCubit>().state),
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -183,9 +184,8 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                       color: isSelected
                           ? AppColors.buttonText
                           : AppColors.textSecondary,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                 );
@@ -346,16 +346,16 @@ class _IngredientMainPageState extends State<IngredientMainPage>
       final filteredIngredients = _searchQuery.isEmpty
           ? ingredients
           : ingredients
-                .where(
-                  (ingredient) =>
-                      ingredient.name.toLowerCase().contains(
-                        _searchQuery.toLowerCase(),
-                      ) ||
-                      ingredient.purchaseUnitId.toLowerCase().contains(
-                        _searchQuery.toLowerCase(),
-                      ),
-                )
-                .toList();
+              .where(
+                (ingredient) =>
+                    ingredient.name.toLowerCase().contains(
+                          _searchQuery.toLowerCase(),
+                        ) ||
+                    ingredient.purchaseUnitId.toLowerCase().contains(
+                          _searchQuery.toLowerCase(),
+                        ),
+              )
+              .toList();
 
       if (filteredIngredients.isEmpty) {
         if (_searchQuery.isNotEmpty) {

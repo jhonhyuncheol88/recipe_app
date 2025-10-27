@@ -119,7 +119,7 @@ class AiAnalysisAdDialog extends StatelessWidget {
                   const Icon(Icons.play_circle_outline, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    '광고 시청하기',
+                    AppStrings.getWatchAd(currentLocale),
                     style: AppTextStyles.buttonMedium.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -172,7 +172,7 @@ class AiAnalysisAdDialog extends StatelessWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('광고 로드에 실패했습니다. 잠시 후 다시 시도해주세요.'),
+              content: Text(AppStrings.getAdLoadFailed(locale)),
               backgroundColor: AppColors.warning,
               duration: const Duration(seconds: 3),
             ),
@@ -185,7 +185,7 @@ class AiAnalysisAdDialog extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('오류가 발생했습니다: $e'),
+            content: Text('${AppStrings.getErrorOccurred(locale)}: $e'),
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 3),
           ),

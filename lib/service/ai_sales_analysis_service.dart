@@ -4,14 +4,12 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import '../model/recipe.dart';
 import '../model/ingredient.dart';
 
-/// 메뉴 타입별 목표 원가율 정의
-enum MenuType {
-  snack, // 분식/라면/한끼 간편
-  main, // 덮밥/면/대표 단품
-  stewShare, // 찌개·탕(공유/2인)
-  premium, // 프리미엄 단품(스테이크/해산물/수제버거)
-  dessert, // 디저트/사이드
-  beverage, // 음료(커피/에이드)
+/// 원가 대비 수익률 옵션 (총 매출 대비 원가율 기준)
+enum ProfitMargin {
+  low, // 원가율 30% (수익률 70% = 원가의 2.33배)
+  medium, // 원가율 25% (수익률 75% = 원가의 4.0배)
+  high, // 원가율 20% (수익률 80% = 원가의 5.0배)
+  premium, // 원가율 15% (수익률 85% = 원가의 6.67배)
 }
 
 /// AI 기반 판매 분석 서비스
@@ -19,25 +17,17 @@ class AiSalesAnalysisService {
   static const String _modelName = 'gemini-2.0-flash-exp';
   late final GenerativeModel _model;
 
-  // 메뉴 타입별 목표 원가율 (제품 원가비중)
-  static const Map<MenuType, double> _targetCostRatio = {
-    MenuType.snack: 0.42, // 42% (40~45%)
-    MenuType.main: 0.33, // 33% (33~35%) - 기준 사례 5,000→15,000
-    MenuType.stewShare: 0.35, // 35% (33~38%)
-    MenuType.premium: 0.30, // 30% (30~32%)
-    MenuType.dessert: 0.35, // 35% (30~35%)
-    MenuType.beverage: 0.32, // 32% (30~35%)
+  // 총 매출 대비 원가율 설정 (총 매출 중 원가가 차지하는 비율)
+  // 판매가 = 원가 / 원가율
+  static const Map<ProfitMargin, double> _costRatio = {
+    ProfitMargin.low: 0.30, // 원가율 30% (판매가 = 원가 / 0.30)
+    ProfitMargin.medium: 0.25, // 원가율 25% (판매가 = 원가 / 0.25 = 원가의 4배)
+    ProfitMargin.high: 0.20, // 원가율 20% (판매가 = 원가 / 0.20 = 원가의 5배)
+    ProfitMargin.premium: 0.15, // 원가율 15% (판매가 = 원가 / 0.15 = 원가의 6.67배)
   };
 
-  // 메뉴 타입별 곱셈계수 (1 / 목표 원가율)
-  static const Map<MenuType, double> _multiplierRatio = {
-    MenuType.snack: 2.38, // 1 / 0.42
-    MenuType.main: 3.03, // 1 / 0.33
-    MenuType.stewShare: 2.86, // 1 / 0.35
-    MenuType.premium: 3.33, // 1 / 0.30
-    MenuType.dessert: 2.86, // 1 / 0.35
-    MenuType.beverage: 3.13, // 1 / 0.32
-  };
+  // 기본 원가율 (권장: 25%)
+  static const ProfitMargin _defaultProfitMargin = ProfitMargin.medium;
 
   AiSalesAnalysisService() {
     _initializeModel();
@@ -83,10 +73,11 @@ class AiSalesAnalysisService {
       final responseText = response.text ?? '';
 
       // 응답 파싱 및 반환
-      return _parseAnalysisResponse(responseText);
+      return _parseAnalysisResponse(
+          responseText, recipe, userLanguage ?? 'korea');
     } catch (e) {
       // 에러 발생 시 기본 분석 결과 반환
-      return _getDefaultAnalysis(recipe, userLanguage ?? 'Korean');
+      return _getDefaultAnalysis(recipe, userLanguage ?? 'korea');
     }
   }
 
@@ -98,11 +89,14 @@ class AiSalesAnalysisService {
     String? userLanguage,
   }) {
     // 사용자 언어 감지 (기본값: 한국어)
-    final language = userLanguage ?? 'Korean';
-    final isKorean =
-        language.toLowerCase().contains('ko') ||
-        language.toLowerCase().contains('korean') ||
-        language.toLowerCase().contains('한국어');
+    // userLanguage는 AppLocale enum의 name 값 (korea, usa, china, japan 등)
+    final language = userLanguage ?? 'korea';
+
+    // AppLocale enum name으로 직접 비교
+    final isKorean = language.toLowerCase() == 'korea';
+    final isEnglish = language.toLowerCase() == 'usa';
+    final isChinese = language.toLowerCase() == 'china';
+    final isJapanese = language.toLowerCase() == 'japan';
 
     // 사용자 질문이 있는 경우 포함
     final userQuerySection = userQuery != null && userQuery.isNotEmpty
@@ -115,15 +109,13 @@ $userQuery
         : '';
 
     // 재료 정보 구성
-    final ingredientDetails = ingredients
-        .map((ingredient) {
-          final recipeIngredient = recipe.ingredients.firstWhere(
-            (ri) => ri.ingredientId == ingredient.id,
-            orElse: () => recipe.ingredients.first,
-          );
-          return '${ingredient.name} ${recipeIngredient.amount}${recipeIngredient.unitId}';
-        })
-        .join(', ');
+    final ingredientDetails = ingredients.map((ingredient) {
+      final recipeIngredient = recipe.ingredients.firstWhere(
+        (ri) => ri.ingredientId == ingredient.id,
+        orElse: () => recipe.ingredients.first,
+      );
+      return '${ingredient.name} ${recipeIngredient.amount}${recipeIngredient.unitId}';
+    }).join(', ');
 
     // 언어별 프롬프트 구성
     if (isKorean) {
@@ -134,7 +126,7 @@ $userQuery
 레시피 정보:
 - 이름: ${recipe.name}
 - 설명: ${recipe.description}
-- 총 원가: ${recipe.totalCost}원
+- 총 원가: ${recipe.totalCost}
 - 사용 재료: $ingredientDetails
 
 $userQuerySection
@@ -144,7 +136,7 @@ $userQuerySection
 {
   "optimal_price": {
     "recommended_price": "추천 판매가 (숫자만, 단위 없이)",
-    "cost_ratio": "목표 원가율 (30-45 사이의 정수, 단위 없이)",
+    "cost_ratio": "수익률 (20-50 사이의 정수, 단위 없이)",
     "profit_per_serving": "1인분당 예상 수익 (숫자만, 단위 없이)",
     "price_analysis": "가격 설정 근거 설명"
   },
@@ -167,25 +159,31 @@ $userQuerySection
   }
 }
 
-가격 설정 가이드라인 (개선된 원가율 기반):
-1. 메뉴 타입별 목표 원가율 적용:
-   - 분식/간편: 42% (곱셈계수 2.38) - 원가 × 2.38
-   - 대표 단품: 33% (곱셈계수 3.03) - 원가 × 3.03 (기준: 5,000원→15,000원)
-   - 찌개/탕: 35% (곱셈계수 2.86) - 원가 × 2.86
-   - 프리미엄: 30% (곱셈계수 3.33) - 원가 × 3.33
-   - 디저트/사이드: 35% (곱셈계수 2.86) - 원가 × 2.86
-   - 음료: 32% (곱셈계수 3.13) - 원가 × 3.13
+가격 설정 가이드라인 (총 매출 대비 원가율 기준):
+⚠️ 매우 중요: 현재 레시피의 총 원가는 ${recipe.totalCost}입니다.
+   이 값은 이미 입력된 값이며, 절대로 변경하거나 환율을 적용하면 안 됩니다.
+   이 값(${recipe.totalCost})으로만 계산해야 합니다!
 
-2. 핵심 공식: 판매가 = 원가 × 곱셈계수 (2.3~3.3배)
-3. 심리적 가격: 1천/5백 단위 반올림 후 ...900/...500으로 매무새 정리
-4. 예시: 원가 5,000원 → 대표 단품 기준 15,000원 (3배, 원가율 33%)
-5. 예시: 원가 27,000원 → 대표 단품 기준 81,000원 (3배, 원가율 33%)
+1. 총 매출 대비 원가율 옵션:
+   - 보수적: 원가율 30% (판매가 = 원가 / 0.30 = 원가의 약 3.33배)
+   - 균형 (권장): 원가율 25% (판매가 = 원가 / 0.25 = 원가의 4배)
+   - 적극적: 원가율 20% (판매가 = 원가 / 0.20 = 원가의 5배)
+   - 프리미엄: 원가율 15% (판매가 = 원가 / 0.15 = 원가의 6.67배)
 
-⚠️ 중요: 목표 원가율은 30-45% 사이의 정수로 설정해야 합니다.
-   - 판매가 = 원가 × 곱셈계수 (2.3~3.3배)
-   - 원가율 = 원가 ÷ 판매가 × 100
-   - 예: 원가 5,000원 → 판매가 15,000원 (3배) → 원가율 = 5,000÷15,000×100 = 33%
-   - 예: 원가 27,000원 → 판매가 81,000원 (3배) → 원가율 = 27,000÷81,000×100 = 33%
+2. 핵심 공식: 판매가 = 현재 원가(${recipe.totalCost}) / 원가율
+   정확한 계산:
+   - 원가율 30%: 판매가 = ${recipe.totalCost} / 0.30 = ${recipe.totalCost / 0.30}
+   - 원가율 25%: 판매가 = ${recipe.totalCost} / 0.25 = ${recipe.totalCost / 0.25}
+   - 원가율 20%: 판매가 = ${recipe.totalCost} / 0.20 = ${recipe.totalCost / 0.20}
+   - 원가율 15%: 판매가 = ${recipe.totalCost} / 0.15 = ${recipe.totalCost / 0.15}
+
+3. 추천 판매가 4가지 제시 (원가율 30%, 25%, 20%, 15%)
+4. 심리적 가격: 반올림 후 ...900/...500 끝자리 적용
+
+⚠️ 절대 금지:
+   - 원가(${recipe.totalCost})를 변경하면 안 됩니다
+   - 환율 변환하면 안 됩니다
+   - 위 계산 예시에 나온 값(${recipe.totalCost / 0.30}, ${recipe.totalCost / 0.25} 등)과 비슷한 값을 추천해야 합니다
 
 분석 시 고려사항:
 1. 한국 외식업계의 특성과 트렌드를 반영
@@ -194,16 +192,17 @@ $userQuerySection
 4. 원가 대비 수익성을 극대화하는 방안 제시
 5. 시장 경쟁력과 고객 가치 인식을 균형있게 고려
 ''';
-    } else {
+    }
+
+    if (isEnglish) {
       // 영어 프롬프트
-      return '''
-You are an expert marketing consultant specializing in restaurant business strategies. 
+      return '''You are an expert marketing consultant specializing in restaurant business strategies. 
 Please analyze the given recipe information and provide comprehensive sales strategy recommendations.
 
 Recipe Information:
 - Name: ${recipe.name}
 - Description: ${recipe.description}
-- Total Cost: ${recipe.totalCost} KRW
+- Total Cost: ${recipe.totalCost}
 - Ingredients Used: $ingredientDetails
 
 $userQuerySection
@@ -212,8 +211,8 @@ Please analyze the following items in JSON format. You must respond with only a 
 
 {
   "optimal_price": {
-    "recommended_price": "Recommended selling price (numbers only, no units)",
-    "cost_ratio": "Target cost ratio (30-45 integer, no units)",
+    "recommended_price": "Recommended selling price (numbers only, no units, no currency conversion)",
+    "cost_ratio": "Profit margin percentage (20-50 integer, no units)",
     "profit_per_serving": "Expected profit per serving (numbers only, no units)",
     "price_analysis": "Price setting rationale"
   },
@@ -236,25 +235,31 @@ Please analyze the following items in JSON format. You must respond with only a 
   }
 }
 
-Pricing Guidelines (Enhanced Cost Ratio Based):
-1. Menu Type-Specific Target Cost Ratios:
-   - Snack/Quick: 42% (multiplier 2.38) - Cost × 2.38
-   - Main Dish: 33% (multiplier 3.03) - Cost × 3.03 (Standard: 5,000→15,000 KRW)
-   - Stew/Soup: 35% (multiplier 2.86) - Cost × 2.86
-   - Premium: 30% (multiplier 3.33) - Cost × 3.33
-   - Dessert/Side: 35% (multiplier 2.86) - Cost × 2.86
-   - Beverage: 32% (multiplier 3.13) - Cost × 3.13
+Pricing Guidelines (Cost Ratio Based on Total Revenue):
+⚠️ VERY IMPORTANT: The current recipe's total cost is ${recipe.totalCost}.
+   This value is already the input value. NEVER change it or apply currency conversion!
+   You MUST calculate using this value only (${recipe.totalCost})!
 
-2. Core Formula: Selling Price = Cost × Multiplier (2.3~3.3x)
-3. Psychological Pricing: Round to 1K/500 units, then adjust to ...900/...500 endings
-4. Example: Cost 5,000 KRW → Main dish standard 15,000 KRW (3x, 33% cost ratio)
-5. Example: Cost 27,000 KRW → Main dish standard 81,000 KRW (3x, 33% cost ratio)
+1. Cost Ratio Options (Cost as % of Total Revenue):
+   - Conservative: 30% cost ratio (Selling Price = Cost / 0.30 = approx. 3.33x the cost)
+   - Balanced (Recommended): 25% cost ratio (Selling Price = Cost / 0.25 = 4x the cost)
+   - Aggressive: 20% cost ratio (Selling Price = Cost / 0.20 = 5x the cost)
+   - Premium: 15% cost ratio (Selling Price = Cost / 0.15 = 6.67x the cost)
 
-⚠️ Important: Target cost ratio must be set as an integer between 30-45%.
-   - Selling Price = Cost × Multiplier (2.3~3.3x)
-   - Cost Ratio = Cost ÷ Selling Price × 100
-   - Example: Cost 5,000 KRW → Selling Price 15,000 KRW (3x) → Cost Ratio = 5,000÷15,000×100 = 33%
-   - Example: Cost 27,000 KRW → Selling Price 81,000 KRW (3x) → Cost Ratio = 27,000÷81,000×100 = 33%
+2. Core Formula: Selling Price = Current Cost(${recipe.totalCost}) / Cost Ratio
+   Exact calculations:
+   - 30% cost ratio: Selling Price = ${recipe.totalCost} / 0.30 = ${recipe.totalCost / 0.30}
+   - 25% cost ratio: Selling Price = ${recipe.totalCost} / 0.25 = ${recipe.totalCost / 0.25}
+   - 20% cost ratio: Selling Price = ${recipe.totalCost} / 0.20 = ${recipe.totalCost / 0.20}
+   - 15% cost ratio: Selling Price = ${recipe.totalCost} / 0.15 = ${recipe.totalCost / 0.15}
+
+3. Recommend ONE of the 4 cost ratios (30%, 25%, 20%, 15%)
+4. Psychological Pricing: Round to ...900/...500 endings
+
+⚠️ ABSOLUTELY FORBIDDEN:
+   - You MUST NOT change the cost(${recipe.totalCost})
+   - You MUST NOT apply currency conversion
+   - You MUST recommend values similar to the examples above (${recipe.totalCost / 0.30}, ${recipe.totalCost / 0.25}, etc.)
 
 Analysis Considerations:
 1. Consider the characteristics and trends of the restaurant industry
@@ -264,10 +269,219 @@ Analysis Considerations:
 5. Balance market competitiveness with customer value perception
 ''';
     }
+
+    if (isChinese) {
+      // 중국어 프롬프트
+      return '''
+您是一位专为餐厅经营者提供帮助的优秀市场营销专家AI。
+请根据给定的食谱信息分析并建议销售策略。
+
+食谱信息:
+- 名称: ${recipe.name}
+- 描述: ${recipe.description}
+- 总成本: ${recipe.totalCost}
+- 使用的食材: $ingredientDetails
+
+$userQuerySection
+
+请以JSON格式分析以下项目。必须仅以有效的JSON对象响应:
+
+{
+  "optimal_price": {
+    "recommended_price": "推荐售价 (仅数字, 无单位, 不进行货币转换)",
+    "cost_ratio": "利润率百分比 (20-50整数, 无单位)",
+    "profit_per_serving": "每份预期利润 (仅数字, 无单位)",
+    "price_analysis": "定价理由分析"
+  },
+  "marketing_points": {
+    "unique_selling_points": ["独特卖点1", "独特卖点2", "独特卖点3"],
+    "target_customers": "目标客户群",
+    "competitive_advantages": ["竞争优势1", "竞争优势2"],
+    "seasonal_timing": "最佳销售时机"
+  },
+  "serving_guidance": {
+    "opening_script": "向客户打招呼的用语",
+    "description_script": "介绍食谱时的说明",
+    "price_justification": "价格解释用语",
+    "upselling_tips": ["追加销售建议1", "追加销售建议2"]
+  },
+  "business_insights": {
+    "cost_efficiency": "成本效率分析",
+    "profitability_tips": "盈利能力提升建议",
+    "risk_factors": "需要注意的风险因素"
+  }
+}
+
+定价指南 (基于当前输入值的利润率):
+⚠️ 非常重要: 当前食谱的总成本是${recipe.totalCost}。
+   这个值已经是输入值，绝对不能更改或应用汇率转换！
+   必须只使用这个值(${recipe.totalCost})进行计算！
+
+1. 老板的利润选项:
+   - 保守: 20%利润率
+   - 平衡 (推荐): 30%利润率
+   - 积极: 40%利润率
+   - 高级: 50%利润率
+
+2. 核心公式: 售价 = 当前成本(${recipe.totalCost}) / (1 - 利润率)
+   精确计算:
+   - 20%利润: 售价 = ${recipe.totalCost} / (1 - 0.20) = ${recipe.totalCost / 0.80}
+   - 30%利润: 售价 = ${recipe.totalCost} / (1 - 0.30) = ${recipe.totalCost / 0.70}
+   - 40%利润: 售价 = ${recipe.totalCost} / (1 - 0.40) = ${recipe.totalCost / 0.60}
+   - 50%利润: 售价 = ${recipe.totalCost} / (1 - 0.50) = ${recipe.totalCost / 0.50}
+
+3. 推荐4种利润率中的一种 (20%, 30%, 40%, 50%)
+4. 心理定价: 四舍五入后调整为...900/...500结尾
+
+⚠️ 绝对禁止:
+   - 不能更改成本(${recipe.totalCost})
+   - 不能进行货币转换
+   - 必须推荐与上述示例相似的值(${recipe.totalCost / 0.80}, ${recipe.totalCost / 0.70}等)
+''';
+    }
+
+    if (isJapanese) {
+      // 일본어 프롬프트
+      return '''
+あなたは日本のレストラン経営者をサポートする優れたマーケティング専門家のAIです。
+与えられたレシピ情報に基づいて販売戦略を分析し提案してください。
+
+レシピ情報:
+- 名前: ${recipe.name}
+- 説明: ${recipe.description}
+- 総原価: ${recipe.totalCost}
+- 使用食材: $ingredientDetails
+
+$userQuerySection
+
+以下の項目をJSON形式で分析してください。有効なJSONオブジェクトのみを返答してください:
+
+{
+  "optimal_price": {
+    "recommended_price": "推奨販売価格 (数字のみ, 単位なし, 通貨変換なし)",
+    "cost_ratio": "利益率パーセンテージ (20-50整数, 単位なし)",
+    "profit_per_serving": "1人前あたりの予想利益 (数字のみ, 単位なし)",
+    "price_analysis": "価格設定の根拠"
+  },
+  "marketing_points": {
+    "unique_selling_points": ["独自の販売ポイント1", "独自の販売ポイント2", "独自の販売ポイント3"],
+    "target_customers": "ターゲット顧客層",
+    "competitive_advantages": ["競争優位性1", "競争優位性2"],
+    "seasonal_timing": "最適な販売時期"
+  },
+  "serving_guidance": {
+    "opening_script": "お客様への最初の挨拶に使用するフレーズ",
+    "description_script": "レシピを紹介する際の説明",
+    "price_justification": "価格を説明する際のフレーズ",
+    "upselling_tips": ["追加販売のヒント1", "追加販売のヒント2"]
+  },
+  "business_insights": {
+    "cost_efficiency": "原価効率性の分析",
+    "profitability_tips": "収益性向上のヒント",
+    "risk_factors": "注意すべきリスク要因"
+  }
+}
+
+価格設定ガイドライン (現在の入力値基準の利益率):
+⚠️ 非常に重要: 現在のレシピの総原価は${recipe.totalCost}です。
+   この値はすでに入力値であり、絶対に変更したり通貨変換を適用してはいけません！
+   この値(${recipe.totalCost})のみを使用して計算する必要があります！
+
+1. オーナーの利益率オプション:
+   - 保守的: 20%利益率
+   - バランス (推奨): 30%利益率
+   - 積極的: 40%利益率
+   - プレミアム: 50%利益率
+
+2. 基本式: 販売価格 = 現在の原価(${recipe.totalCost}) / (1 - 利益率)
+   正確な計算:
+   - 20%利益: 販売価格 = ${recipe.totalCost} / (1 - 0.20) = ${recipe.totalCost / 0.80}
+   - 30%利益: 販売価格 = ${recipe.totalCost} / (1 - 0.30) = ${recipe.totalCost / 0.70}
+   - 40%利益: 販売価格 = ${recipe.totalCost} / (1 - 0.40) = ${recipe.totalCost / 0.60}
+   - 50%利益: 販売価格 = ${recipe.totalCost} / (1 - 0.50) = ${recipe.totalCost / 0.50}
+
+3. 4つの利益率 (20%, 30%, 40%, 50%) から1つを推奨
+4. 心理的価格設定: ...900/...500で終わるように調整
+
+⚠️ 絶対に禁止:
+   - 原価(${recipe.totalCost})を変更してはいけません
+   - 通貨変換を適用してはいけません
+   - 上記の計算例に示された値(${recipe.totalCost / 0.80}, ${recipe.totalCost / 0.70}など)と類似した値を推奨する必要があります
+''';
+    }
+
+    // 기본값: 영어
+    return '''
+You are an expert marketing consultant specializing in restaurant business strategies. 
+Please analyze the given recipe information and provide comprehensive sales strategy recommendations.
+
+Recipe Information:
+- Name: ${recipe.name}
+- Description: ${recipe.description}
+- Total Cost: ${recipe.totalCost}
+- Ingredients Used: $ingredientDetails
+
+$userQuerySection
+
+Please analyze the following items in JSON format. You must respond with only a valid JSON object:
+
+{
+  "optimal_price": {
+    "recommended_price": "Recommended selling price (numbers only, no units, no currency conversion)",
+    "cost_ratio": "Profit margin percentage (20-50 integer, no units)",
+    "profit_per_serving": "Expected profit per serving (numbers only, no units)",
+    "price_analysis": "Price setting rationale"
+  },
+  "marketing_points": {
+    "unique_selling_points": ["Unique selling point 1", "Unique selling point 2", "Unique selling point 3"],
+    "target_customers": "Target customer segment",
+    "competitive_advantages": ["Competitive advantage 1", "Competitive advantage 2"],
+    "seasonal_timing": "Optimal selling season"
+  },
+  "serving_guidance": {
+    "opening_script": "Opening script for customers",
+    "description_script": "Recipe introduction script",
+    "price_justification": "Price justification script",
+    "upselling_tips": ["Upselling tip 1", "Upselling tip 2"]
+  },
+  "business_insights": {
+    "cost_efficiency": "Cost efficiency analysis",
+    "profitability_tips": "Profitability improvement tips",
+    "risk_factors": "Risk factors to consider"
+  }
+}
+
+Pricing Guidelines (Profit Margin Based on Current Input Value):
+⚠️ VERY IMPORTANT: The current recipe's total cost is ${recipe.totalCost}.
+   This value is already the input value. NEVER change it or apply currency conversion!
+   You MUST calculate using this value only (${recipe.totalCost})!
+
+1. Owner's Profit Margin Options:
+   - Conservative: 20% profit margin
+   - Balanced (Recommended): 30% profit margin
+   - Aggressive: 40% profit margin
+   - Premium: 50% profit margin
+
+2. Core Formula: Selling Price = Current Cost(${recipe.totalCost}) / (1 - Profit Margin)
+   Exact calculations:
+   - 20% profit: Selling Price = ${recipe.totalCost} / (1 - 0.20) = ${recipe.totalCost / 0.80}
+   - 30% profit: Selling Price = ${recipe.totalCost} / (1 - 0.30) = ${recipe.totalCost / 0.70}
+   - 40% profit: Selling Price = ${recipe.totalCost} / (1 - 0.40) = ${recipe.totalCost / 0.60}
+   - 50% profit: Selling Price = ${recipe.totalCost} / (1 - 0.50) = ${recipe.totalCost / 0.50}
+
+3. Recommend ONE of the 4 profit margins (20%, 30%, 40%, 50%)
+4. Psychological Pricing: Round to ...900/...500 endings
+
+⚠️ ABSOLUTELY FORBIDDEN:
+   - You MUST NOT change the cost(${recipe.totalCost})
+   - You MUST NOT apply currency conversion
+   - You MUST recommend values similar to the examples above (${recipe.totalCost / 0.80}, ${recipe.totalCost / 0.70}, etc.)
+''';
   }
 
   /// AI 응답 파싱
-  Map<String, dynamic> _parseAnalysisResponse(String response) {
+  Map<String, dynamic> _parseAnalysisResponse(
+      String response, Recipe recipe, String language) {
     try {
       // JSON 부분만 추출 (```json``` 블록이 있는 경우)
       String jsonText = response;
@@ -295,18 +509,67 @@ Analysis Considerations:
         }
       }
 
-      // 원가율 값 검증 및 수정
+      // 추천 가격과 수익 검증 및 보정
       if (analysis['optimal_price'] != null &&
           analysis['optimal_price'] is Map<String, dynamic>) {
         final optimalPrice = analysis['optimal_price'] as Map<String, dynamic>;
+
+        // 수익률 검증 (20-50% 범위)
         if (optimalPrice.containsKey('cost_ratio')) {
           final costRatio = optimalPrice['cost_ratio'];
           if (costRatio is String) {
             final costValue = int.tryParse(costRatio);
-            if (costValue != null && (costValue < 30 || costValue > 45)) {
-              // 원가율이 범위를 벗어나면 기본값으로 수정
-              optimalPrice['cost_ratio'] = '33';
-              print('⚠️ 원가율이 범위를 벗어나 기본값 33%로 수정: $costValue%');
+            if (costValue != null && (costValue < 20 || costValue > 50)) {
+              // 수익률이 범위를 벗어나면 기본값(30%)으로 수정
+              optimalPrice['cost_ratio'] = '30';
+              print('⚠️ 수익률이 범위를 벗어나 기본값 30%로 수정: $costValue%');
+            }
+          }
+        }
+
+        // 추천 가격 검증 및 보정 (총 매출 대비 원가율 기준)
+        if (optimalPrice.containsKey('recommended_price')) {
+          final recommendedPriceStr = optimalPrice['recommended_price'];
+          if (recommendedPriceStr is String) {
+            final recommendedPrice = double.tryParse(recommendedPriceStr);
+            if (recommendedPrice != null) {
+              // 예상 가격 범위 계산 (원가율 방식)
+              // 원가율 30%: 원가 / 0.30 = 원가 * 3.33배
+              // 원가율 15%: 원가 / 0.15 = 원가 * 6.67배
+              final expectedMinPrice =
+                  recipe.totalCost / 0.35; // 원가율 35% (최대 보수적)
+              final expectedMaxPrice =
+                  recipe.totalCost / 0.10; // 원가율 10% (최대 프리미엄)
+
+              // 디버깅을 위한 로그
+              print(
+                  '🔍 가격 검증: AI 추천=$recommendedPrice, 원가=${recipe.totalCost}, '
+                  '예상 범위=${expectedMinPrice.toStringAsFixed(2)}~${expectedMaxPrice.toStringAsFixed(2)}');
+
+              if (recommendedPrice > expectedMaxPrice ||
+                  recommendedPrice < expectedMinPrice) {
+                print(
+                    '⚠️ AI 추천 가격이 비정상적입니다: $recommendedPrice (원가: ${recipe.totalCost})');
+                print('기본 계산값(원가율 25%)으로 보정합니다.');
+
+                // 기본 25% 원가율로 재계산
+                final correctedPrice = recipe.totalCost / 0.25;
+                final correctedPriceFormatted =
+                    _formatPriceForLocale(correctedPrice, language);
+                optimalPrice['recommended_price'] =
+                    correctedPriceFormatted.toString();
+
+                // 수익도 재계산
+                final correctedProfit = correctedPrice - recipe.totalCost;
+                final correctedProfitFormatted =
+                    _formatPriceForLocale(correctedProfit, language);
+                optimalPrice['profit_per_serving'] =
+                    correctedProfitFormatted.toString();
+
+                print('✅ 보정된 가격: $correctedPrice (원가율 25%)');
+              } else {
+                print('✅ AI 추천 가격이 정상 범위 내입니다.');
+              }
             }
           }
         }
@@ -316,91 +579,33 @@ Analysis Considerations:
     } catch (e) {
       print('AI 응답 파싱 오류: $e');
       // 파싱 실패 시 기본 분석 결과 반환
-      return _getDefaultAnalysis(null, 'Korean');
+      return _getDefaultAnalysis(recipe, language);
     }
   }
 
-  /// 메뉴 타입을 자동으로 판단하는 메서드
-  MenuType _determineMenuType(Recipe recipe, List<Ingredient> ingredients) {
-    final name = recipe.name.toLowerCase();
-    final description = recipe.description.toLowerCase();
-
-    // 프리미엄 메뉴 판단
-    if (name.contains('스테이크') ||
-        name.contains('steak') ||
-        name.contains('해산물') ||
-        name.contains('seafood') ||
-        name.contains('수제') ||
-        name.contains('handmade') ||
-        name.contains('프리미엄') ||
-        name.contains('premium')) {
-      return MenuType.premium;
-    }
-
-    // 음료 판단
-    if (name.contains('커피') ||
-        name.contains('coffee') ||
-        name.contains('에이드') ||
-        name.contains('ade') ||
-        name.contains('음료') ||
-        name.contains('drink') ||
-        name.contains('차') ||
-        name.contains('tea')) {
-      return MenuType.beverage;
-    }
-
-    // 디저트/사이드 판단
-    if (name.contains('디저트') ||
-        name.contains('dessert') ||
-        name.contains('사이드') ||
-        name.contains('side') ||
-        name.contains('후식') ||
-        name.contains('간식')) {
-      return MenuType.dessert;
-    }
-
-    // 찌개/탕 판단 (공유 메뉴)
-    if (name.contains('찌개') ||
-        name.contains('탕') ||
-        name.contains('전골') ||
-        name.contains('hotpot') ||
-        name.contains('공유') ||
-        name.contains('share')) {
-      return MenuType.stewShare;
-    }
-
-    // 분식/간편 메뉴 판단
-    if (name.contains('분식') ||
-        name.contains('라면') ||
-        name.contains('간편') ||
-        name.contains('한끼') ||
-        name.contains('스낵') ||
-        name.contains('snack')) {
-      return MenuType.snack;
-    }
-
-    // 기본값: 대표 단품
-    return MenuType.main;
-  }
-
-  /// 개선된 가격 추천 계산
+  /// 개선된 가격 추천 계산 (총 매출 대비 원가율 기준)
   double _calculateRecommendedPrice({
     required double ingredientCost,
-    required MenuType menuType,
+    ProfitMargin profitMargin = ProfitMargin.medium,
     double fixedPerDish = 0, // 포장/용기/연료 등 고정비
     double variableRate = 0.0, // 카드/플랫폼 수수료 등 (예: 0.05)
     int roundingStep = 500, // 반올림 단위
     bool charmEnding = true, // 심리적 가격 (900/500 끝자리)
   }) {
-    final targetRatio = _targetCostRatio[menuType]!;
-    final effectiveRatio = targetRatio - variableRate;
+    // 목표 원가율 가져오기 (예: 0.25 = 25%)
+    final targetCostRatio = _costRatio[profitMargin] ?? 0.25;
 
-    if (effectiveRatio <= 0.18) {
-      throw Exception('유효 원가율이 너무 낮습니다. 목표 원가율 또는 수수료를 재설정하세요.');
+    // 총 매출 대비 원가율 기반 판매가 계산
+    // 원가율 = (원가 + 고정비) / 판매가
+    // 따라서: 판매가 = (원가 + 고정비) / 원가율
+    final totalCost = ingredientCost + fixedPerDish;
+    double price = totalCost / targetCostRatio;
+
+    // 수수료 반영 (수수료는 매출 대비 비율이므로)
+    // 실제 판매가 = 계산된 가격 / (1 - 수수료율)
+    if (variableRate > 0) {
+      price = price / (1 - variableRate);
     }
-
-    // 핵심 공식: P = (C + F) ÷ (r - v)
-    double price = (ingredientCost + fixedPerDish) / effectiveRatio;
 
     // 반올림 적용
     price = (price / roundingStep).roundToDouble() * roundingStep;
@@ -418,79 +623,59 @@ Analysis Considerations:
     return price;
   }
 
-  /// 메뉴 타입 이름을 반환하는 헬퍼 메서드
-  String _getMenuTypeName(MenuType type, bool isKorean) {
-    if (isKorean) {
-      switch (type) {
-        case MenuType.snack:
-          return '분식/간편';
-        case MenuType.main:
-          return '대표 단품';
-        case MenuType.stewShare:
-          return '찌개/탕';
-        case MenuType.premium:
-          return '프리미엄';
-        case MenuType.dessert:
-          return '디저트/사이드';
-        case MenuType.beverage:
-          return '음료';
-      }
-    } else {
-      switch (type) {
-        case MenuType.snack:
-          return 'Snack/Quick';
-        case MenuType.main:
-          return 'Main Dish';
-        case MenuType.stewShare:
-          return 'Stew/Soup';
-        case MenuType.premium:
-          return 'Premium';
-        case MenuType.dessert:
-          return 'Dessert/Side';
-        case MenuType.beverage:
-          return 'Beverage';
-      }
+  /// 언어별 가격 포맷팅
+  double _formatPriceForLocale(double price, String language) {
+    // AppLocale enum name으로 직접 비교
+    switch (language.toLowerCase()) {
+      case 'china':
+        // 중국어: 소수점 2자리까지 반올림
+        return double.parse(price.toStringAsFixed(2));
+      case 'japan':
+      case 'korea':
+      case 'usa':
+      default:
+        // 일본어, 한국어, 영어, 기타: 정수로 반올림
+        return price.roundToDouble();
     }
   }
 
   /// 기본 분석 결과 (AI 응답 실패 시)
   Map<String, dynamic> _getDefaultAnalysis(Recipe? recipe, String language) {
-    final isKorean =
-        language.toLowerCase().contains('ko') ||
-        language.toLowerCase().contains('korean') ||
-        language.toLowerCase().contains('한국어');
+    // AppLocale enum name으로 직접 비교
+    final isKorean = language.toLowerCase() == 'korea';
 
     final basePrice = recipe?.totalCost ?? 0;
 
-    // 메뉴 타입 자동 판단
-    final menuType = recipe != null
-        ? _determineMenuType(recipe, [])
-        : MenuType.main;
-    final targetRatio = _targetCostRatio[menuType]!;
-    final multiplier = _multiplierRatio[menuType]!;
+    // 기본 원가율 적용 (25%)
+    final profitMargin = _defaultProfitMargin;
+    final targetCostRatio = _costRatio[profitMargin]!;
 
-    // 개선된 가격 계산
+    // 개선된 가격 계산 (현재 입력된 값 기준, 환율 변환 없음)
     final recommendedPrice = _calculateRecommendedPrice(
       ingredientCost: basePrice,
-      menuType: menuType,
+      profitMargin: profitMargin,
       roundingStep: 500,
       charmEnding: true,
     );
 
-    // 원가율을 퍼센트로 변환 (소수점 없이)
-    final costRatioPercent = (targetRatio * 100).round();
-    final marginRatePercent = (100 - costRatioPercent).round();
-    final profitPerServing = (recommendedPrice - basePrice).round();
+    // 원가율과 수익 계산 (현재 입력된 값 기준)
+    final profitRatePercent = ((1 - targetCostRatio) * 100).round(); // 수익률
+    final profitPerServing = (recommendedPrice - basePrice);
+
+    // 언어별 반올림 방식 적용
+    final recommendedPriceFormatted =
+        _formatPriceForLocale(recommendedPrice, language);
+    final profitPerServingFormatted =
+        _formatPriceForLocale(profitPerServing, language);
 
     if (isKorean) {
       return {
         'optimal_price': {
-          'recommended_price': recommendedPrice.toString(),
-          'cost_ratio': costRatioPercent.toString(),
-          'profit_per_serving': profitPerServing.toString(),
-          'price_analysis':
-              '메뉴 타입(${_getMenuTypeName(menuType, true)})에 맞는 목표 원가율 ${costRatioPercent}%를 적용했습니다. '
-              '원가 대비 ${multiplier.toStringAsFixed(2)}배로 시장 경쟁력과 수익성을 균형있게 고려한 가격입니다.',
+          'recommended_price': recommendedPriceFormatted.toString(),
+          'cost_ratio': profitRatePercent.toString(),
+          'profit_per_serving': profitPerServingFormatted.toString(),
+          'price_analysis': '원가 대비 ${profitRatePercent}% 수익률을 목표로 가격을 설정했습니다. '
+              '이 가격은 시장 경쟁력과 사장님의 수익을 균형있게 고려한 결과입니다.',
         },
         'marketing_points': {
           'unique_selling_points': ['신선한 재료 사용', '정성스러운 조리', '합리적인 가격'],
@@ -515,12 +700,12 @@ Analysis Considerations:
       // 영어 기본 분석
       return {
         'optimal_price': {
-          'recommended_price': recommendedPrice.toString(),
-          'cost_ratio': costRatioPercent.toString(),
-          'profit_per_serving': profitPerServing.toString(),
+          'recommended_price': recommendedPriceFormatted.toString(),
+          'cost_ratio': profitRatePercent.toString(),
+          'profit_per_serving': profitPerServingFormatted.toString(),
           'price_analysis':
-              'Applied target cost ratio of ${costRatioPercent}% for menu type (${_getMenuTypeName(menuType, false)}). '
-              'Priced at ${multiplier.toStringAsFixed(2)}x cost ratio, balancing market competitiveness and profitability.',
+              'Applied target profit margin of ${profitRatePercent}% based on cost. '
+                  'This price balances market competitiveness with owner profitability.',
         },
         'marketing_points': {
           'unique_selling_points': [
@@ -553,26 +738,10 @@ Analysis Considerations:
     }
   }
 
-  /// 사용자 언어 감지 (간단한 구현)
-  String _detectLanguage(String text) {
-    if (text.isEmpty) return 'Korean';
-
-    // 한국어 문자 포함 여부로 판단
-    final koreanPattern = RegExp(r'[가-힣]');
-    if (koreanPattern.hasMatch(text)) return 'Korean';
-
-    // 영어 패턴 확인
-    final englishPattern = RegExp(r'[a-zA-Z]');
-    if (englishPattern.hasMatch(text)) return 'English';
-
-    // 기본값
-    return 'Korean';
-  }
-
-  /// 추천 판매가 계산 (메뉴 타입 기반)
-  double calculateRecommendedPriceByMenuType({
+  /// 추천 판매가 계산 (원가 대비 수익률 기반)
+  double calculateRecommendedPriceByProfitMargin({
     required double recipeCost,
-    required MenuType menuType,
+    ProfitMargin profitMargin = ProfitMargin.medium,
     double fixedPerDish = 0,
     double variableRate = 0.0,
     int roundingStep = 500,
@@ -580,7 +749,7 @@ Analysis Considerations:
   }) {
     return _calculateRecommendedPrice(
       ingredientCost: recipeCost,
-      menuType: menuType,
+      profitMargin: profitMargin,
       fixedPerDish: fixedPerDish,
       variableRate: variableRate,
       roundingStep: roundingStep,
@@ -588,12 +757,13 @@ Analysis Considerations:
     );
   }
 
-  /// 추천 판매가 계산 (수동 계산용 - 기존 호환성)
-  double calculateRecommendedPrice(double recipeCost, double targetCostRatio) {
-    if (targetCostRatio <= 0 || targetCostRatio >= 100) {
-      throw Exception('원가율은 0과 100 사이의 값이어야 합니다.');
+  /// 추천 판매가 계산 (기존 호환성 유지 - 수익률 기준)
+  double calculateRecommendedPrice(double recipeCost, double targetProfitRate) {
+    if (targetProfitRate <= 0 || targetProfitRate >= 1) {
+      throw Exception('수익률은 0과 1 사이의 값이어야 합니다.');
     }
-    return recipeCost / (targetCostRatio / 100);
+    // 판매가 = 원가 / (1 - 수익률)
+    return recipeCost / (1 - targetProfitRate);
   }
 
   /// 마진율 계산

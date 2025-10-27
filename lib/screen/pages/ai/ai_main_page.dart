@@ -103,7 +103,6 @@ class _AiMainPageState extends State<AiMainPage> {
                 const SizedBox(height: 24),
                 _buildIngredientSelection(currentLocale),
                 const SizedBox(height: 24),
-
                 _buildRecipeGeneration(currentLocale),
                 if (_generatedRecipe != null) ...[
                   const SizedBox(height: 24),
@@ -441,9 +440,12 @@ class _AiMainPageState extends State<AiMainPage> {
                             locale,
                           ),
                           icon: Icons.auto_awesome,
-                          dialogTitle: 'AI 레시피 생성',
-                          dialogMessage: 'AI 레시피 생성은 광고 시청 후 진행해드려요!',
-                          dialogDescription: '광고 시청 후 AI가 창의적인 레시피를 생성합니다.',
+                          dialogTitle:
+                              AppStrings.getAiRecipeDialogTitle(locale),
+                          dialogMessage:
+                              AppStrings.getAiRecipeDialogMessage(locale),
+                          dialogDescription:
+                              AppStrings.getAiRecipeDialogDescription(locale),
                         );
                       },
                     ),
@@ -764,9 +766,13 @@ class _AiMainPageState extends State<AiMainPage> {
                           buttonText: AppStrings.getKoreanStyle(locale),
                           icon: Icons.restaurant,
                           isOutlined: true,
-                          dialogTitle: 'AI 레시피 생성',
-                          dialogMessage: 'AI 레시피 생성은 광고 시청 후 진행해드려요!',
-                          dialogDescription: '광고 시청 후 AI가 한식 스타일의 레시피를 생성합니다.',
+                          dialogTitle:
+                              AppStrings.getAiRecipeDialogTitle(locale),
+                          dialogMessage:
+                              AppStrings.getAiRecipeDialogMessage(locale),
+                          dialogDescription:
+                              AppStrings.getKoreanStyleRecipeDialogDescription(
+                                  locale),
                         ),
                       ),
               ),
@@ -827,9 +833,13 @@ class _AiMainPageState extends State<AiMainPage> {
                           buttonText: AppStrings.getFusionStyle(locale),
                           icon: Icons.auto_awesome,
                           isOutlined: true,
-                          dialogTitle: 'AI 레시피 생성',
-                          dialogMessage: 'AI 레시피 생성은 광고 시청 후 진행해드려요!',
-                          dialogDescription: '광고 시청 후 AI가 퓨전 스타일의 레시피를 생성합니다.',
+                          dialogTitle:
+                              AppStrings.getAiRecipeDialogTitle(locale),
+                          dialogMessage:
+                              AppStrings.getAiRecipeDialogMessage(locale),
+                          dialogDescription:
+                              AppStrings.getFusionStyleRecipeDialogDescription(
+                                  locale),
                         ),
                       ),
               ),
@@ -1106,9 +1116,8 @@ class _AiMainPageState extends State<AiMainPage> {
     final allCuisineTags = DefaultTags.recipeTagsFor(locale);
 
     // 퓨전 태그는 제외하고 실제 국가별 태그만 선택
-    final countryTags = allCuisineTags
-        .where((tag) => tag.id != 'fusion')
-        .toList();
+    final countryTags =
+        allCuisineTags.where((tag) => tag.id != 'fusion').toList();
 
     // 1-2개의 랜덤 태그 선택
     final numberOfTags = random.nextInt(2) + 1; // 1개 또는 2개
@@ -1155,9 +1164,8 @@ class _AiMainPageState extends State<AiMainPage> {
       _logger.e('재료 분석 중 오류: $e');
       // 기존 방식으로 폴백
       final recipeIngredients = recipe['ingredients'] as List? ?? [];
-      final selectedIngredientNames = _selectedIngredients
-          .map((e) => e.name.toLowerCase())
-          .toList();
+      final selectedIngredientNames =
+          _selectedIngredients.map((e) => e.name.toLowerCase()).toList();
 
       final missing = <String>[];
 
@@ -1185,9 +1193,8 @@ class _AiMainPageState extends State<AiMainPage> {
   // AI 레시피 자동 저장
   void _saveAiRecipe(Map<String, dynamic> recipe, AppLocale locale) {
     try {
-      final sourceIngredients = _selectedIngredients
-          .map((e) => e.name)
-          .toList();
+      final sourceIngredients =
+          _selectedIngredients.map((e) => e.name).toList();
 
       // 태그 정보 확인 및 설정
       final tags = recipe['tags'] as List? ?? [];
