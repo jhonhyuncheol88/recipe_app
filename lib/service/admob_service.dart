@@ -42,10 +42,26 @@ class AdMobService {
       // kDebugMode를 사용해서 테스트 모드 설정 (디버그 빌드일 때만)
       if (kDebugMode) {
         _logger.d('디버그 모드: 테스트 디바이스 설정 적용');
+        
+        // 실제 기기 ID를 환경 변수에서 가져오거나 기본값 사용
+        final testDeviceIdFromEnv = dotenv.env['ADMOB_TEST_DEVICE_ID'];
+        final testDeviceIds = <String>['EMULATOR'];
+        
+        if (testDeviceIdFromEnv != null && testDeviceIdFromEnv.isNotEmpty) {
+          testDeviceIds.add(testDeviceIdFromEnv);
+          _logger.d('환경 변수에서 테스트 디바이스 ID 로드: $testDeviceIdFromEnv');
+        } else {
+          // 환경 변수에 없으면 로그에 안내 메시지 출력
+          _logger.w('⚠️ ADMOB_TEST_DEVICE_ID가 설정되지 않았습니다.');
+          _logger.w('⚠️ 실제 기기에서 테스트 광고를 보려면:');
+          _logger.w('⚠️ 1. 앱을 실행하고 로그캣에서 "To get test ads on this device" 메시지를 찾으세요');
+          _logger.w('⚠️ 2. .env 파일에 ADMOB_TEST_DEVICE_ID="실제기기ID" 추가하세요');
+        }
+        
         MobileAds.instance.updateRequestConfiguration(
-          RequestConfiguration(testDeviceIds: ['EMULATOR', 'TEST_DEVICE_ID']),
+          RequestConfiguration(testDeviceIds: testDeviceIds),
         );
-        _logger.d('테스트 디바이스 설정 완료');
+        _logger.d('테스트 디바이스 설정 완료: $testDeviceIds');
       } else {
         _logger.i('릴리즈 모드로 실행 중');
       }
@@ -74,58 +90,146 @@ class AdMobService {
     _logger.d(
         '전면 광고 ID 요청 - kDebugMode: $kDebugMode, Platform: ${Platform.operatingSystem}');
 
-    // 디버그 모드에서는 테스트 광고 ID 사용
-    if (kDebugMode) {
-      _logger.d('디버그 모드: 테스트 전면 광고 ID 사용');
-      // Android와 iOS 테스트 ID
-      final testId = Platform.isAndroid
-          ? 'ca-app-pub-3940256099942544/1033173712' // Android 테스트 전면
-          : 'ca-app-pub-3940256099942544/4411468910'; // iOS 테스트 전면
-      _logger.d('${Platform.operatingSystem} 테스트 전면 광고 ID: $testId');
-      return testId;
-    }
-
-    // 릴리즈 모드에서는 실제 광고 ID 사용
-    _logger.d('릴리즈 모드: 실제 전면 광고 ID 사용');
+    // 환경 변수로 실제 광고 ID 강제 사용 여부 확인
+    final forceProduction = dotenv.env['ADMOB_FORCE_PRODUCTION'] == 'true';
+    
+    // 실제 광고 ID 확인
     final envKey = Platform.isAndroid
         ? 'ADMOB_ANDROID_FORWARD_ID'
         : 'ADMOB_IOS_FORWARD_ID';
     final prodId = dotenv.env[envKey];
-    if (prodId == null || prodId.isEmpty) {
-      _logger.e('프로덕션 전면 광고 ID가 설정되지 않음 ($envKey)');
-      throw Exception('프로덕션 전면 광고 ID가 설정되지 않았습니다. .env 파일에서 $envKey를 확인해주세요.');
+    
+    // 디버그 모드에서는 테스트 광고 ID 사용 (강제 프로덕션 모드가 아닐 때만)
+    // HTTP 403 에러 방지를 위해 디버그 모드에서는 기본적으로 테스트 ID 사용
+    if (kDebugMode && !forceProduction) {
+      _logger.w('⚠️ 디버그 모드: 테스트 광고 ID 사용');
+      _logger.w('⚠️ 실제 광고 ID를 사용하려면 릴리즈 빌드로 실행하거나');
+      _logger.w('⚠️ .env 파일에 ADMOB_FORCE_PRODUCTION=true 추가하세요');
+      
+      final testId = Platform.isAndroid
+          ? 'ca-app-pub-3940256099942544/1033173712' // Android 테스트 전면
+          : 'ca-app-pub-3940256099942544/4411468910'; // iOS 테스트 전면
+      _logger.d('${Platform.operatingSystem} 테스트 전면 광고 ID: $testId');
+      print('AdMobService: 테스트 광고 ID 사용 - $testId');
+      return testId;
     }
-    _logger.d('${Platform.operatingSystem} 프로덕션 전면 광고 ID: $prodId');
-    return prodId;
+    
+    // 릴리즈 모드이거나 강제 프로덕션 모드에서는 실제 광고 ID 사용
+    if (prodId != null && prodId.isNotEmpty) {
+      _logger.i('✅ 실제 전면 광고 ID 사용: $prodId');
+      _logger.i('   - kDebugMode: $kDebugMode');
+      _logger.i('   - forceProduction: $forceProduction');
+      print('AdMobService: 실제 광고 ID 사용 - $prodId');
+      return prodId;
+    }
+    
+    // 실제 광고 ID가 없으면 디버그 모드에서만 테스트 ID 사용
+    if (kDebugMode) {
+      _logger.w('⚠️ 실제 광고 ID가 설정되지 않음 ($envKey)');
+      _logger.w('⚠️ 디버그 모드이므로 테스트 광고 ID를 사용합니다');
+      
+      final testId = Platform.isAndroid
+          ? 'ca-app-pub-3940256099942544/1033173712' // Android 테스트 전면
+          : 'ca-app-pub-3940256099942544/4411468910'; // iOS 테스트 전면
+      _logger.d('${Platform.operatingSystem} 테스트 전면 광고 ID: $testId');
+      print('AdMobService: 테스트 광고 ID 사용 - $testId');
+      return testId;
+    }
+
+    // 릴리즈 모드에서 실제 광고 ID가 없으면 에러
+    _logger.e('프로덕션 전면 광고 ID가 설정되지 않음 ($envKey)');
+    throw Exception('프로덕션 전면 광고 ID가 설정되지 않았습니다. .env 파일에서 $envKey를 확인해주세요.');
   }
 
   /// 전면 광고 로드
   Future<InterstitialAd?> loadInterstitialAd() async {
-    _logger.d('전면 광고 로드 시작');
+    _logger.i('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    _logger.i('📺 전면 광고 로드 시작');
+    _logger.i('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
     try {
       final completer = Completer<InterstitialAd?>();
       final adUnitId = getInterstitialAdUnitId();
 
-      _logger.d('광고 로드 시도 - ID: $adUnitId');
-      print('AdMobService: 광고 로드 시도 - ID: $adUnitId');
+      _logger.i('🔍 광고 단위 ID: $adUnitId');
+      _logger.i('🔍 kDebugMode: $kDebugMode');
+      _logger.i('🔍 Platform: ${Platform.operatingSystem}');
+      _logger.i('🔍 AdMob 초기화 상태 확인 중...');
+      
+      // AdMob 초기화 상태 확인
+      try {
+        final initializationStatus = await MobileAds.instance.initialize();
+        _logger.i('🔍 AdMob 초기화 상태: ${initializationStatus.adapterStatuses}');
+        print('AdMob 초기화 상태: ${initializationStatus.adapterStatuses}');
+      } catch (e) {
+        _logger.w('AdMob 초기화 상태 확인 실패: $e');
+      }
+      
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('AdMobService: 광고 로드 시도 시작');
+      print('광고 단위 ID: $adUnitId');
+      print('kDebugMode: $kDebugMode');
+      print('Platform: ${Platform.operatingSystem}');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       InterstitialAd.load(
         adUnitId: adUnitId,
         request: const AdRequest(),
         adLoadCallback: InterstitialAdLoadCallback(
           onAdLoaded: (ad) {
-            _logger.i('전면 광고가 로드되었습니다. ID: ${ad.adUnitId}');
-            print('AdMobService: 전면 광고 로드 성공 - ID: ${ad.adUnitId}');
+            _logger.i('✅✅✅ 전면 광고 로드 성공 ✅✅✅');
+            _logger.i('광고 단위 ID: ${ad.adUnitId}');
+            _logger.i('응답 정보: ${ad.responseInfo}');
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            print('✅✅✅ AdMobService: 전면 광고 로드 성공 ✅✅✅');
+            print('광고 단위 ID: ${ad.adUnitId}');
+            print('응답 정보: ${ad.responseInfo}');
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             if (!completer.isCompleted) {
               completer.complete(ad);
             }
           },
           onAdFailedToLoad: (error) {
-            _logger.e('전면 광고 로드 실패: ${error.message}');
-            _logger.e('전면 광고 로드 실패 코드: ${error.code}');
-            _logger.e('전면 광고 로드 실패 도메인: ${error.domain}');
-            print('AdMobService: 전면 광고 로드 실패 - ${error.message}');
-            print('AdMobService: 전면 광고 로드 실패 코드 - ${error.code}');
+            _logger.e('❌❌❌ 전면 광고 로드 실패 ❌❌❌');
+            _logger.e('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            _logger.e('에러 메시지: ${error.message}');
+            _logger.e('에러 코드: ${error.code}');
+            _logger.e('에러 도메인: ${error.domain}');
+            _logger.e('에러 응답 정보: ${error.responseInfo}');
+            _logger.e('에러 응답 정보 toString: ${error.responseInfo?.toString()}');
+            
+            // 에러 코드별 상세 설명
+            switch (error.code) {
+              case 0:
+                _logger.e('에러 유형: ERROR_CODE_INTERNAL_ERROR - 내부 오류');
+                break;
+              case 1:
+                _logger.e('에러 유형: ERROR_CODE_INVALID_REQUEST - 잘못된 요청');
+                break;
+              case 2:
+                _logger.e('에러 유형: ERROR_CODE_NETWORK_ERROR - 네트워크 오류');
+                break;
+              case 3:
+                _logger.e('에러 유형: ERROR_CODE_NO_FILL - 광고 없음 (가장 흔한 경우)');
+                _logger.e('⚠️ 이 에러는 광고 단위에 광고가 없을 때 발생합니다.');
+                _logger.e('⚠️ 광고 단위가 방금 생성되었거나 승인 대기 중일 수 있습니다.');
+                break;
+              case 8:
+                _logger.e('에러 유형: ERROR_CODE_INVALID_AD_SIZE - 잘못된 광고 크기');
+                break;
+              default:
+                _logger.e('에러 유형: 알 수 없는 에러 코드');
+            }
+            
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            print('❌❌❌ AdMobService: 전면 광고 로드 실패 ❌❌❌');
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            print('에러 메시지: ${error.message}');
+            print('에러 코드: ${error.code}');
+            print('에러 도메인: ${error.domain}');
+            print('에러 응답 정보: ${error.responseInfo}');
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            
             if (!completer.isCompleted) {
               completer.complete(null);
             }
@@ -147,11 +251,19 @@ class AdMobService {
       );
 
       if (interstitialAd != null) {
-        _logger.i('전면 광고 로드 성공');
-        print('AdMobService: 전면 광고 로드 완료');
+        _logger.i('✅ 전면 광고 로드 완료 - 광고 객체 반환');
+        print('AdMobService: 전면 광고 로드 완료 - 광고 객체 반환');
       } else {
-        _logger.w('전면 광고 로드 실패 - null 반환');
-        print('AdMobService: 전면 광고 로드 실패 - null 반환');
+        _logger.w('⚠️ 전면 광고 로드 실패 - null 반환');
+        _logger.w('⚠️ 광고 요청이 AdMob 서버에 전달되지 않았을 수 있습니다');
+        _logger.w('⚠️ 확인사항:');
+        _logger.w('   1. .env 파일에 ADMOB_ANDROID_FORWARD_ID가 설정되어 있는지');
+        _logger.w('   2. 실제 광고 단위 ID가 올바른지');
+        _logger.w('   3. AdMob 콘솔에서 광고 단위가 활성화되어 있는지');
+        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        print('⚠️ AdMobService: 전면 광고 로드 실패 - null 반환');
+        print('⚠️ 광고 요청이 AdMob 서버에 전달되지 않았을 수 있습니다');
+        print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       }
       return interstitialAd;
     } catch (e) {
