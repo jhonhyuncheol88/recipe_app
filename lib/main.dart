@@ -103,6 +103,8 @@ Future<void> _postAppInitialization(Logger logger) async {
     try {
       await AdMobService.instance.initialize();
       logger.i('✅ AdMob 초기화 완료');
+      // 앱 시작 시 전면 광고 1회 노출 시도 (실패 무시)
+      await AdMobService.instance.showInterstitialAd();
     } catch (e) {
       logger.e('⚠️ AdMob 초기화 실패(무시): $e');
     }

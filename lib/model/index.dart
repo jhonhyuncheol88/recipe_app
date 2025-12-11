@@ -4,6 +4,7 @@ export 'unit.dart';
 export 'recipe.dart';
 export 'recipe_ingredient.dart';
 export 'recipe_sauce.dart';
+export 'recipe_price_history.dart';
 export 'ocr_result.dart';
 export 'notification_model.dart';
 export 'tag.dart';

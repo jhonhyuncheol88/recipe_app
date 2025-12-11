@@ -18,6 +18,7 @@ import '../../controller/auth/auth_state.dart';
 import '../../data/index.dart';
 import '../../router/router_helper.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 /// 설정 페이지
 class SettingsPage extends StatefulWidget {
@@ -215,10 +216,24 @@ class _SettingsPageState extends State<SettingsPage> {
     return Column(
       children: [
         SettingsListTile(
+          title: AppStrings.getOnboarding(locale),
+          subtitle: AppStrings.getOnboardingDescription(locale),
+          icon: Icons.auto_awesome,
+          onTap: () {
+            RouterHelper.goToOnboarding(context, force: true);
+          },
+        ),
+        SettingsListTile(
           title: AppStrings.getLanguageSettings(locale),
           subtitle: context.watch<LocaleCubit>().state.displayName,
           icon: Icons.language,
           onTap: _showLanguageDialog,
+        ),
+        SettingsListTile(
+          title: AppStrings.getSendFeedback(locale),
+          subtitle: AppStrings.getSendFeedbackDescription(locale),
+          icon: Icons.mail_outline,
+          onTap: _sendFeedbackEmail,
         ),
         SettingsListTile(
           title: AppStrings.getExportData(locale),
@@ -242,6 +257,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildAppInfo(AppLocale locale) {
     return Column(
       children: [
@@ -709,5 +725,48 @@ class _SettingsPageState extends State<SettingsPage> {
         backgroundColor: AppColors.info,
       ),
     );
+  }
+
+  Future<void> _sendFeedbackEmail() async {
+    final currentLocale = context.read<LocaleCubit>().state;
+
+    final Email email = Email(
+      body: '문의 내용을 작성해주세요.\n\n',
+      subject: '[레시피 앱 문의]',
+      recipients: ['jeon_hyun_cheol@jalam-kr.com'],
+      cc: [],
+      bcc: [],
+      attachmentPaths: [],
+      isHTML: false,
+    );
+
+    try {
+      await FlutterEmailSender.send(email);
+    } catch (error) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('메일 앱을 사용할 수 없습니다.'),
+              content: const Text(
+                '아래 이메일로 문의주시면 빠른 시일 내에 답변드릴게요!\n\njeon_hyun_cheol@jalam-kr.com',
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    AppStrings.getConfirm(currentLocale),
+                    style: AppTextStyles.buttonMedium,
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
   }
 }

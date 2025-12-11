@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:uuid/uuid.dart';
 import '../model/index.dart';
 import '../util/app_locale.dart';
 
@@ -27,7 +28,7 @@ class DatabaseHelper {
 
       final database = await openDatabase(
         path,
-        version: 5, // 버전 업데이트 (AI 레시피 테이블 추가)
+        version: 6, // 버전 업데이트 (레시피 가격 히스토리 테이블 추가)
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       );
@@ -209,6 +210,26 @@ class DatabaseHelper {
         'CREATE INDEX IF NOT EXISTS idx_ai_recipes_cuisine_type ON ai_recipes(cuisine_type)',
       );
 
+      // Recipe Price History 테이블 생성
+      developer.log('Recipe Price History 테이블 생성', name: 'DatabaseHelper');
+      await db.execute('''
+        CREATE TABLE recipe_price_history (
+          id TEXT PRIMARY KEY,
+          recipe_id TEXT NOT NULL,
+          price REAL NOT NULL,
+          recorded_at TEXT NOT NULL,
+          FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
+        )
+      ''');
+
+      // Recipe Price History 인덱스 생성
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_recipe_price_history_recipe_id ON recipe_price_history(recipe_id)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_recipe_price_history_recorded_at ON recipe_price_history(recorded_at)',
+      );
+
       // 기본 단위 데이터 삽입
       developer.log('기본 단위 데이터 삽입', name: 'DatabaseHelper');
       await _insertDefaultUnits(db);
@@ -366,6 +387,79 @@ class DatabaseHelper {
         );
 
         developer.log('AI 레시피 테이블 추가 완료', name: 'DatabaseHelper');
+      }
+
+      if (oldVersion < 6) {
+        // 버전 6: 레시피 가격 히스토리 테이블 추가
+        developer.log('레시피 가격 히스토리 테이블 추가 시작', name: 'DatabaseHelper');
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS recipe_price_history (
+            id TEXT PRIMARY KEY,
+            recipe_id TEXT NOT NULL,
+            price REAL NOT NULL,
+            recorded_at TEXT NOT NULL,
+            FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
+          )
+        ''');
+
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_recipe_price_history_recipe_id ON recipe_price_history(recipe_id)',
+        );
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_recipe_price_history_recorded_at ON recipe_price_history(recorded_at)',
+        );
+
+        developer.log('레시피 가격 히스토리 테이블 추가 완료', name: 'DatabaseHelper');
+
+        // 기존 레시피들의 현재 가격을 히스토리에 마이그레이션
+        developer.log('기존 레시피 가격 히스토리 마이그레이션 시작', name: 'DatabaseHelper');
+        try {
+          final List<Map<String, dynamic>> recipes = await db.query('recipes');
+          final now = DateTime.now().toIso8601String();
+          int migratedCount = 0;
+
+          for (final recipe in recipes) {
+            final recipeId = recipe['id'] as String;
+            final totalCost = (recipe['total_cost'] as num?)?.toDouble();
+
+            if (totalCost != null && totalCost > 0) {
+              // 해당 레시피에 이미 히스토리가 있는지 확인
+              final existingHistory = await db.query(
+                'recipe_price_history',
+                where: 'recipe_id = ?',
+                whereArgs: [recipeId],
+                limit: 1,
+              );
+
+              // 히스토리가 없으면 현재 가격을 초기 히스토리로 추가
+              if (existingHistory.isEmpty) {
+                final historyId = const Uuid().v4();
+                await db.insert(
+                  'recipe_price_history',
+                  {
+                    'id': historyId,
+                    'recipe_id': recipeId,
+                    'price': totalCost,
+                    'recorded_at': now,
+                  },
+                );
+                migratedCount++;
+              }
+            }
+          }
+
+          developer.log(
+            '기존 레시피 가격 히스토리 마이그레이션 완료: $migratedCount개 레시피',
+            name: 'DatabaseHelper',
+          );
+        } catch (e) {
+          developer.log(
+            '기존 레시피 가격 히스토리 마이그레이션 실패: $e',
+            name: 'DatabaseHelper',
+          );
+          // 마이그레이션 실패해도 계속 진행
+        }
       }
     } catch (e) {
       developer.log('데이터베이스 업그레이드 실패: $e', name: 'DatabaseHelper');

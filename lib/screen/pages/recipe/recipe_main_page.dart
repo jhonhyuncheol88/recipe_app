@@ -6,6 +6,7 @@ import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../widget/index.dart';
 import '../../widget/recipe_quick_view_dialog.dart';
+import '../../widget/recipe_price_chart_bottom_sheet.dart';
 import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/recipe/recipe_state.dart';
 import '../../../model/recipe.dart';
@@ -341,6 +342,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
               onLongPress: () => _toggleRecipeSelection(recipe.id),
               onAiAnalysis: () => _startAiAnalysis(recipe), // AI 분석 콜백 추가
               onViewQuick: () => _viewRecipeQuick(recipe), // 레시피 바로보기 콜백 추가
+              onPriceChart: () => _showPriceChart(recipe), // 가격 차트 콜백 추가
             ),
           );
         },
@@ -429,6 +431,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     context.push('/recipe/edit', extra: recipe);
   }
 
+  // ignore: unused_element
   void _viewRecipe(Recipe recipe) {
     context.push('/recipe/detail', extra: recipe);
   }
@@ -538,12 +541,50 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
 
   /// 레시피 바로보기
   void _viewRecipeQuick(Recipe recipe) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => RecipeQuickViewDialog(
-        recipe: recipe,
-        locale: context.read<LocaleCubit>().state,
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final bottomPadding = MediaQuery.of(ctx).viewInsets.bottom;
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: bottomPadding),
+            child: FractionallySizedBox(
+              heightFactor: 0.9,
+              child: RecipeQuickViewContent(
+                recipe: recipe,
+                locale: context.read<LocaleCubit>().state,
+                onClose: () => Navigator.of(ctx).pop(),
+                isBottomSheet: true,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 가격 차트 표시
+  void _showPriceChart(Recipe recipe) {
+    final currentLocale = context.read<LocaleCubit>().state;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return SafeArea(
+          child: FractionallySizedBox(
+            heightFactor: 0.85,
+            child: RecipePriceChartBottomSheet(
+              recipeId: recipe.id,
+              recipeName: recipe.name,
+              currentPrice: recipe.totalCost,
+              locale: currentLocale,
+            ),
+          ),
+        );
+      },
     );
   }
 }

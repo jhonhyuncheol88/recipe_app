@@ -2827,8 +2827,6 @@ class AppStrings {
         return 'Servings';
       case AppLocale.euro:
         return 'Servings';
-      default:
-        return 'Servings';
     }
   }
 
@@ -5578,6 +5576,156 @@ class AppStrings {
     }
   }
 
+  static String getSendFeedback(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '의견 보내기';
+      case AppLocale.japan:
+        return 'フィードバックを送信';
+      case AppLocale.china:
+        return '发送反馈';
+      case AppLocale.usa:
+        return 'Send Feedback';
+      case AppLocale.euro:
+        return 'Send Feedback';
+    }
+  }
+
+  static String getSendFeedbackDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '피드백 메일을 보내주세요';
+      case AppLocale.japan:
+        return 'フィードバックメールを送信してください';
+      case AppLocale.china:
+        return '请发送反馈邮件';
+      case AppLocale.usa:
+        return 'Please send feedback email';
+      case AppLocale.euro:
+        return 'Please send feedback email';
+    }
+  }
+
+  static String getPriceChart(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '가격 추이';
+      case AppLocale.japan:
+        return '価格推移';
+      case AppLocale.china:
+        return '价格趋势';
+      case AppLocale.usa:
+        return 'Price Trend';
+      case AppLocale.euro:
+        return 'Price Trend';
+    }
+  }
+
+  static String getDaily(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '일별';
+      case AppLocale.japan:
+        return '日別';
+      case AppLocale.china:
+        return '每日';
+      case AppLocale.usa:
+        return 'Daily';
+      case AppLocale.euro:
+        return 'Daily';
+    }
+  }
+
+  static String getMonthly(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '월별';
+      case AppLocale.japan:
+        return '月別';
+      case AppLocale.china:
+        return '每月';
+      case AppLocale.usa:
+        return 'Monthly';
+      case AppLocale.euro:
+        return 'Monthly';
+    }
+  }
+
+  static String getYearly(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '연도별';
+      case AppLocale.japan:
+        return '年別';
+      case AppLocale.china:
+        return '每年';
+      case AppLocale.usa:
+        return 'Yearly';
+      case AppLocale.euro:
+        return 'Yearly';
+    }
+  }
+
+  static String getNoPriceData(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '가격 데이터가 없습니다';
+      case AppLocale.japan:
+        return '価格データがありません';
+      case AppLocale.china:
+        return '没有价格数据';
+      case AppLocale.usa:
+        return 'No price data available';
+      case AppLocale.euro:
+        return 'No price data available';
+    }
+  }
+
+  static String getWriteReview(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '리뷰 작성';
+      case AppLocale.japan:
+        return 'レビューを書く';
+      case AppLocale.china:
+        return '写评论';
+      case AppLocale.usa:
+        return 'Write Review';
+      case AppLocale.euro:
+        return 'Write Review';
+    }
+  }
+
+  static String getWriteReviewDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '앱스토어에서 별점과 리뷰를 작성해주세요';
+      case AppLocale.japan:
+        return 'アプリストアで評価とレビューを書いてください';
+      case AppLocale.china:
+        return '请在应用商店中评分和写评论';
+      case AppLocale.usa:
+        return 'Rate and review the app on the store';
+      case AppLocale.euro:
+        return 'Rate and review the app on the store';
+    }
+  }
+
+  static String getReviewError(AppLocale locale, String error) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '리뷰 작성에 실패했습니다: $error';
+      case AppLocale.japan:
+        return 'レビューの作成に失敗しました: $error';
+      case AppLocale.china:
+        return '写评论失败: $error';
+      case AppLocale.usa:
+        return 'Failed to write review: $error';
+      case AppLocale.euro:
+        return 'Failed to write review: $error';
+    }
+  }
+
   static String getLoginRequired(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
@@ -6164,6 +6312,81 @@ class AppStrings {
         return 'Set Target Cost Ratio';
       case AppLocale.euro:
         return 'Set Target Cost Ratio';
+    }
+  }
+
+  static String getOnboardingAdNoticeTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '앱 시작 시 전면 광고가 한 번 표시돼요';
+      case AppLocale.japan:
+        return 'アプリ起動時に全画面広告が1回表示されます';
+      case AppLocale.china:
+        return '启动应用时会显示一次全屏广告';
+      case AppLocale.usa:
+        return 'A full-screen ad appears once on app start';
+      case AppLocale.euro:
+        return 'A full-screen ad appears once on app start';
+    }
+  }
+
+  static String getOnboardingAdNoticeDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '서비스 유지와 무료 제공을 위해 앱을 열 때 전면 광고가 한 번 노출됩니다. 광고가 끝나면 바로 서비스로 이동합니다.';
+      case AppLocale.japan:
+        return 'サービス維持と無料提供のため、アプリ起動時に全画面広告が1回表示されます。終了後すぐにサービスに進みます。';
+      case AppLocale.china:
+        return '为维持服务与免费使用，启动应用时会显示一次全屏广告。广告结束后会立即进入服务。';
+      case AppLocale.usa:
+        return 'To keep the service free, one full-screen ad shows when you open the app. After it finishes, you’ll go straight into the app.';
+      case AppLocale.euro:
+        return 'To keep the service free, one full-screen ad shows when you open the app. After it finishes, you’ll go straight into the app.';
+    }
+  }
+
+  static String getOnboardingAdNoticePoint(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '광고 종료 후 바로 사용 가능합니다.';
+      case AppLocale.japan:
+        return '広告終了後、すぐに利用できます。';
+      case AppLocale.china:
+        return '广告结束后即可立即使用。';
+      case AppLocale.usa:
+        return 'You can use the app right after the ad.';
+      case AppLocale.euro:
+        return 'You can use the app right after the ad.';
+    }
+  }
+
+  static String getOnboardingAdNoticeFooter(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '테스트 중에는 Google 테스트 광고가 표시될 수 있습니다.';
+      case AppLocale.japan:
+        return 'テスト中は Google のテスト広告が表示される場合があります。';
+      case AppLocale.china:
+        return '测试期间可能会显示 Google 测试广告。';
+      case AppLocale.usa:
+        return 'During testing, Google test ads may appear.';
+      case AppLocale.euro:
+        return 'During testing, Google test ads may appear.';
+    }
+  }
+
+  static String getRecipeShareCopied(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피 텍스트를 복사했어요.';
+      case AppLocale.japan:
+        return 'レシピのテキストをコピーしました。';
+      case AppLocale.china:
+        return '已复制食谱文本。';
+      case AppLocale.usa:
+        return 'Recipe text copied.';
+      case AppLocale.euro:
+        return 'Recipe text copied.';
     }
   }
 

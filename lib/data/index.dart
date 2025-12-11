@@ -3,6 +3,7 @@ export 'database_helper.dart';
 export 'ingredient_repository.dart';
 export 'unit_repository.dart';
 export 'recipe_repository.dart';
+export 'recipe_price_history_repository.dart';
 export 'tag_repository.dart';
 export 'sauce_repository.dart';
 export 'ai_recipe_repository.dart';

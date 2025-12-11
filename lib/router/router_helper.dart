@@ -216,8 +216,14 @@ class RouterHelper {
     context.go(AppRouter.home);
   }
 
-  /// 온보딩 페이지로 이동
-  static void goToOnboarding(BuildContext context) {
-    context.push(AppRouter.onboarding);
+  /// 온보딩 페이지로 이동 (force=true면 완료 여부와 관계없이 진입)
+  static void goToOnboarding(
+    BuildContext context, {
+    bool force = false,
+  }) {
+    context.push(
+      AppRouter.onboarding,
+      extra: {'forceOnboarding': force},
+    );
   }
 }

@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import '../model/ingredient.dart';
 
 /// OCR 텍스트를 분석하여 재료명만 추출하고 Ingredient 모델에 맞는 JSON으로 변환하는 서비스
 class OcrGeminiService {
@@ -88,15 +85,12 @@ class OcrGeminiService {
           trimmedLine.startsWith('🔄') ||
           trimmedLine.startsWith('📊') ||
           trimmedLine.startsWith('주의사항') ||
-          trimmedLine.startsWith('이제'))
-        continue;
+          trimmedLine.startsWith('이제')) continue;
 
       // 파이프(|) 구분자가 있는 경우만 처리
       if (trimmedLine.contains('|')) {
-        final parts = trimmedLine
-            .split('|')
-            .map((part) => part.trim())
-            .toList();
+        final parts =
+            trimmedLine.split('|').map((part) => part.trim()).toList();
 
         if (parts.isNotEmpty && parts[0].isNotEmpty) {
           final ingredientInfo = <String, dynamic>{
@@ -202,8 +196,7 @@ class OcrGeminiService {
     // 숫자로 시작하고 특수문자나 단위가 없는 경우 (가격일 가능성 높음)
     if (RegExp(r'^\d').hasMatch(name) &&
         name.replaceAll(',', '').replaceAll(' ', '').length > 3 &&
-        RegExp(r'^[\d,\s]+$').hasMatch(name))
-      return false;
+        RegExp(r'^[\d,\s]+$').hasMatch(name)) return false;
 
     return true;
   }
@@ -303,9 +296,8 @@ $ocrText
             'brand': brandQuality.isNotEmpty ? brandQuality : null,
             'package_info': packageInfo.isNotEmpty ? packageInfo : null,
             'price_info': priceInfo.isNotEmpty ? priceInfo : null, // 가격 정보 추가
-            'additional_info': additionalInfo.isNotEmpty
-                ? additionalInfo
-                : null,
+            'additional_info':
+                additionalInfo.isNotEmpty ? additionalInfo : null,
             'category': category,
             'confidence': confidence,
             'suggested_price': extractedPrice, // 추출된 가격 사용
@@ -592,15 +584,13 @@ $ocrText
         'ocr_text_length': ocrText.length,
         'processing_timestamp': DateTime.now().toIso8601String(),
         'analysis_summary': {
-          'high_confidence_count': ingredientFormats
-              .where((i) => i['confidence'] >= 0.8)
-              .length,
+          'high_confidence_count':
+              ingredientFormats.where((i) => i['confidence'] >= 0.8).length,
           'medium_confidence_count': ingredientFormats
               .where((i) => i['confidence'] >= 0.6 && i['confidence'] < 0.8)
               .length,
-          'low_confidence_count': ingredientFormats
-              .where((i) => i['confidence'] < 0.6)
-              .length,
+          'low_confidence_count':
+              ingredientFormats.where((i) => i['confidence'] < 0.6).length,
         },
       };
 

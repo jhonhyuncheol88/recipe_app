@@ -1,9 +1,14 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:uuid/uuid.dart';
 import '../model/index.dart';
 import 'database_helper.dart';
+import 'recipe_price_history_repository.dart';
 
 class RecipeRepository {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
+  final RecipePriceHistoryRepository _priceHistoryRepository =
+      RecipePriceHistoryRepository();
+  final Uuid _uuid = const Uuid();
 
   // 레시피 추가
   Future<void> insertRecipe(Recipe recipe) async {
@@ -13,6 +18,19 @@ class RecipeRepository {
       await txn.insert(
         'recipes',
         recipe.toJson(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      // 첫 가격 히스토리 기록
+      final priceHistory = RecipePriceHistory(
+        id: _uuid.v4(),
+        recipeId: recipe.id,
+        price: recipe.totalCost,
+        recordedAt: DateTime.now(),
+      );
+      await txn.insert(
+        'recipe_price_history',
+        priceHistory.toJson(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
@@ -82,6 +100,18 @@ class RecipeRepository {
   Future<void> updateRecipe(Recipe recipe) async {
     final db = await _databaseHelper.database;
     await db.transaction((txn) async {
+      // 기존 레시피 가격 조회
+      final List<Map<String, dynamic>> oldRecipeMaps = await txn.query(
+        'recipes',
+        where: 'id = ?',
+        whereArgs: [recipe.id],
+      );
+
+      double? oldPrice;
+      if (oldRecipeMaps.isNotEmpty) {
+        oldPrice = (oldRecipeMaps.first['total_cost'] as num?)?.toDouble();
+      }
+
       // 레시피 업데이트
       await txn.update(
         'recipes',
@@ -89,6 +119,34 @@ class RecipeRepository {
         where: 'id = ?',
         whereArgs: [recipe.id],
       );
+
+      // 가격이 변경되었으면 히스토리 저장
+      if (oldPrice != null && oldPrice != recipe.totalCost) {
+        final priceHistory = RecipePriceHistory(
+          id: _uuid.v4(),
+          recipeId: recipe.id,
+          price: recipe.totalCost,
+          recordedAt: DateTime.now(),
+        );
+        await txn.insert(
+          'recipe_price_history',
+          priceHistory.toJson(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      } else if (oldPrice == null) {
+        // 새로 추가된 레시피인 경우 첫 가격 기록
+        final priceHistory = RecipePriceHistory(
+          id: _uuid.v4(),
+          recipeId: recipe.id,
+          price: recipe.totalCost,
+          recordedAt: DateTime.now(),
+        );
+        await txn.insert(
+          'recipe_price_history',
+          priceHistory.toJson(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
 
       // 기존 재료들 삭제
       await txn.delete(

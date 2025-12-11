@@ -4,7 +4,6 @@ import '../../theme/app_text_styles.dart';
 import '../../util/number_formatter.dart';
 import '../../util/app_locale.dart';
 import '../../util/app_strings.dart';
-import '../../../router/router_helper.dart';
 import '../../model/recipe.dart';
 
 /// 앱에서 사용하는 공통 카드 위젯
@@ -104,9 +103,9 @@ class IngredientCard extends StatelessWidget {
                 child: Text(
                   name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
                 ),
               ),
               if (onEdit != null)
@@ -129,16 +128,16 @@ class IngredientCard extends StatelessWidget {
               Text(
                 NumberFormatter.formatCurrency(price, AppLocale.korea),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.accent,
-                ),
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.accent,
+                    ),
               ),
               const SizedBox(width: 8),
               Text(
                 '${NumberFormatter.formatNumber(amount.toInt(), AppLocale.korea)} $unit',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                      color: AppColors.textSecondary,
+                    ),
               ),
             ],
           ),
@@ -147,9 +146,9 @@ class IngredientCard extends StatelessWidget {
             Text(
               '${NumberFormatter.formatCurrency(unitPrice!, AppLocale.korea)}/$unit',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textLight,
-                fontStyle: FontStyle.italic,
-              ),
+                    color: AppColors.textLight,
+                    fontStyle: FontStyle.italic,
+                  ),
             ),
           ],
           if (expiryDate != null) ...[
@@ -178,9 +177,9 @@ class IngredientCard extends StatelessWidget {
           Text(
             AppStrings.getNoExpiryDate(locale),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textLight,
-              fontWeight: FontWeight.w500,
-            ),
+                  color: AppColors.textLight,
+                  fontWeight: FontWeight.w500,
+                ),
           ),
         ],
       );
@@ -217,9 +216,9 @@ class IngredientCard extends StatelessWidget {
         Text(
           '${AppStrings.getExpiryDate(locale)}: ${expiryDate!.year}-${expiryDate!.month.toString().padLeft(2, '0')}-${expiryDate!.day.toString().padLeft(2, '0')} ($statusText)',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: statusColor,
-            fontWeight: FontWeight.w500,
-          ),
+                color: statusColor,
+                fontWeight: FontWeight.w500,
+              ),
         ),
       ],
     );
@@ -241,6 +240,7 @@ class RecipeCard extends StatelessWidget {
   final VoidCallback? onLongPress;
   final VoidCallback? onAiAnalysis; // AI 분석 콜백 추가
   final VoidCallback? onViewQuick; // 레시피 바로보기 콜백 추가
+  final VoidCallback? onPriceChart; // 가격 차트 콜백 추가
   final Recipe? recipe; // 실제 Recipe 객체 추가
   final AppLocale locale; // 로컬화 지원 추가
 
@@ -259,6 +259,7 @@ class RecipeCard extends StatelessWidget {
     this.onLongPress,
     this.onAiAnalysis, // AI 분석 콜백 선택적 매개변수
     this.onViewQuick, // 레시피 바로보기 콜백 선택적 매개변수
+    this.onPriceChart, // 가격 차트 콜백 선택적 매개변수
     this.recipe, // Recipe 객체 선택적 매개변수
     required this.locale, // 로컬화 지원 필수 매개변수
   });
@@ -278,11 +279,22 @@ class RecipeCard extends StatelessWidget {
                 child: Text(
                   name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
                 ),
               ),
+              if (onPriceChart != null)
+                IconButton(
+                  icon: const Icon(
+                    Icons.show_chart,
+                    color: AppColors.textSecondary,
+                  ),
+                  onPressed: onPriceChart,
+                  tooltip: AppStrings.getPriceChart(locale),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               if (onEdit != null || onDelete != null)
                 PopupMenuButton<String>(
                   icon: const Icon(
@@ -346,6 +358,78 @@ class RecipeCard extends StatelessWidget {
           ],
           const SizedBox(height: 12),
 
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.getIngredientCountSimple(locale),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$ingredientCount개',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      AppStrings.getTotalWeight(locale),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${NumberFormatter.formatNumber(totalWeight.toInt(), AppLocale.korea)} $weightUnit',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      AppStrings.getTotalCost(locale),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      NumberFormatter.formatCurrency(
+                        totalCost,
+                        AppLocale.korea,
+                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accent,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
           // AI 분석 버튼
           if (onAiAnalysis != null)
             SizedBox(
@@ -401,76 +485,6 @@ class RecipeCard extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppStrings.getIngredientCountSimple(locale),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$ingredientCount개',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      AppStrings.getTotalWeight(locale),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${NumberFormatter.formatNumber(totalWeight.toInt(), AppLocale.korea)} $weightUnit',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      AppStrings.getTotalCost(locale),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      NumberFormatter.formatCurrency(
-                        totalCost,
-                        AppLocale.korea,
-                      ),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );

@@ -204,82 +204,107 @@ class _AiMainPageState extends State<AiMainPage> {
 
                 return Column(
                   children: [
-                    SizedBox(
-                      height: 200,
-                      child: SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: ingredients.map((ingredient) {
-                            final isSelected = _selectedIngredients.contains(
-                              ingredient,
-                            );
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        // 아이템 너비 100 + spacing 8을 고려하여 한 줄에 들어갈 수 있는 개수 계산
+                        final itemWidth = 100.0;
+                        final spacing = 8.0;
+                        final crossAxisCount =
+                            ((constraints.maxWidth + spacing) /
+                                    (itemWidth + spacing))
+                                .floor();
 
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  if (isSelected) {
-                                    _selectedIngredients.remove(ingredient);
-                                  } else {
-                                    _selectedIngredients.add(ingredient);
-                                  }
-                                });
-                              },
-                              child: Container(
-                                width: 100,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.accent
-                                      : AppColors.surface,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
+                        // 3줄로 고정하기 위한 높이 계산
+                        // 아이템 높이 50 + mainAxisSpacing 8 + padding 8 (위아래)
+                        final itemHeight = 50.0;
+                        final padding = 8.0;
+                        final fixedHeight =
+                            3 * itemHeight + 2 * spacing + 2 * padding;
+
+                        return SizedBox(
+                          height: fixedHeight,
+                          child: GridView.builder(
+                            padding: const EdgeInsets.all(8),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              childAspectRatio: itemWidth / itemHeight,
+                              crossAxisSpacing: spacing,
+                              mainAxisSpacing: spacing,
+                            ),
+                            itemCount: ingredients.length,
+                            itemBuilder: (context, index) {
+                              final ingredient = ingredients[index];
+                              final isSelected = _selectedIngredients.contains(
+                                ingredient,
+                              );
+
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    if (isSelected) {
+                                      _selectedIngredients.remove(ingredient);
+                                    } else {
+                                      _selectedIngredients.add(ingredient);
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
                                     color: isSelected
                                         ? AppColors.accent
-                                        : AppColors.divider,
-                                    width: 1,
-                                  ),
-                                  boxShadow: isSelected
-                                      ? [
-                                          BoxShadow(
-                                            color: AppColors.accent.withOpacity(
-                                              0.3,
-                                            ),
-                                            blurRadius: 4,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ]
-                                      : null,
-                                ),
-                                child: Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
+                                        : AppColors.surface,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.accent
+                                          : AppColors.divider,
+                                      width: 1,
                                     ),
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        ingredient.name,
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: isSelected
-                                              ? AppColors.buttonText
-                                              : AppColors.textPrimary,
-                                          fontWeight: isSelected
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
+                                    boxShadow: isSelected
+                                        ? [
+                                            BoxShadow(
+                                              color:
+                                                  AppColors.accent.withOpacity(
+                                                0.3,
+                                              ),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          ingredient.name,
+                                          style:
+                                              AppTextStyles.bodySmall.copyWith(
+                                            color: isSelected
+                                                ? AppColors.buttonText
+                                                : AppColors.textPrimary,
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
                                         ),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
+                              );
+                            },
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     if (_selectedIngredients.isNotEmpty)

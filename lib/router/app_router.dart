@@ -29,7 +29,6 @@ import '../screen/pages/onboarding/onboarding_page.dart';
 import '../screen/pages/language_selection_page.dart';
 
 import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
 import '../util/app_locale.dart';
 
 import '../model/ingredient.dart';
@@ -75,6 +74,9 @@ class AppRouter {
                 prefs.getBool('language_selected') ?? false;
             final onboardingCompleted =
                 prefs.getBool('onboarding_completed') ?? false;
+            final forceOnboarding = state.extra is Map<String, dynamic> &&
+                (state.extra as Map<String, dynamic>)['forceOnboarding'] ==
+                    true;
 
             // 언어가 선택되지 않은 경우 언어 선택 페이지로
             if (!languageSelected &&
@@ -92,7 +94,9 @@ class AppRouter {
             }
 
             // 온보딩 완료 후 홈으로
-            if (onboardingCompleted && state.matchedLocation == onboarding) {
+            if (onboardingCompleted &&
+                state.matchedLocation == onboarding &&
+                !forceOnboarding) {
               return home;
             }
 
