@@ -24,36 +24,37 @@ class AppTheme {
 
       // 앱바 테마
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: AppColors.surface, // 베이지톤 배경
+        foregroundColor: AppColors.primary, // 딥 네이비
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         titleTextStyle: AppTextStyles.headline4.copyWith(
-          color: AppColors.textPrimary,
+          color: AppColors.primary, // 딥 네이비
+          fontWeight: FontWeight.w600,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textSecondary),
+        iconTheme: const IconThemeData(color: AppColors.primary, size: 24),
       ),
 
       // 카드 테마
       cardTheme: CardThemeData(
-        color: AppColors.surface,
-        elevation: 4,
+        color: AppColors.surface, // 흰색 카드 배경
+        elevation: 0, // Flat 디자인
         shadowColor: AppColors.shadow,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       ),
 
-      // 버튼 테마
+      // 버튼 테마 (Flat 디자인)
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.buttonPrimary,
-          foregroundColor: AppColors.buttonText,
-          elevation: 2,
-          shadowColor: AppColors.shadow,
+          backgroundColor: AppColors.buttonPrimary, // 딥 네이비
+          foregroundColor: AppColors.buttonText, // 흰색
+          elevation: 0, // Flat 디자인
+          shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
 
@@ -61,7 +62,8 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.accent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
 
@@ -78,28 +80,28 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.surface,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.divider),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.divider),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.accent, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 12,
+          vertical: 14,
         ),
         hintStyle: AppTextStyles.bodyMedium.copyWith(
           color: AppColors.textLight,
@@ -112,11 +114,11 @@ class AppTheme {
           if (states.contains(MaterialState.selected)) {
             return AppColors.accent;
           }
-          return AppColors.textLight;
+          return Colors.white;
         }),
         trackColor: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
-            return AppColors.accent.withOpacity(0.3);
+            return AppColors.accent.withAlpha(128); // withAlpha 사용
           }
           return AppColors.divider;
         }),
@@ -125,9 +127,9 @@ class AppTheme {
       // 다이얼로그 테마
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
-        elevation: 8,
-        shadowColor: AppColors.shadowDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 0, // Flat 디자인
+        shadowColor: AppColors.shadow,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         titleTextStyle: AppTextStyles.headline4.copyWith(
           color: AppColors.textPrimary,
         ),
@@ -142,25 +144,26 @@ class AppTheme {
         contentTextStyle: AppTextStyles.bodyMedium.copyWith(
           color: AppColors.textPrimary,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         behavior: SnackBarBehavior.floating,
+        elevation: 0, // Flat 디자인
       ),
 
       // 바텀 네비게이션 바 테마
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.accent,
+        selectedItemColor: AppColors.accent, // 번트 오렌지
         unselectedItemColor: AppColors.textSecondary,
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 0, // Flat 디자인
       ),
 
       // 리스트 타일 테마
       listTileTheme: ListTileThemeData(
         tileColor: AppColors.surface,
         selectedTileColor: AppColors.primaryLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
 
       // 구분선 테마
@@ -170,13 +173,13 @@ class AppTheme {
         space: 1,
       ),
 
-      // 플로팅 액션 버튼 테마
+      // 플로팅 액션 버튼 테마 (Flat 디자인)
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.buttonPrimary,
-        foregroundColor: AppColors.buttonText,
-        elevation: 4,
+        backgroundColor: AppColors.buttonPrimary, // 딥 네이비
+        foregroundColor: AppColors.buttonText, // 흰색
+        elevation: 0, // Flat 디자인
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
+          borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
       ),
 

@@ -122,24 +122,26 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       ),
       body: BlocBuilder<RecipeCubit, RecipeState>(
         builder: (context, recipeState) {
-          final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-          final availableHeight =
-              MediaQuery.of(context).size.height - keyboardHeight;
-
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: availableHeight - 200, // AppBar와 기타 요소들의 높이 고려
-              ),
-              child: Column(
-                children: [
-                  if (_isSelectionMode) _buildSelectionHeader(),
-                  _buildSearchSection(),
-                  _buildFilterSection(),
-                  _buildRecipeList(recipeState),
-                ],
-              ),
-            ),
+          return Column(
+            children: [
+              // AppBar 아래 바깥쪽 구분선
+              const Divider(height: 1, thickness: 1, color: AppColors.divider),
+              if (_isSelectionMode) ...[
+                _buildSelectionHeader(),
+                // Selection Header 아래 안쪽 구분선
+                const Divider(
+                    height: 1, thickness: 1, color: AppColors.divider),
+              ],
+              _buildSearchSection(),
+              // Search Section 아래 안쪽 구분선
+              const Divider(
+                  height: 1, thickness: 1, color: AppColors.dividerLight),
+              _buildFilterSection(),
+              // Filter Section 아래 안쪽 구분선
+              const Divider(
+                  height: 1, thickness: 1, color: AppColors.dividerLight),
+              Expanded(child: _buildRecipeList(recipeState)),
+            ],
           );
         },
       ),
@@ -187,7 +189,8 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
                   });
                   _applyFilter(filter);
                 },
-                selectedColor: AppColors.accent.withOpacity(0.2),
+                selectedColor:
+                    AppColors.accent.withAlpha(51), // withAlpha 사용 (약 20% 투명도)
                 checkmarkColor: AppColors.accent,
                 labelStyle: AppTextStyles.bodySmall.copyWith(
                   color:
@@ -313,10 +316,10 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     return Container(
       constraints: BoxConstraints(
         minHeight: 100,
-        maxHeight: MediaQuery.of(context).size.height * 0.6, // 화면 높이의 60%로 제한
       ),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(
+            16, 16, 16, 80), // 하단 패딩을 80으로 증가 (FAB 공간 확보)
         shrinkWrap: true,
         itemCount: recipes.length,
         itemBuilder: (context, index) {
@@ -365,7 +368,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     return FloatingActionButton.extended(
       heroTag: 'recipe_add_button',
       onPressed: _addRecipe,
-      backgroundColor: AppColors.buttonPrimary,
+      backgroundColor: AppColors.textLight, // 더 연한 회색
       foregroundColor: AppColors.buttonText,
       icon: const Icon(Icons.add),
       label: Text(

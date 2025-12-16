@@ -192,7 +192,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
           border: Border.all(color: AppColors.divider, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadow.withOpacity(0.1),
+              color: AppColors.shadow.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -205,7 +205,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.accent.withOpacity(0.1),
+                color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
@@ -226,13 +226,13 @@ class _AiRecipePageState extends State<AiRecipePage> {
                         ),
                         if (aiRecipe.cuisineType != null) ...[
                           const SizedBox(height: 4),
-                          Text(
-                            aiRecipe.cuisineType!,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.accent,
-                              fontWeight: FontWeight.w500,
-                            ),
+                        Text(
+                          aiRecipe.cuisineType!,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w600, // 굵기 증가로 가독성 향상
                           ),
+                        ),
                         ],
                       ],
                     ),
@@ -279,7 +279,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
                   Text(
                     aiRecipe.description,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                      color: AppColors.textPrimary, // textSecondary 대신 textPrimary로 변경하여 가독성 향상
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -320,10 +320,11 @@ class _AiRecipePageState extends State<AiRecipePage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.accent.withOpacity(0.1),
+                            color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.accent.withOpacity(0.3),
+                              color: AppColors.accent.withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+                              width: 1,
                             ),
                           ),
                           child: Text(
@@ -331,6 +332,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.accent,
                               fontSize: 12,
+                              fontWeight: FontWeight.w600, // 텍스트 굵게하여 가독성 향상
                             ),
                           ),
                         );
@@ -361,10 +363,11 @@ class _AiRecipePageState extends State<AiRecipePage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.success.withOpacity(0.1),
+                            color: AppColors.success.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.success.withOpacity(0.3),
+                              color: AppColors.success.withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+                              width: 1,
                             ),
                           ),
                           child: Text(
@@ -372,6 +375,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.success,
                               fontSize: 12,
+                              fontWeight: FontWeight.w600, // 텍스트 굵게하여 가독성 향상
                             ),
                           ),
                         ),
@@ -390,9 +394,12 @@ class _AiRecipePageState extends State<AiRecipePage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(
+          color: color.withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -401,7 +408,11 @@ class _AiRecipePageState extends State<AiRecipePage> {
           const SizedBox(width: 4),
           Text(
             text,
-            style: AppTextStyles.bodySmall.copyWith(color: color, fontSize: 12),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w600, // 텍스트 굵게하여 가독성 향상
+            ),
           ),
         ],
       ),

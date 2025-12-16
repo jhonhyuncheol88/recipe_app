@@ -73,7 +73,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
               ),
             ),
             style: TextButton.styleFrom(
-              backgroundColor: AppColors.primary.withOpacity(0.1),
+              backgroundColor: AppColors.primary.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -251,7 +251,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
     return FloatingActionButton.extended(
       heroTag: 'sauce_add_button',
       onPressed: _createSauce,
-      backgroundColor: AppColors.buttonPrimary,
+      backgroundColor: AppColors.textLight, // 더 연한 회색
       foregroundColor: AppColors.buttonText,
       icon: const Icon(Icons.add),
       label: Text(AppStrings.getAddSauceButton(currentLocale)),
@@ -435,7 +435,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
     return FloatingActionButton.extended(
       heroTag: 'ingredient_add_button',
       onPressed: _addIngredient,
-      backgroundColor: AppColors.buttonPrimary,
+      backgroundColor: AppColors.textLight, // 더 연한 회색
       foregroundColor: AppColors.buttonText,
       icon: const Icon(Icons.add),
       label: Text(

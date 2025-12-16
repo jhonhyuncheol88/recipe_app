@@ -85,15 +85,8 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.primary,
-              AppColors.background,
-            ],
-          ),
+        decoration: const BoxDecoration(
+          color: AppColors.background, // Solid Color (깨끗한 화이트)
         ),
         child: Center(
           child: Padding(

@@ -115,7 +115,7 @@ class AppTextStyles {
   static TextStyle get priceText => GoogleFonts.nunito(
     fontSize: 20,
     fontWeight: FontWeight.w700,
-    color: AppColors.accent,
+    color: AppColors.costEmphasized, // 번트 오렌지
     height: 1.2,
   );
 
@@ -158,5 +158,52 @@ class AppTextStyles {
     fontWeight: FontWeight.w500,
     color: AppColors.accent,
     height: 1.2,
+  );
+
+  // 숫자 텍스트 스타일 (짙은 검은색 - 중요)
+  static TextStyle get numberLarge => GoogleFonts.nunito(
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    color: AppColors.numberPrimary,
+    height: 1.2,
+  );
+
+  static TextStyle get numberMedium => GoogleFonts.nunito(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    color: AppColors.numberPrimary,
+    height: 1.3,
+  );
+
+  static TextStyle get numberSmall => GoogleFonts.nunito(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    color: AppColors.numberPrimary,
+    height: 1.4,
+  );
+
+  // 강조 숫자 (가격, 중요 수치 등)
+  static TextStyle get numberAccent => GoogleFonts.nunito(
+    fontSize: 20,
+    fontWeight: FontWeight.w800,
+    color: AppColors.numberAccent,
+    height: 1.2,
+  );
+
+  // 가격 텍스트 (짙은 검은색)
+  static TextStyle get priceTextImproved => GoogleFonts.nunito(
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    color: AppColors.numberAccent,
+    height: 1.2,
+  );
+
+  // Cost 강조 스타일 (번트 오렌지, 크고 굵게)
+  static TextStyle get costEmphasized => GoogleFonts.nunito(
+    fontSize: 28,
+    fontWeight: FontWeight.w900,
+    color: AppColors.costEmphasized,
+    height: 1.2,
+    letterSpacing: -0.5,
   );
 }

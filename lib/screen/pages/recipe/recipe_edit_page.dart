@@ -668,10 +668,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                         cost,
                                         currentLocale,
                                       ),
-                                      style: AppTextStyles.bodyMedium.copyWith(
-                                        color: AppColors.accent,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                      style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                                     ),
                                   ],
                                 ),
@@ -944,11 +941,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                               cost,
                                               currentLocale,
                                             ),
-                                            style: AppTextStyles.bodyMedium
-                                                .copyWith(
-                                                  color: AppColors.accent,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                            style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                                           ),
                                         ],
                                       );

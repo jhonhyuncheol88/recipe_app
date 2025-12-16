@@ -296,9 +296,10 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.accent.withOpacity(0.1),
+        color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.accent.withOpacity(0.3)),
+        border: Border.all(
+            color: AppColors.accent.withAlpha(77)), // withAlpha 사용 (약 30% 투명도)
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,18 +319,15 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
             children: [
               Text(
                 NumberFormatter.formatCurrency(totalPrice, widget.locale),
-                style: AppTextStyles.headline3.copyWith(
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 24,
-                ),
+                style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
               ),
               if (_multiplier != 1.0)
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.accent.withOpacity(0.2),
+                    color: AppColors.accent
+                        .withAlpha(51), // withAlpha 사용 (약 20% 투명도)
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -498,10 +496,37 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
     await Clipboard.setData(ClipboardData(text: text));
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
+
+    // 바텀시트 내부에서는 부모 Scaffold의 context를 사용
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.showSnackBar(
       SnackBar(
-        content: Text(AppStrings.getRecipeShareCopied(widget.locale)),
+        content: Row(
+          children: [
+            const Icon(
+              Icons.check_circle,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                AppStrings.getRecipeShareCopied(widget.locale),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
         backgroundColor: AppColors.success,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }

@@ -129,15 +129,7 @@ class _OnboardingPageState extends State<OnboardingPage>
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.primaryLight,
-              AppColors.primary,
-              AppColors.primaryDark,
-            ],
-          ),
+          color: AppColors.background, // Solid Color (깨끗한 화이트)
         ),
         child: SafeArea(
           child: Column(

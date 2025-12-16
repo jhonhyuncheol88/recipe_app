@@ -93,23 +93,19 @@ class AppButton extends StatelessWidget {
   Color _getTextColor() {
     switch (type) {
       case AppButtonType.primary:
+        return AppColors.buttonText; // 흰색
       case AppButtonType.secondary:
+        return AppColors.buttonTextDark; // 검은색
       case AppButtonType.success:
       case AppButtonType.warning:
       case AppButtonType.error:
-        return AppColors.buttonText;
+        return AppColors.buttonText; // 흰색
     }
   }
 
   double _getElevation() {
-    switch (size) {
-      case AppButtonSize.small:
-        return 1;
-      case AppButtonSize.medium:
-        return 2;
-      case AppButtonSize.large:
-        return 3;
-    }
+    // Flat 디자인: 모든 elevation을 0으로 설정
+    return 0;
   }
 
   double _getBorderRadius() {

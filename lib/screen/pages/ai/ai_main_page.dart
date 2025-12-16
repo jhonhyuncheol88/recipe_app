@@ -150,7 +150,7 @@ class _AiMainPageState extends State<AiMainPage> {
           Text(
             AppStrings.getAiRecipeGenerationDescription(locale),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: AppColors.textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
             ),
           ),
         ],
@@ -265,9 +265,7 @@ class _AiMainPageState extends State<AiMainPage> {
                                         ? [
                                             BoxShadow(
                                               color:
-                                                  AppColors.accent.withOpacity(
-                                                0.3,
-                                              ),
+                                                AppColors.accent.withAlpha(77), // withAlpha 사용 (약 30% 투명도)
                                               blurRadius: 4,
                                               offset: const Offset(0, 2),
                                             ),
@@ -311,10 +309,11 @@ class _AiMainPageState extends State<AiMainPage> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.accent.withOpacity(0.1),
+                          color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.accent.withOpacity(0.3),
+                            color: AppColors.accent.withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+                            width: 1,
                           ),
                         ),
                         child: Row(
@@ -379,7 +378,7 @@ class _AiMainPageState extends State<AiMainPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.warning.withOpacity(0.1),
+                color: AppColors.warning.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.warning, width: 1),
               ),
@@ -404,7 +403,7 @@ class _AiMainPageState extends State<AiMainPage> {
                 Text(
                   '${AppStrings.getSelectedIngredients(locale)}: ${_selectedIngredients.map((e) => e.name).join(', ')}',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: AppColors.textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -729,7 +728,7 @@ class _AiMainPageState extends State<AiMainPage> {
           Text(
             AppStrings.getCreateDifferentStyleRecipesDescription(locale),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: AppColors.textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
             ),
           ),
           const SizedBox(height: 16),
@@ -879,7 +878,7 @@ class _AiMainPageState extends State<AiMainPage> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.accent.withOpacity(0.1),
+        color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.accent, width: 1),
       ),
@@ -903,7 +902,7 @@ class _AiMainPageState extends State<AiMainPage> {
           Text(
             AppStrings.getViewSavedAiRecipesDescription(locale),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: AppColors.textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
             ),
           ),
           const SizedBox(height: 16),

@@ -31,12 +31,8 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.primaryLight, AppColors.background],
-          ),
+        decoration: const BoxDecoration(
+          color: AppColors.background, // Solid Color (깨끗한 화이트)
         ),
         child: SafeArea(
           child: Center(

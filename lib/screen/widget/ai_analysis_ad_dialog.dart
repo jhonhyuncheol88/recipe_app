@@ -62,9 +62,9 @@ class AiAnalysisAdDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withOpacity(0.1),
+                  color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.accent.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.accent.withAlpha(77)), // withAlpha 사용 (약 30% 투명도)
                 ),
                 child: Row(
                   children: [

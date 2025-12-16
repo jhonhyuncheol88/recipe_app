@@ -34,15 +34,21 @@ class AppCard extends StatelessWidget {
     Widget cardWidget = Container(
       margin: margin ?? const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.surface,
+        color: backgroundColor ?? AppColors.surface, // 흰색 카드 배경
         borderRadius: borderRadius ?? BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: elevation ?? 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: AppColors.divider, // 카드 테두리 추가 (배경과 구분)
+          width: 1,
+        ),
+        boxShadow: elevation != null && elevation! > 0
+            ? [
+                BoxShadow(
+                  color: AppColors.shadow,
+                  blurRadius: elevation!,
+                  offset: const Offset(0, 1), // Flat 디자인: 최소 그림자
+                ),
+              ]
+            : null, // Flat 디자인: elevation이 0이면 그림자 없음
       ),
       child: Padding(
         padding: padding ?? const EdgeInsets.all(16),
@@ -269,7 +275,8 @@ class RecipeCard extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       isClickable: true,
-      backgroundColor: isSelected ? AppColors.primaryLight : null,
+      backgroundColor: isSelected ? AppColors.primaryLight.withAlpha(51) : AppColors.surface, // 흰색 카드 배경
+      elevation: 0, // Flat 디자인
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -284,6 +291,29 @@ class RecipeCard extends StatelessWidget {
                       ),
                 ),
               ),
+              // AI 분석 버튼 (작은 텍스트 버튼, 오렌지색)
+              if (onAiAnalysis != null)
+                TextButton.icon(
+                  onPressed: onAiAnalysis,
+                  icon: const Icon(
+                    Icons.auto_awesome,
+                    size: 14,
+                    color: AppColors.accent,
+                  ),
+                  label: Text(
+                    AppStrings.getAnalyzeWithAi(locale),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
               if (onPriceChart != null)
                 IconButton(
                   icon: const Icon(
@@ -418,44 +448,13 @@ class RecipeCard extends StatelessWidget {
                         totalCost,
                         AppLocale.korea,
                       ),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.accent,
-                          ),
+                      style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-
-          // AI 분석 버튼
-          if (onAiAnalysis != null)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: onAiAnalysis,
-                icon: const Icon(Icons.analytics, size: 20),
-                label: Text(
-                  AppStrings.getAnalyzeWithAi(locale),
-                  style: AppTextStyles.buttonMedium.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: AppColors.buttonText,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
           const SizedBox(height: 12),
 
           // 레시피 바로보기 버튼
