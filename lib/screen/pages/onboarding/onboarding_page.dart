@@ -74,10 +74,7 @@ class _OnboardingPageState extends State<OnboardingPage>
       setState(() {
         _currentPage++;
       });
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOutCubic,
-      );
+      _pageController.jumpToPage(_currentPage);
       _resetAndStartAnimation();
     }
   }
@@ -87,10 +84,7 @@ class _OnboardingPageState extends State<OnboardingPage>
       setState(() {
         _currentPage--;
       });
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOutCubic,
-      );
+      _pageController.jumpToPage(_currentPage);
       _resetAndStartAnimation();
     }
   }
@@ -99,11 +93,7 @@ class _OnboardingPageState extends State<OnboardingPage>
     setState(() {
       _currentPage = page;
     });
-    _pageController.animateToPage(
-      page,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOutCubic,
-    );
+    _pageController.jumpToPage(page);
     _resetAndStartAnimation();
   }
 

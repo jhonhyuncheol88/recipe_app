@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../theme/app_colors.dart';
@@ -12,7 +13,9 @@ import '../../../controller/recipe/recipe_state.dart';
 import '../../../model/recipe.dart';
 import '../../../model/tag.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../util/app_locale.dart';
 import '../../../router/router_helper.dart';
+import '../../../data/ingredient_repository.dart';
 
 /// 레시피 메인 페이지
 class RecipeMainPage extends StatefulWidget {
@@ -25,21 +28,22 @@ class RecipeMainPage extends StatefulWidget {
 class _RecipeMainPageState extends State<RecipeMainPage> {
   bool _isSelectionMode = false;
   final Set<String> _selectedRecipes = {};
-  String _selectedFilter = '전체';
+  String? _selectedFilter;
   final TextEditingController _searchController = TextEditingController();
 
   // 필터 옵션: 기본 태그(`tag.dart`) 기반으로 구성
-  List<String> get _filterOptions => [
-        '전체',
-        ...DefaultTags.recipeTagsFor(
-          context.read<LocaleCubit>().state,
-        ).map((t) => t.name),
-      ];
+  List<String> get _filterOptions {
+    final currentLocale = context.read<LocaleCubit>().state;
+    final allText = AppStrings.getAll(currentLocale);
+    return [
+      allText,
+      ...DefaultTags.recipeTagsFor(currentLocale).map((t) => t.name),
+    ];
+  }
 
   @override
   void initState() {
     super.initState();
-    print('RecipeMainPage initState 호출');
     // Tab navigation에서 탭 변경 시 loadRecipes()를 호출하므로 여기서는 호출하지 않음
   }
 
@@ -53,10 +57,15 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   Map<String, dynamic> _calculateRecipeInfo(Recipe recipe) {
     final ingredientCount = recipe.ingredients.length;
     double totalWeightG = 0.0;
+    final currentLocale = context.read<LocaleCubit>().state;
 
     // 모든 재료의 투입량을 g 단위(기본 단위)로 환산해서 합산
     for (final ingredient in recipe.ingredients) {
-      switch (ingredient.unitId) {
+      final unitId = ingredient.unitId;
+      final unitPiece = AppStrings.getUnitPiece(currentLocale);
+      final unitSlice = AppStrings.getUnitSlice(currentLocale);
+
+      switch (unitId) {
         case 'g':
           totalWeightG += ingredient.amount;
           break;
@@ -69,12 +78,17 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
         case 'L':
           totalWeightG += ingredient.amount * 1000;
           break;
-        case '개':
-        case '조각':
-          totalWeightG += ingredient.amount * 50; // 개당 50g 가정
-          break;
         default:
-          totalWeightG += ingredient.amount;
+          // 단위 ID가 언어팩의 "개" 또는 "조각"과 일치하는지 확인
+          if (unitId == unitPiece ||
+              unitId == unitSlice ||
+              unitId == '개' ||
+              unitId == '조각') {
+            totalWeightG += ingredient.amount * 50; // 개당 50g 가정
+          } else {
+            totalWeightG += ingredient.amount;
+          }
+          break;
       }
     }
 
@@ -88,6 +102,8 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    // 초기 필터 설정
+    _selectedFilter ??= AppStrings.getAll(currentLocale);
     return Scaffold(
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
@@ -168,9 +184,6 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
 
   Widget _buildFilterSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
-    final Map<String, String> localized = {
-      '전체': AppStrings.getAll(currentLocale),
-    };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
@@ -181,13 +194,13 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
-                label: Text(localized[filter] ?? filter),
+                label: Text(filter),
                 selected: isSelected,
                 onSelected: (selected) {
                   setState(() {
                     _selectedFilter = filter;
                   });
-                  _applyFilter(filter);
+                  _applyFilter(filter, currentLocale);
                 },
                 selectedColor:
                     AppColors.accent.withAlpha(51), // withAlpha 사용 (약 20% 투명도)
@@ -346,6 +359,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
               onAiAnalysis: () => _startAiAnalysis(recipe), // AI 분석 콜백 추가
               onViewQuick: () => _viewRecipeQuick(recipe), // 레시피 바로보기 콜백 추가
               onPriceChart: () => _showPriceChart(recipe), // 가격 차트 콜백 추가
+              onShare: () => _shareRecipe(recipe), // 공유 콜백 추가
             ),
           );
         },
@@ -378,13 +392,13 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     );
   }
 
-  void _applyFilter(String filter) {
-    if (filter == '전체') {
+  void _applyFilter(String filter, AppLocale locale) {
+    final allText = AppStrings.getAll(locale);
+    if (filter == allText) {
       context.read<RecipeCubit>().loadRecipes();
     } else {
       // 기본 태그 목록에서 이름으로 id 찾기 후 Cubit에 위임
-      final tag = DefaultTags.recipeTagsFor(context.read<LocaleCubit>().state)
-          .firstWhere(
+      final tag = DefaultTags.recipeTagsFor(locale).firstWhere(
         (t) => t.name == filter,
         orElse: () => Tag(
           id: '',
@@ -463,7 +477,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        '${AppStrings.getDelete(currentLocale)} 중 오류가 발생했습니다: $e',
+                        AppStrings.getDeleteError(currentLocale, e.toString()),
                       ),
                       backgroundColor: AppColors.error,
                     ),
@@ -535,9 +549,6 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
 
   /// AI 분석 시작
   void _startAiAnalysis(Recipe recipe) {
-    print('_startAiAnalysis 호출됨 - Recipe: ${recipe.name}');
-    print('_startAiAnalysis 호출됨 - Recipe ID: ${recipe.id}');
-
     // AI 판매 분석 페이지로 이동 (RouterHelper 사용)
     RouterHelper.goToAiSalesAnalysis(context, recipe);
   }
@@ -589,5 +600,45 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
         );
       },
     );
+  }
+
+  /// 레시피 공유
+  void _shareRecipe(Recipe recipe) async {
+    final currentLocale = context.read<LocaleCubit>().state;
+    final buffer = StringBuffer();
+
+    buffer.writeln(recipe.name);
+    if (recipe.description.isNotEmpty) {
+      buffer.writeln(recipe.description);
+    }
+    buffer.writeln('--- ${AppStrings.getIngredients(currentLocale)} ---');
+
+    // 재료 정보 추가
+    final ingredientRepo = IngredientRepository();
+    for (final ingredient in recipe.ingredients) {
+      try {
+        final ing =
+            await ingredientRepo.getIngredientById(ingredient.ingredientId);
+        final name = ing?.name ?? ingredient.ingredientId;
+        buffer.writeln('- $name: ${ingredient.amount} ${ingredient.unitId}');
+      } catch (e) {
+        buffer.writeln(
+            '- ${ingredient.ingredientId}: ${ingredient.amount} ${ingredient.unitId}');
+      }
+    }
+
+    // 클립보드에 복사
+    await Clipboard.setData(ClipboardData(text: buffer.toString()));
+
+    // 스낵 메시지 표시
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.getCopied(currentLocale)),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }

@@ -663,12 +663,17 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                         color: AppColors.textSecondary,
                                       ),
                                     ),
-                                    Text(
-                                      NumberFormatter.formatCurrency(
-                                        cost,
-                                        currentLocale,
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        NumberFormatter.formatCurrency(
+                                          cost,
+                                          currentLocale,
+                                        ),
+                                        style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
+                                        textAlign: TextAlign.left,
                                       ),
-                                      style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                                     ),
                                   ],
                                 ),
@@ -936,12 +941,17 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                                       AppColors.textSecondary,
                                                 ),
                                           ),
-                                          Text(
-                                            NumberFormatter.formatCurrency(
-                                              cost,
-                                              currentLocale,
+                                          FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              NumberFormatter.formatCurrency(
+                                                cost,
+                                                currentLocale,
+                                              ),
+                                              style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
+                                              textAlign: TextAlign.left,
                                             ),
-                                            style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                                           ),
                                         ],
                                       );

@@ -180,6 +180,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                     },
                     backgroundColor: AppColors.surface,
                     selectedColor: AppColors.primary,
+                    checkmarkColor: AppColors.buttonText,
                     labelStyle: AppTextStyles.bodySmall.copyWith(
                       color: isSelected
                           ? AppColors.buttonText

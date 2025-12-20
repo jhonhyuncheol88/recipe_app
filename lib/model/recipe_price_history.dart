@@ -49,3 +49,4 @@ class RecipePriceHistory extends Equatable {
   List<Object?> get props => [id, recipeId, price, recordedAt];
 }
 
+

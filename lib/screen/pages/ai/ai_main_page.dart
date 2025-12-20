@@ -50,16 +50,16 @@ class _AiMainPageState extends State<AiMainPage> {
         lineLength: 120,
         colors: true,
         printEmojis: true,
-        printTime: true,
       ),
     );
 
     // AdCubit 초기화
     _adCubit = AdCubit();
 
-    // AdMobService에 AdCubit 설정
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<IngredientCubit>().loadIngredients();
+    // AdMobService에 AdCubit 설정 및 재료 데이터 로드
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 재료 데이터를 await으로 로드하여 완료 보장
+      await context.read<IngredientCubit>().loadIngredients();
       // AdMobService에 AdCubit 설정
       AdMobService.instance.setAdCubit(_adCubit);
     });
@@ -150,7 +150,8 @@ class _AiMainPageState extends State<AiMainPage> {
           Text(
             AppStrings.getAiRecipeGenerationDescription(locale),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
+              color: AppColors
+                  .textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
             ),
           ),
         ],
@@ -264,8 +265,8 @@ class _AiMainPageState extends State<AiMainPage> {
                                     boxShadow: isSelected
                                         ? [
                                             BoxShadow(
-                                              color:
-                                                AppColors.accent.withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+                                              color: AppColors.accent.withAlpha(
+                                                  77), // withAlpha 사용 (약 30% 투명도)
                                               blurRadius: 4,
                                               offset: const Offset(0, 2),
                                             ),
@@ -309,10 +310,12 @@ class _AiMainPageState extends State<AiMainPage> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+                          color: AppColors.accent
+                              .withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.accent.withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+                            color: AppColors.accent
+                                .withAlpha(77), // withAlpha 사용 (약 30% 투명도)
                             width: 1,
                           ),
                         ),
@@ -378,7 +381,8 @@ class _AiMainPageState extends State<AiMainPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.warning.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+                color:
+                    AppColors.warning.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.warning, width: 1),
               ),
@@ -403,7 +407,8 @@ class _AiMainPageState extends State<AiMainPage> {
                 Text(
                   '${AppStrings.getSelectedIngredients(locale)}: ${_selectedIngredients.map((e) => e.name).join(', ')}',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
+                    color: AppColors
+                        .textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -728,7 +733,8 @@ class _AiMainPageState extends State<AiMainPage> {
           Text(
             AppStrings.getCreateDifferentStyleRecipesDescription(locale),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
+              color: AppColors
+                  .textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
             ),
           ),
           const SizedBox(height: 16),
@@ -902,7 +908,8 @@ class _AiMainPageState extends State<AiMainPage> {
           Text(
             AppStrings.getViewSavedAiRecipesDescription(locale),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
+              color: AppColors
+                  .textPrimary, // textSecondary에서 textPrimary로 변경하여 가독성 향상
             ),
           ),
           const SizedBox(height: 16),
@@ -1226,7 +1233,9 @@ class _AiMainPageState extends State<AiMainPage> {
 
       // 요리 스타일이 있지만 태그가 없는 경우 기본 태그 추가
       if (cuisineType.isNotEmpty && tags.isEmpty) {
-        final defaultTags = _getDefaultTagsForCuisine(cuisineType, locale);
+        final currentLocale = context.read<LocaleCubit>().state;
+        final defaultTags =
+            _getDefaultTagsForCuisine(cuisineType, currentLocale);
         recipe['tags'] = defaultTags;
       }
 
@@ -1264,7 +1273,7 @@ class _AiMainPageState extends State<AiMainPage> {
 
     // 매칭되는 태그가 없으면 퓨전 태그 추가
     if (defaultTags.isEmpty) {
-      defaultTags.add('퓨전');
+      defaultTags.add(AppStrings.getFusion(locale));
     }
 
     return defaultTags;
@@ -1277,6 +1286,8 @@ class _AiMainPageState extends State<AiMainPage> {
 
   void _addAllMissingIngredients() {
     if (_missingIngredients.isEmpty) return;
+
+    final currentLocale = context.read<LocaleCubit>().state;
 
     try {
       // 누락된 재료들을 일괄 추가 페이지로 전달
@@ -1296,7 +1307,7 @@ class _AiMainPageState extends State<AiMainPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${AppStrings.getBulkIngredientAdditionError(AppLocale.korea)}: $e',
+            '${AppStrings.getBulkIngredientAdditionError(currentLocale)}: $e',
           ),
           backgroundColor: AppColors.error,
         ),

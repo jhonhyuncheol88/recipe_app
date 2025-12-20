@@ -260,52 +260,54 @@ class AppRouter {
         ],
 
         // 에러 페이지
-        errorBuilder: (context, state) => Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            title: Text(AppStrings.getPageNotFoundTitle(AppLocale.korea)),
-            backgroundColor: AppColors.surface,
-            elevation: 0,
-          ),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: AppColors.error),
-                const SizedBox(height: 16),
-                Text(
-                  AppStrings.getPageNotFoundTitle(AppLocale.korea),
-                  style: Theme.of(
-                    context,
-                  )
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(color: AppColors.textPrimary),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  AppStrings.getPageNotFoundSubtitle(AppLocale.korea),
-                  style: Theme.of(
-                    context,
-                  )
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: AppColors.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => context.go(home),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.buttonPrimary,
-                    foregroundColor: AppColors.buttonText,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+        errorBuilder: (context, state) => BlocBuilder<LocaleCubit, AppLocale>(
+          builder: (context, currentLocale) => Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              title: Text(AppStrings.getPageNotFoundTitle(currentLocale)),
+              backgroundColor: AppColors.surface,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: AppColors.error),
+                  const SizedBox(height: 16),
+                  Text(
+                    AppStrings.getPageNotFoundTitle(currentLocale),
+                    style: Theme.of(
+                      context,
+                    )
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(color: AppColors.textPrimary),
                   ),
-                  child: Text(AppStrings.getBackToHome(AppLocale.korea)),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    AppStrings.getPageNotFoundSubtitle(currentLocale),
+                    style: Theme.of(
+                      context,
+                    )
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: AppColors.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => context.go(home),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.buttonPrimary,
+                      foregroundColor: AppColors.buttonText,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(AppStrings.getBackToHome(currentLocale)),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

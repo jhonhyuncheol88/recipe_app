@@ -5,7 +5,6 @@ import 'package:recipe_app/router/router_helper.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
-import '../../../util/app_locale.dart';
 import '../../../util/date_formatter.dart';
 
 import '../../../controller/ingredient/ingredient_cubit.dart';
@@ -423,10 +422,12 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
     }
   }
 
-  // 포맷팅된 가격 파싱
+  // 포맷팅된 가격 파싱 (소수점 포함)
   double? _parseFormattedPrice(String value) {
-    final numbers = value.replaceAll(RegExp(r'[^\d]'), '');
-    return double.tryParse(numbers);
+    if (value.isEmpty) return null;
+    // 숫자와 소수점만 추출
+    final cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
+    return double.tryParse(cleanValue);
   }
 
   // 포맷팅된 수량 파싱
@@ -497,3 +498,4 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
     }
   }
 }
+

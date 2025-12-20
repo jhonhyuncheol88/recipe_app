@@ -307,6 +307,7 @@ class _SettingsPageState extends State<SettingsPage> {
               AppLocale.usa,
               AppLocale.china,
               AppLocale.japan,
+              AppLocale.vietnam,
             ])
               _buildLanguageOption(loc.displayName, loc),
           ],
@@ -549,11 +550,11 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          AppStrings.getDataReset(AppLocale.korea),
+          AppStrings.getDataReset(currentLocale),
           style: AppTextStyles.headline4,
         ),
         content: Text(
-          AppStrings.getDataResetWarning(AppLocale.korea),
+          AppStrings.getDataResetWarning(currentLocale),
           style: AppTextStyles.bodyMedium,
         ),
         actions: [
@@ -659,11 +660,12 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showDeveloperInfo() {
+    final currentLocale = context.read<LocaleCubit>().state;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          AppStrings.getDeveloperInfo(AppLocale.korea),
+          AppStrings.getDeveloperInfo(currentLocale),
           style: AppTextStyles.headline4,
         ),
         content: Column(
@@ -671,21 +673,21 @@ class _SettingsPageState extends State<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppStrings.getDeveloperTeam(AppLocale.korea),
+              AppStrings.getDeveloperTeam(currentLocale),
               style: AppTextStyles.bodyLarge.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              AppStrings.getAppDescription(AppLocale.korea),
+              AppStrings.getAppDescription(currentLocale),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              AppStrings.getVersion(AppLocale.korea),
+              AppStrings.getVersion(currentLocale),
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textLight,
               ),
@@ -696,7 +698,7 @@ class _SettingsPageState extends State<SettingsPage> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              AppStrings.getConfirm(AppLocale.korea),
+              AppStrings.getConfirm(currentLocale),
               style: AppTextStyles.buttonMedium,
             ),
           ),
@@ -706,11 +708,15 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showPrivacyPolicy() {
+    final currentLocale = context.read<LocaleCubit>().state;
     // TODO: 개인정보 처리방침 페이지로 이동
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          AppStrings.getFeatureInProgress(AppLocale.korea, '개인정보 처리방침'),
+          AppStrings.getFeatureInProgress(
+            currentLocale,
+            AppStrings.getPrivacyPolicy(currentLocale),
+          ),
         ),
         backgroundColor: AppColors.info,
       ),
@@ -718,10 +724,16 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showTermsOfService() {
+    final currentLocale = context.read<LocaleCubit>().state;
     // TODO: 이용약관 페이지로 이동
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppStrings.getFeatureInProgress(AppLocale.korea, '이용약관')),
+        content: Text(
+          AppStrings.getFeatureInProgress(
+            currentLocale,
+            AppStrings.getTermsOfService(currentLocale),
+          ),
+        ),
         backgroundColor: AppColors.info,
       ),
     );
@@ -731,8 +743,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final currentLocale = context.read<LocaleCubit>().state;
 
     final Email email = Email(
-      body: '문의 내용을 작성해주세요.\n\n',
-      subject: '[레시피 앱 문의]',
+      body: AppStrings.getFeedbackEmailBody(currentLocale),
+      subject: AppStrings.getFeedbackEmailSubject(currentLocale),
       recipients: ['jeon_hyun_cheol@jalam-kr.com'],
       cc: [],
       bcc: [],
@@ -748,9 +760,9 @@ class _SettingsPageState extends State<SettingsPage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('메일 앱을 사용할 수 없습니다.'),
-              content: const Text(
-                '아래 이메일로 문의주시면 빠른 시일 내에 답변드릴게요!\n\njeon_hyun_cheol@jalam-kr.com',
+              title: Text(AppStrings.getMailAppUnavailable(currentLocale)),
+              content: Text(
+                AppStrings.getFeedbackEmailContactMessage(currentLocale),
               ),
               actions: <Widget>[
                 TextButton(

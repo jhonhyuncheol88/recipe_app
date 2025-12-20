@@ -9,6 +9,7 @@ class DateFormatter {
     AppLocale.china: DateFormat('yyyy年MM月dd日', 'zh_CN'),
     AppLocale.usa: DateFormat('MMM dd, yyyy', 'en_US'),
     AppLocale.euro: DateFormat('dd.MM.yyyy', 'de_DE'),
+    AppLocale.vietnam: DateFormat('dd/MM/yyyy', 'vi_VN'),
   };
 
   static final Map<AppLocale, DateFormat> _timeFormatters = {
@@ -17,6 +18,7 @@ class DateFormatter {
     AppLocale.china: DateFormat('HH:mm', 'zh_CN'),
     AppLocale.usa: DateFormat('h:mm a', 'en_US'),
     AppLocale.euro: DateFormat('HH:mm', 'de_DE'),
+    AppLocale.vietnam: DateFormat('HH:mm', 'vi_VN'),
   };
 
   static final Map<AppLocale, DateFormat> _dateTimeFormatters = {
@@ -25,6 +27,7 @@ class DateFormatter {
     AppLocale.china: DateFormat('yyyy年MM月dd日 HH:mm', 'zh_CN'),
     AppLocale.usa: DateFormat('MMM dd, yyyy h:mm a', 'en_US'),
     AppLocale.euro: DateFormat('dd.MM.yyyy HH:mm', 'de_DE'),
+    AppLocale.vietnam: DateFormat('dd/MM/yyyy HH:mm', 'vi_VN'),
   };
 
   static final Map<AppLocale, DateFormat> _shortDateFormatters = {
@@ -33,6 +36,7 @@ class DateFormatter {
     AppLocale.china: DateFormat('MM/dd', 'zh_CN'),
     AppLocale.usa: DateFormat('MM/dd', 'en_US'),
     AppLocale.euro: DateFormat('dd.MM', 'de_DE'),
+    AppLocale.vietnam: DateFormat('dd/MM', 'vi_VN'),
   };
 
   /// 날짜 포맷팅
@@ -72,6 +76,8 @@ class DateFormatter {
           return '${difference.inDays} days ago';
         case AppLocale.euro:
           return 'vor ${difference.inDays} Tagen';
+        case AppLocale.vietnam:
+          return '${difference.inDays} ngày trước';
       }
     } else if (difference.inHours > 0) {
       switch (locale) {
@@ -85,6 +91,8 @@ class DateFormatter {
           return '${difference.inHours} hours ago';
         case AppLocale.euro:
           return 'vor ${difference.inHours} Stunden';
+        case AppLocale.vietnam:
+          return '${difference.inHours} giờ trước';
       }
     } else if (difference.inMinutes > 0) {
       switch (locale) {
@@ -98,6 +106,8 @@ class DateFormatter {
           return '${difference.inMinutes} minutes ago';
         case AppLocale.euro:
           return 'vor ${difference.inMinutes} Minuten';
+        case AppLocale.vietnam:
+          return '${difference.inMinutes} phút trước';
       }
     } else {
       switch (locale) {
@@ -111,6 +121,8 @@ class DateFormatter {
           return 'Just now';
         case AppLocale.euro:
           return 'Gerade eben';
+        case AppLocale.vietnam:
+          return 'Vừa xong';
       }
     }
   }
@@ -133,6 +145,8 @@ class DateFormatter {
           return 'Expired';
         case AppLocale.euro:
           return 'Abgelaufen';
+        case AppLocale.vietnam:
+          return 'Đã hết hạn';
       }
     } else if (difference.inDays <= 1) {
       // 위험
@@ -147,6 +161,8 @@ class DateFormatter {
           return 'Danger';
         case AppLocale.euro:
           return 'Gefahr';
+        case AppLocale.vietnam:
+          return 'Nguy hiểm';
       }
     } else if (difference.inDays <= 3) {
       // 경고
@@ -161,6 +177,8 @@ class DateFormatter {
           return 'Warning';
         case AppLocale.euro:
           return 'Warnung';
+        case AppLocale.vietnam:
+          return 'Cảnh báo';
       }
     } else {
       // 정상
@@ -175,6 +193,8 @@ class DateFormatter {
           return 'Normal';
         case AppLocale.euro:
           return 'Normal';
+        case AppLocale.vietnam:
+          return 'Bình thường';
       }
     }
   }

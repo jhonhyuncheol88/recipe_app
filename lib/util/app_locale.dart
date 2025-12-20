@@ -6,7 +6,8 @@ enum AppLocale {
   japan('ja', 'JP', '日本語', '🇯🇵'),
   china('zh', 'CN', '中文', '🇨🇳'),
   usa('en', 'US', 'English', '🇺🇸'),
-  euro('de', 'DE', 'Deutsch', '🇪🇺');
+  euro('de', 'DE', 'Deutsch', '🇪🇺'),
+  vietnam('vi', 'VN', 'Tiếng Việt', '🇻🇳');
 
   const AppLocale(
     this.languageCode,
@@ -33,6 +34,8 @@ enum AppLocale {
         return 'English';
       case AppLocale.euro:
         return 'Deutsch';
+      case AppLocale.vietnam:
+        return 'Tiếng Việt';
     }
   }
 

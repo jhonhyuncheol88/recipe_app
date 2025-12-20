@@ -77,6 +77,8 @@ class InitialDataService {
         return 1.0 / 9.0; // 1엔 = 9원
       case AppLocale.euro:
         return 1.0 / 1300.0; // 유로(기본값으로 미국과 동일)
+      case AppLocale.vietnam:
+        return 1.0 / 23000.0; // 1동 = 23,000원
     }
   }
 

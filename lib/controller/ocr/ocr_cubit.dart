@@ -123,23 +123,26 @@ class OcrCubit extends Cubit<OcrState> {
     PermissionService? permissionService,
     ReceiptParserService? receiptParserService,
     OcrGeminiService? ocrGeminiService,
-  }) : _ocrService = ocrService ?? OcrService(),
-       _permissionService = permissionService ?? PermissionService(),
-       _receiptParserService = receiptParserService ?? ReceiptParserService(),
-       _ocrGeminiService = ocrGeminiService ?? OcrGeminiService(),
-       super(OcrInitial());
+  })  : _ocrService = ocrService ?? OcrService(),
+        _permissionService = permissionService ?? PermissionService(),
+        _receiptParserService = receiptParserService ?? ReceiptParserService(),
+        _ocrGeminiService = ocrGeminiService ?? OcrGeminiService(),
+        super(OcrInitial());
 
   // 갤러리에서 이미지 선택
-  Future<void> selectImageFromGallery() async {
+  Future<void> selectImageFromGallery({AppLocale? locale}) async {
     try {
       _logger.i('📱 이미지 선택 시작');
       emit(OcrImageSelecting());
+
+      // 현재 언어 설정 가져오기 (기본값: 한국어)
+      final currentLocale = locale ?? AppLocale.korea;
 
       // 권한 확인
       final hasPermission = await PermissionService.requestGalleryPermission();
       if (!hasPermission) {
         emit(
-          OcrError(AppStrings.getGalleryPermissionRequired(AppLocale.korea)),
+          OcrError(AppStrings.getGalleryPermissionRequired(currentLocale)),
         );
         return;
       }
@@ -155,25 +158,27 @@ class OcrCubit extends Cubit<OcrState> {
       if (image != null) {
         final imageFile = File(image.path);
         _logger.i('🖼️ 이미지 선택됨: ${imageFile.path}');
-        await processImage(imageFile);
+        await processImage(imageFile, locale: currentLocale);
       } else {
         _logger.i('❌ 이미지 선택 취소됨');
         emit(OcrInitial());
       }
     } catch (e) {
       _logger.e('❌ 이미지 선택 중 오류 발생: $e');
-      emit(OcrError('이미지 선택 중 오류가 발생했습니다: $e'));
+      final currentLocale = locale ?? AppLocale.korea;
+      emit(OcrError('${AppStrings.getImageSelectError(currentLocale)}: $e'));
     }
   }
 
   // 이미지 OCR 처리
   Future<void> processImage(File imageFile, {AppLocale? locale}) async {
+    // 현재 언어 설정 가져오기 (기본값: 한국어)
+    final currentLocale = locale ?? AppLocale.korea;
+
     try {
       _logger.i('🔍 OCR 처리 시작');
       emit(OcrProcessing(imageFile));
 
-      // 현재 언어 설정 가져오기 (기본값: 한국어)
-      final currentLocale = locale ?? AppLocale.korea;
       final localeObj = _getLocaleFromAppLocale(currentLocale);
 
       // 자동 언어 감지 사용 (더 정확함)
@@ -186,7 +191,7 @@ class OcrCubit extends Cubit<OcrState> {
       }
 
       if (recognizedText.trim().isEmpty) {
-        emit(OcrError(AppStrings.getOcrFailedMessage(AppLocale.korea)));
+        emit(OcrError(AppStrings.getOcrFailedMessage(currentLocale)));
         return;
       }
 
@@ -203,19 +208,22 @@ class OcrCubit extends Cubit<OcrState> {
 
       // OCR 완료 후 자동으로 Gemini 분석 시작
       _logger.i('🤖 자동 Gemini 분석 시작');
-      await startGeminiAnalysis();
+      await startGeminiAnalysis(locale: currentLocale);
     } catch (e) {
       _logger.e('❌ OCR 처리 중 오류 발생: $e');
-      emit(OcrError('OCR 처리 중 오류가 발생했습니다: $e'));
+      emit(OcrError('${AppStrings.getOcrProcessingError(currentLocale)}: $e'));
     }
   }
 
   /// Gemini로 OCR 텍스트 분석 시작 (수동 호출)
-  Future<void> startGeminiAnalysis() async {
+  Future<void> startGeminiAnalysis({AppLocale? locale}) async {
     try {
       final currentState = state;
+      final currentLocale = locale ?? AppLocale.korea;
+
       if (currentState is! OcrResultGenerated) {
         _logger.e('❌ OCR 결과가 생성되지 않은 상태에서 Gemini 분석을 시작할 수 없습니다.');
+        emit(OcrError(AppStrings.getOcrResultNotGenerated(currentLocale)));
         return;
       }
 
@@ -243,11 +251,14 @@ class OcrCubit extends Cubit<OcrState> {
         );
       } else {
         _logger.e('❌ Gemini 분석 실패: ${geminiResult['error']}');
-        emit(OcrError('Gemini 분석 중 오류가 발생했습니다: ${geminiResult['error']}'));
+        final errorMessage = geminiResult['error'] ?? '';
+        emit(OcrError(
+            '${AppStrings.getGeminiAnalysisError(currentLocale)}: $errorMessage'));
       }
     } catch (e) {
       _logger.e('❌ Gemini 분석 중 오류 발생: $e');
-      emit(OcrError('Gemini 분석 중 오류가 발생했습니다: $e'));
+      final currentLocale = locale ?? AppLocale.korea;
+      emit(OcrError('${AppStrings.getGeminiAnalysisError(currentLocale)}: $e'));
     }
   }
 
@@ -270,8 +281,8 @@ class OcrCubit extends Cubit<OcrState> {
         return const Locale('en', 'US');
       case AppLocale.euro:
         return const Locale('en', 'EU');
-      default:
-        return const Locale('ko', 'KR');
+      case AppLocale.vietnam:
+        return const Locale('vi', 'VN');
     }
   }
 }

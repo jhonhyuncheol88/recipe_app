@@ -64,6 +64,11 @@ class NumberFormatter {
       symbol: '€',
       decimalDigits: 2,
     ),
+    AppLocale.vietnam: NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: '₫',
+      decimalDigits: 0, // 동은 정수로만 표시
+    ),
   };
 
   static final Map<AppLocale, NumberFormat> _numberFormatters = {
@@ -72,6 +77,7 @@ class NumberFormatter {
     AppLocale.china: NumberFormat('#,###', 'zh_CN'),
     AppLocale.usa: NumberFormat('#,###', 'en_US'),
     AppLocale.euro: NumberFormat('#,###', 'de_DE'),
+    AppLocale.vietnam: NumberFormat('#,###', 'vi_VN'),
   };
 
   static final Map<AppLocale, NumberFormat> _decimalFormatters = {
@@ -80,6 +86,7 @@ class NumberFormatter {
     AppLocale.china: NumberFormat('#,##0.00', 'zh_CN'),
     AppLocale.usa: NumberFormat('#,##0.00', 'en_US'),
     AppLocale.euro: NumberFormat('#,##0.00', 'de_DE'),
+    AppLocale.vietnam: NumberFormat('#,##0.00', 'vi_VN'),
   };
 
   static final Map<AppLocale, NumberFormat> _percentFormatters = {
@@ -88,6 +95,7 @@ class NumberFormatter {
     AppLocale.china: NumberFormat.percentPattern('zh_CN'),
     AppLocale.usa: NumberFormat.percentPattern('en_US'),
     AppLocale.euro: NumberFormat.percentPattern('de_DE'),
+    AppLocale.vietnam: NumberFormat.percentPattern('vi_VN'),
   };
 
   /// 통화 포맷팅
@@ -144,6 +152,12 @@ class NumberFormatter {
           symbol: '€',
           decimalDigits: 2,
         ).format(price);
+      case AppLocale.vietnam:
+        return NumberFormat.currency(
+          locale: 'vi_VN',
+          symbol: '₫',
+          decimalDigits: 0, // 동은 정수로만 표시
+        ).format(price);
     }
   }
 
@@ -163,6 +177,8 @@ class NumberFormatter {
         return '$formattedNumber $unit';
       case AppLocale.euro:
         return '$formattedNumber $unit';
+      case AppLocale.vietnam:
+        return '$formattedNumber$unit';
     }
   }
 
@@ -182,6 +198,8 @@ class NumberFormatter {
         return '$formattedNumber pcs';
       case AppLocale.euro:
         return '$formattedNumber Stk';
+      case AppLocale.vietnam:
+        return '$formattedNumber cái';
     }
   }
 
@@ -206,6 +224,8 @@ class NumberFormatter {
         return '$formattedValue $fromUnit → $formattedValue $toUnit';
       case AppLocale.euro:
         return '$formattedValue $fromUnit → $formattedValue $toUnit';
+      case AppLocale.vietnam:
+        return '$formattedValue$fromUnit → $formattedValue$toUnit';
     }
   }
 
@@ -222,6 +242,8 @@ class NumberFormatter {
         return '\$';
       case AppLocale.euro:
         return '€';
+      case AppLocale.vietnam:
+        return '₫';
     }
   }
 
@@ -238,6 +260,8 @@ class NumberFormatter {
         return 'Dollar';
       case AppLocale.euro:
         return 'Euro';
+      case AppLocale.vietnam:
+        return 'Đồng';
     }
   }
 
@@ -283,6 +307,7 @@ class NumberFormatter {
         strValue.contains('¥') ||
         strValue.contains('\$') ||
         strValue.contains('€') ||
+        strValue.contains('₫') ||
         strValue.contains('원')) {
       return strValue;
     }
@@ -343,7 +368,7 @@ class NumberFormatter {
 
     // 통화 기호와 천 단위 구분자 제거
     final cleanText = priceText
-        .replaceAll(RegExp(r'[₩¥\$€원]'), '')
+        .replaceAll(RegExp(r'[₩¥\$€₫원]'), '')
         .replaceAll(',', '')
         .trim();
 

@@ -107,6 +107,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
       AppLocale.usa,
       AppLocale.china,
       AppLocale.japan,
+      AppLocale.vietnam,
     ];
 
     return Column(
@@ -228,6 +229,8 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
         return '请选择语言';
       case AppLocale.usa:
         return 'Select a language';
+      case AppLocale.vietnam:
+        return 'Chọn ngôn ngữ';
       default:
         return '언어를 선택해주세요';
     }
@@ -243,6 +246,8 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
         return '选择语言后\n应用将以该语言显示';
       case AppLocale.usa:
         return 'Choose your language\nand the app will display in that language';
+      case AppLocale.vietnam:
+        return 'Chọn ngôn ngữ bạn muốn\nvà ứng dụng sẽ hiển thị bằng ngôn ngữ đó';
       default:
         return '원하는 언어를 선택하면\n앱이 해당 언어로 표시됩니다';
     }
@@ -258,6 +263,8 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
         return '下一步';
       case AppLocale.usa:
         return 'Next';
+      case AppLocale.vietnam:
+        return 'Tiếp theo';
       default:
         return '다음';
     }

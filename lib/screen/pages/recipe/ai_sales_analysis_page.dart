@@ -37,13 +37,6 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
   void initState() {
     super.initState();
 
-    // Recipe 객체 확인 로그
-    print('AiSalesAnalysisPage initState - Recipe: ${widget.recipe}');
-    print(
-      'AiSalesAnalysisPage initState - Recipe name: ${widget.recipe?.name}',
-    );
-    print('AiSalesAnalysisPage initState - Recipe id: ${widget.recipe?.id}');
-
     // AdCubit 초기화
     _adCubit = AdCubit();
 
@@ -69,19 +62,15 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
 
   /// 광고 표시 후 AI 분석 진행
   Future<void> _showAdAndAnalyze() async {
-    print('_showAdAndAnalyze 호출됨 - 광고 시도 후 분석 진행');
-
     try {
       // 전면 광고 표시 시도
-      final adResult = await AdMobService.instance.showInterstitialAd();
-      print('광고 표시 결과: $adResult');
+      await AdMobService.instance.showInterstitialAd();
 
       // 광고 성공/실패와 관계없이 AI 분석 진행
       if (mounted) {
         _startAnalysis();
       }
     } catch (e) {
-      print('광고 표시 중 오류 발생: $e');
       // 광고 오류 발생 시에도 AI 분석 진행
       if (mounted) {
         _startAnalysis();
@@ -93,16 +82,12 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
   Future<void> _startAnalysis() async {
     if (_isAnalyzing) return;
 
-    print('_startAnalysis 호출됨 - Recipe: ${widget.recipe}');
-    print('_startAnalysis 호출됨 - Recipe name: ${widget.recipe?.name}');
-    print('_startAnalysis 호출됨 - Recipe ID: ${widget.recipe?.id}');
-    print('_startAnalysis - 광고 시청 후 분석 시작');
+    final currentLocale = context.read<LocaleCubit>().state;
 
     // Recipe 객체가 없으면 분석할 수 없음
     if (widget.recipe == null) {
-      print('Recipe 객체가 null입니다. 분석을 중단합니다.');
       setState(() {
-        _errorMessage = '레시피 정보를 찾을 수 없습니다.';
+        _errorMessage = AppStrings.getRecipeNotFound(currentLocale);
         _isAnalyzing = false;
       });
       return;
@@ -115,7 +100,6 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     });
 
     try {
-      final currentLocale = context.read<LocaleCubit>().state;
       final result = await context.read<RecipeCubit>().performAiSalesAnalysis(
             widget.recipe!.id,
             userQuery: _specialRequestController.text.trim().isEmpty
@@ -131,13 +115,13 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
         });
       } else {
         setState(() {
-          _errorMessage = '분석 결과를 가져올 수 없습니다.';
+          _errorMessage = AppStrings.getAnalysisResultNotFound(currentLocale);
           _isAnalyzing = false;
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = '분석 중 오류가 발생했습니다: $e';
+        _errorMessage = '${AppStrings.getAnalysisError(currentLocale)}: $e';
         _isAnalyzing = false;
       });
     }
@@ -197,7 +181,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.recipe?.name ?? '레시피 이름 없음',
+              widget.recipe?.name ?? AppStrings.getRecipeNameNotFound(locale),
               style: AppTextStyles.headline4.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.bold,

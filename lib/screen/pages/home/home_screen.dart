@@ -48,7 +48,8 @@ class HomeScreen extends StatelessWidget {
                               : null,
                         ),
                         title: Text(
-                          state.user.displayName ?? AppStrings.getUser(AppLocale.korea),
+                          state.user.displayName ??
+                              AppStrings.getUser(AppLocale.korea),
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w600,
                           ),

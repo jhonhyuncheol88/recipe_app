@@ -132,7 +132,7 @@ class IngredientCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                NumberFormatter.formatCurrency(price, AppLocale.korea),
+                NumberFormatter.formatCurrency(price, locale),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.accent,
@@ -140,7 +140,7 @@ class IngredientCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                '${NumberFormatter.formatNumber(amount.toInt(), AppLocale.korea)} $unit',
+                '${NumberFormatter.formatNumber(amount.toInt(), locale)} $unit',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -150,7 +150,7 @@ class IngredientCard extends StatelessWidget {
           if (unitPrice != null) ...[
             const SizedBox(height: 4),
             Text(
-              '${NumberFormatter.formatCurrency(unitPrice!, AppLocale.korea)}/$unit',
+              '${NumberFormatter.formatCurrency(unitPrice!, locale)}/$unit',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textLight,
                     fontStyle: FontStyle.italic,
@@ -247,6 +247,7 @@ class RecipeCard extends StatelessWidget {
   final VoidCallback? onAiAnalysis; // AI 분석 콜백 추가
   final VoidCallback? onViewQuick; // 레시피 바로보기 콜백 추가
   final VoidCallback? onPriceChart; // 가격 차트 콜백 추가
+  final VoidCallback? onShare; // 공유 콜백 추가
   final Recipe? recipe; // 실제 Recipe 객체 추가
   final AppLocale locale; // 로컬화 지원 추가
 
@@ -266,6 +267,7 @@ class RecipeCard extends StatelessWidget {
     this.onAiAnalysis, // AI 분석 콜백 선택적 매개변수
     this.onViewQuick, // 레시피 바로보기 콜백 선택적 매개변수
     this.onPriceChart, // 가격 차트 콜백 선택적 매개변수
+    this.onShare, // 공유 콜백 선택적 매개변수
     this.recipe, // Recipe 객체 선택적 매개변수
     required this.locale, // 로컬화 지원 필수 매개변수
   });
@@ -275,7 +277,9 @@ class RecipeCard extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       isClickable: true,
-      backgroundColor: isSelected ? AppColors.primaryLight.withAlpha(51) : AppColors.surface, // 흰색 카드 배경
+      backgroundColor: isSelected
+          ? AppColors.primaryLight.withAlpha(51)
+          : AppColors.surface, // 흰색 카드 배경
       elevation: 0, // Flat 디자인
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +313,8 @@ class RecipeCard extends StatelessWidget {
                     ),
                   ),
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -402,7 +407,7 @@ class RecipeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$ingredientCount개',
+                      '${NumberFormatter.formatQuantity(ingredientCount, locale)} ${AppStrings.getUnitPiece(locale)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
@@ -423,7 +428,7 @@ class RecipeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${NumberFormatter.formatNumber(totalWeight.toInt(), AppLocale.korea)} $weightUnit',
+                      '${NumberFormatter.formatNumber(totalWeight.toInt(), locale)} $weightUnit',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
@@ -443,12 +448,17 @@ class RecipeCard extends StatelessWidget {
                           ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      NumberFormatter.formatCurrency(
-                        totalCost,
-                        AppLocale.korea,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        NumberFormatter.formatCurrency(
+                          totalCost,
+                          locale,
+                        ),
+                        style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
+                        textAlign: TextAlign.right,
                       ),
-                      style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                     ),
                   ],
                 ),

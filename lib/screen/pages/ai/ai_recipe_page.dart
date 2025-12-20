@@ -9,8 +9,6 @@ import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/recipe/recipe_state.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../model/ai_recipe.dart';
-import '../../../router/router_helper.dart';
-import 'ai_recipe_detail_page.dart';
 
 /// AI 레시피 관리 페이지
 class AiRecipePage extends StatefulWidget {
@@ -59,15 +57,11 @@ class _AiRecipePageState extends State<AiRecipePage> {
               Expanded(
                 child: BlocBuilder<RecipeCubit, RecipeState>(
                   builder: (context, state) {
-                    print('AiRecipePage: 현재 상태 - ${state.runtimeType}');
-
                     if (state is RecipeLoading) {
-                      print('AiRecipePage: 로딩 상태 표시');
                       return const Center(child: CircularProgressIndicator());
                     }
 
                     if (state is AiRecipesEmpty) {
-                      print('AiRecipePage: 빈 상태 표시');
                       return _buildEmptyState(currentLocale);
                     }
 
@@ -205,7 +199,8 @@ class _AiRecipePageState extends State<AiRecipePage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+                color:
+                    AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
@@ -226,13 +221,13 @@ class _AiRecipePageState extends State<AiRecipePage> {
                         ),
                         if (aiRecipe.cuisineType != null) ...[
                           const SizedBox(height: 4),
-                        Text(
-                          aiRecipe.cuisineType!,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.accent,
-                            fontWeight: FontWeight.w600, // 굵기 증가로 가독성 향상
+                          Text(
+                            aiRecipe.cuisineType!,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.w600, // 굵기 증가로 가독성 향상
+                            ),
                           ),
-                        ),
                         ],
                       ],
                     ),
@@ -279,7 +274,8 @@ class _AiRecipePageState extends State<AiRecipePage> {
                   Text(
                     aiRecipe.description,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textPrimary, // textSecondary 대신 textPrimary로 변경하여 가독성 향상
+                      color: AppColors
+                          .textPrimary, // textSecondary 대신 textPrimary로 변경하여 가독성 향상
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -320,10 +316,12 @@ class _AiRecipePageState extends State<AiRecipePage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+                            color: AppColors.accent
+                                .withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.accent.withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+                              color: AppColors.accent
+                                  .withAlpha(77), // withAlpha 사용 (약 30% 투명도)
                               width: 1,
                             ),
                           ),
@@ -363,10 +361,12 @@ class _AiRecipePageState extends State<AiRecipePage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.success.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+                            color: AppColors.success
+                                .withAlpha(26), // withAlpha 사용 (약 10% 투명도)
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.success.withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+                              color: AppColors.success
+                                  .withAlpha(77), // withAlpha 사용 (약 30% 투명도)
                               width: 1,
                             ),
                           ),

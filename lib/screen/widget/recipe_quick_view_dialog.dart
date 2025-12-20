@@ -317,9 +317,16 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                NumberFormatter.formatCurrency(totalPrice, widget.locale),
-                style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    NumberFormatter.formatCurrency(totalPrice, widget.locale),
+                    style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
+                    textAlign: TextAlign.left,
+                  ),
+                ),
               ),
               if (_multiplier != 1.0)
                 Container(

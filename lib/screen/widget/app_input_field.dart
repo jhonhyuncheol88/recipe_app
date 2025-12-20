@@ -341,35 +341,26 @@ class CurrencyInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // controller가 있으면 그대로 사용, 없으면 포맷팅된 값으로 새로 생성
+    // controller가 있으면 그대로 사용, 없으면 빈 문자열로 생성
     final effectiveController =
         controller ??
         TextEditingController(
           text: initialValue != null
-              ? NumberFormatter.formatCurrency(initialValue!, locale)
+              ? initialValue!.toStringAsFixed(2)
               : '',
         );
-
-    // controller가 있고 초기값이 있으면 포맷팅
-    if (controller != null && controller!.text.isNotEmpty) {
-      final numbers = controller!.text.replaceAll(RegExp(r'[^\d]'), '');
-      final number = double.tryParse(numbers);
-      if (number != null) {
-        controller!.text = NumberFormatter.formatCurrency(number, locale);
-      }
-    }
 
     return AppInputField(
       label: label,
       hint: hint,
       controller: effectiveController,
-      keyboardType: const TextInputType.numberWithOptions(decimal: false),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       enabled: enabled,
       validator: validator,
       onChanged: (value) {
         if (onChanged != null && value.isNotEmpty) {
-          // 포맷팅된 값에서 숫자만 추출
-          final cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
+          // 원시 문자열에서 숫자와 소수점만 추출하여 파싱
+          final cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
           final number = double.tryParse(cleanValue);
           if (number != null) {
             onChanged!(number);
@@ -377,7 +368,7 @@ class CurrencyInputField extends StatelessWidget {
         }
       },
       inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[\d,]')),
+        FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
         _CurrencyInputFormatter(locale),
       ],
       prefixIcon: Icon(Icons.attach_money, color: AppColors.textSecondary),
@@ -385,7 +376,7 @@ class CurrencyInputField extends StatelessWidget {
   }
 }
 
-/// 통화 입력 포맷터
+/// 통화 입력 포맷터 (소수점 2자리 제한, 천 단위 구분자 포함)
 class _CurrencyInputFormatter extends TextInputFormatter {
   final AppLocale locale;
 
@@ -396,25 +387,136 @@ class _CurrencyInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    // 숫자만 추출
-    final numbers = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+    // 숫자와 소수점만 추출 (콤마 제거)
+    // 소수점이 입력된 경우를 명시적으로 확인
+    String text = newValue.text.replaceAll(RegExp(r'[^\d.]'), '');
+    
+    // 소수점이 새로 입력된 경우를 감지
+    bool isDotInput = newValue.text.contains('.') && !oldValue.text.contains('.');
 
-    if (numbers.isEmpty) {
+    if (text.isEmpty) {
       return const TextEditingValue(text: '');
     }
 
-    final number = double.tryParse(numbers);
-    if (number == null) {
+    // 여러 개의 소수점 방지
+    final dotCount = '.'.allMatches(text).length;
+    if (dotCount > 1) {
       return oldValue;
     }
 
-    // 포맷팅된 값 생성
-    final formatted = NumberFormatter.formatCurrency(number, locale);
+    // 소수점이 있는 경우 소수점 2자리까지만 허용
+    String integerPart = '';
+    String decimalPart = '';
+    bool hasDecimalPoint = text.contains('.');
+    
+    if (hasDecimalPoint) {
+      final parts = text.split('.');
+      integerPart = parts[0];
+      if (parts.length == 2) {
+        // 소수점 2자리 초과 시 잘라내기
+        decimalPart = parts[1].length > 2 
+            ? parts[1].substring(0, 2) 
+            : parts[1];
+      }
+      text = '$integerPart.$decimalPart';
+    } else {
+      integerPart = text;
+    }
+
+    // 숫자로 파싱 가능한지 확인 (소수점만 있는 경우도 허용)
+    // 소수점만 있거나 끝에 소수점이 있는 경우는 허용
+    if (text != '.' && text != '' && !text.endsWith('.')) {
+      final number = double.tryParse(text);
+      if (number == null) {
+        // 숫자가 아닌 경우 이전 값 유지
+        return oldValue;
+      }
+    }
+
+    // 천 단위 구분자 추가
+    String formattedText;
+    if (hasDecimalPoint) {
+      // 소수점이 있는 경우: 정수 부분에만 천 단위 구분자 추가
+      if (integerPart.isEmpty) {
+        formattedText = '.$decimalPart';
+      } else {
+        final integerNumber = int.tryParse(integerPart);
+        if (integerNumber != null) {
+          formattedText = '${NumberFormatter.formatNumber(integerNumber, locale)}.$decimalPart';
+        } else {
+          formattedText = text;
+        }
+      }
+    } else {
+      // 소수점이 없는 경우: 전체에 천 단위 구분자 추가
+      if (integerPart.isEmpty) {
+        formattedText = '';
+      } else {
+        final integerNumber = int.tryParse(integerPart);
+        if (integerNumber != null) {
+          formattedText = NumberFormatter.formatNumber(integerNumber, locale);
+        } else {
+          formattedText = text;
+        }
+      }
+    }
+
+    // 커서 위치 계산
+    int cursorPosition;
+    
+    // 소수점이 입력된 경우: 소수점 뒤로 커서 이동
+    if (isDotInput || (hasDecimalPoint && !oldValue.text.contains('.'))) {
+      // 소수점이 새로 입력된 경우: 소수점 바로 뒤로 커서 이동
+      int dotIndex = formattedText.indexOf('.');
+      cursorPosition = dotIndex != -1 ? dotIndex + 1 : formattedText.length;
+    } else if (hasDecimalPoint) {
+      // 이미 소수점이 있는 경우: 소수점 뒤의 숫자 개수 기준으로 계산
+      String beforeCursor = newValue.text.substring(0, newValue.selection.baseOffset.clamp(0, newValue.text.length));
+      int digitsBeforeCursor = beforeCursor.replaceAll(RegExp(r'[^\d.]'), '').length;
+      
+      // 소수점 위치 찾기
+      int dotIndex = formattedText.indexOf('.');
+      if (dotIndex != -1) {
+        // 소수점 앞의 숫자 개수
+        int integerDigits = formattedText.substring(0, dotIndex).replaceAll(RegExp(r'[^\d]'), '').length;
+        
+        if (digitsBeforeCursor <= integerDigits) {
+          // 정수 부분에 커서가 있는 경우: 천 단위 구분자 고려하여 계산
+          cursorPosition = _findPositionInFormattedInteger(
+            formattedText.substring(0, dotIndex),
+            digitsBeforeCursor,
+          );
+        } else {
+          // 소수 부분에 커서가 있는 경우
+          int decimalDigits = digitsBeforeCursor - integerDigits - 1; // -1은 소수점
+          cursorPosition = dotIndex + 1 + decimalDigits.clamp(0, 2);
+        }
+      } else {
+        cursorPosition = formattedText.length;
+      }
+    } else {
+      // 소수점이 없는 경우: 천 단위 구분자 추가 시 커서를 맨 뒤로
+      cursorPosition = formattedText.length;
+    }
 
     return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
+      text: formattedText,
+      selection: TextSelection.collapsed(offset: cursorPosition.clamp(0, formattedText.length)),
     );
+  }
+
+  /// 포맷팅된 정수 부분에서 숫자 개수 기준 위치 찾기
+  int _findPositionInFormattedInteger(String formattedInteger, int digitCount) {
+    int count = 0;
+    for (int i = 0; i < formattedInteger.length; i++) {
+      if (RegExp(r'\d').hasMatch(formattedInteger[i])) {
+        count++;
+        if (count >= digitCount) {
+          return i + 1;
+        }
+      }
+    }
+    return formattedInteger.length;
   }
 }
 
