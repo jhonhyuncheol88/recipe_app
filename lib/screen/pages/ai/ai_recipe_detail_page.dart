@@ -8,6 +8,7 @@ import '../../../util/app_locale.dart';
 import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/recipe/recipe_state.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
 import '../../../model/ai_recipe.dart';
 import '../../../model/ingredient.dart';
 import '../../../service/ingredient_comparison_service.dart';
@@ -467,7 +468,7 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    '${NumberFormatter.formatCurrency(result.unitCost!, locale)}/${matchedIngredient.purchaseUnitId}',
+                    '${NumberFormatter.formatCurrency(result.unitCost!, locale, context.watch<NumberFormatCubit>().state)}/${matchedIngredient.purchaseUnitId}',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -520,6 +521,7 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
                             NumberFormatter.formatCurrency(
                               _calculateIngredientCost(result),
                               locale,
+                              context.watch<NumberFormatCubit>().state,
                             ),
                             style: AppTextStyles.bodyMedium.copyWith(
                               color: AppColors.accent,
@@ -657,7 +659,7 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
                   children: [
                     Text(AppStrings.getAiRecipeTotalCost(locale)),
                     Text(
-                      NumberFormatter.formatCurrency(totalCost, locale),
+                      NumberFormatter.formatCurrency(totalCost, locale, context.watch<NumberFormatCubit>().state),
                       style: AppTextStyles.headline4.copyWith(
                         color: AppColors.accent,
                         fontWeight: FontWeight.w700,

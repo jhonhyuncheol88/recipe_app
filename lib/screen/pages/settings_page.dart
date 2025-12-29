@@ -10,6 +10,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/app_strings.dart';
 import '../../util/app_locale.dart';
+import '../../util/number_format_style.dart';
 import '../widget/index.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../controller/index.dart';
@@ -230,6 +231,15 @@ class _SettingsPageState extends State<SettingsPage> {
           onTap: _showLanguageDialog,
         ),
         SettingsListTile(
+          title: AppStrings.getNumberFormatSettings(locale),
+          subtitle: _getNumberFormatStyleDisplayName(
+            context.watch<NumberFormatCubit>().state,
+            locale,
+          ),
+          icon: Icons.numbers,
+          onTap: _showNumberFormatDialog,
+        ),
+        SettingsListTile(
           title: AppStrings.getSendFeedback(locale),
           subtitle: AppStrings.getSendFeedbackDescription(locale),
           icon: Icons.mail_outline,
@@ -338,6 +348,82 @@ class _SettingsPageState extends State<SettingsPage> {
         Navigator.pop(context);
       },
     );
+  }
+
+  void _showNumberFormatDialog() {
+    final currentLocale = context.read<LocaleCubit>().state;
+    final currentFormat = context.read<NumberFormatCubit>().state;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          AppStrings.getNumberFormatSettings(currentLocale),
+          style: AppTextStyles.headline4,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildNumberFormatOption(
+              AppStrings.getNumberFormatThousandsComma(currentLocale),
+              NumberFormatStyle.thousandsComma,
+              currentFormat,
+            ),
+            _buildNumberFormatOption(
+              AppStrings.getNumberFormatDollarStyle(currentLocale),
+              NumberFormatStyle.dollarStyle,
+              currentFormat,
+            ),
+            _buildNumberFormatOption(
+              AppStrings.getNumberFormatEuropeanStyle(currentLocale),
+              NumberFormatStyle.europeanStyle,
+              currentFormat,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              AppStrings.getCancel(currentLocale),
+              style: AppTextStyles.buttonMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNumberFormatOption(
+    String title,
+    NumberFormatStyle value,
+    NumberFormatStyle currentValue,
+  ) {
+    return ListTile(
+      title: Text(title),
+      trailing: currentValue == value
+          ? Icon(Icons.check, color: AppColors.accent)
+          : null,
+      onTap: () {
+        context.read<NumberFormatCubit>().setFormatStyle(value);
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  String _getNumberFormatStyleDisplayName(
+    NumberFormatStyle style,
+    AppLocale locale,
+  ) {
+    switch (style) {
+      case NumberFormatStyle.thousandsComma:
+        return AppStrings.getNumberFormatThousandsComma(locale);
+      case NumberFormatStyle.dollarStyle:
+        return AppStrings.getNumberFormatDollarStyle(locale);
+      case NumberFormatStyle.europeanStyle:
+        return AppStrings.getNumberFormatEuropeanStyle(locale);
+    }
   }
 
   void _exportData() {

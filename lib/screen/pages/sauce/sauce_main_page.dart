@@ -10,6 +10,7 @@ import '../../../util/number_formatter.dart';
 import '../../../service/sauce_cost_service.dart';
 import '../../../util/unit_converter.dart' as uc;
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
 
 class SauceMainPage extends StatefulWidget {
   const SauceMainPage({super.key});
@@ -68,7 +69,7 @@ class _SauceMainPageState extends State<SauceMainPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${AppStrings.getTotalWeight(currentLocale)}: ${NumberFormatter.formatNumber(sauce.totalWeight.toInt(), currentLocale)} | ${AppStrings.getTotalCost(currentLocale)}: ${NumberFormatter.formatCurrency(sauce.totalCost, currentLocale)}',
+                          '${AppStrings.getTotalWeight(currentLocale)}: ${NumberFormatter.formatNumber(sauce.totalWeight.toInt(), context.watch<NumberFormatCubit>().state)} | ${AppStrings.getTotalCost(currentLocale)}: ${NumberFormatter.formatCurrency(sauce.totalCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -91,7 +92,7 @@ class _SauceMainPageState extends State<SauceMainPage> {
                                 ? 'ml'
                                 : '개';
                             return Text(
-                              '단위당 가격: ${NumberFormatter.formatPerUnitText(unitCost, unitId, currentLocale)}',
+                              '단위당 가격: ${NumberFormatter.formatPerUnitText(unitCost, unitId, currentLocale, context.watch<NumberFormatCubit>().state)}',
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: AppColors.textSecondary,
                               ),

@@ -13,6 +13,7 @@ import '../../../model/ingredient.dart';
 import '../../../model/index.dart';
 import '../../../util/number_formatter.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
 import '../../../router/router_helper.dart';
 
 /// 재료 메인 페이지
@@ -230,7 +231,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                 child: ListTile(
                   title: Text(sauce.name, style: AppTextStyles.bodyMedium),
                   subtitle: Text(
-                    '${AppStrings.getTotalWeight(currentLocale)}: ${NumberFormatter.formatNumber(sauce.totalWeight.toInt(), currentLocale)} | ${AppStrings.getTotalCost(currentLocale)}: ${NumberFormatter.formatCurrency(sauce.totalCost, currentLocale)}',
+                    '${AppStrings.getTotalWeight(currentLocale)}: ${NumberFormatter.formatNumber(sauce.totalWeight.toInt(), context.watch<NumberFormatCubit>().state)} | ${AppStrings.getTotalCost(currentLocale)}: ${NumberFormatter.formatCurrency(sauce.totalCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),

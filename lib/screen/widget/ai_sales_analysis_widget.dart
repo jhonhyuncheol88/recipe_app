@@ -6,6 +6,7 @@ import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/number_formatter.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
 
 /// AI 판매 분석 결과를 보여주는 위젯
 class AiSalesAnalysisWidget extends StatelessWidget {
@@ -118,7 +119,7 @@ class AiSalesAnalysisWidget extends StatelessWidget {
       children: [
         _buildInfoRow(
           AppStrings.getRecommendedPrice(locale),
-          _formatPrice(optimalPrice['recommended_price']),
+          _formatPrice(optimalPrice['recommended_price'], context),
         ),
         _buildInfoRow(
           AppStrings.getTargetMarginRate(locale),
@@ -126,7 +127,7 @@ class AiSalesAnalysisWidget extends StatelessWidget {
         ),
         _buildInfoRow(
           AppStrings.getProfitPerServing(locale),
-          _formatPrice(optimalPrice['profit_per_serving']),
+          _formatPrice(optimalPrice['profit_per_serving'], context),
         ),
         const SizedBox(height: 8),
         Container(
@@ -136,7 +137,7 @@ class AiSalesAnalysisWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
-            _formatAnalysisText(optimalPrice['price_analysis'] ?? '-'),
+            _formatAnalysisText(optimalPrice['price_analysis'] ?? '-', context),
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textPrimary,
             ),
@@ -441,17 +442,17 @@ class AiSalesAnalysisWidget extends StatelessWidget {
   }
 
   /// 가격 포맷팅 (AI 전용 포맷터 사용)
-  String _formatPrice(dynamic value) {
-    return NumberFormatter.formatAiPrice(value, locale);
+  String _formatPrice(dynamic value, BuildContext context) {
+    return NumberFormatter.formatAiPrice(value, locale, context.watch<NumberFormatCubit>().state);
   }
 
   /// 퍼센트 포맷팅 (AI 전용 포맷터 사용)
-  String _formatPercentage(dynamic value) {
-    return NumberFormatter.formatAiPercentage(value, locale);
+  String _formatPercentage(dynamic value, BuildContext context) {
+    return NumberFormatter.formatAiPercentage(value, context.watch<NumberFormatCubit>().state);
   }
 
   /// AI 분석 결과 텍스트에서 숫자 포맷팅 개선
-  String _formatAnalysisText(dynamic text) {
+  String _formatAnalysisText(dynamic text, BuildContext context) {
     if (text == null) return '';
 
     final textStr = text.toString();
@@ -464,7 +465,7 @@ class AiSalesAnalysisWidget extends StatelessWidget {
       final numberStr = match.group(0)?.replaceAll(',', '') ?? '';
       final number = int.tryParse(numberStr);
       if (number != null) {
-        return NumberFormatter.formatNumber(number, locale);
+        return NumberFormatter.formatNumber(number, context.watch<NumberFormatCubit>().state);
       }
       return match.group(0) ?? '';
     });

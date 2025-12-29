@@ -23,6 +23,7 @@ import '../../../data/index.dart';
 import '../../../service/sauce_cost_service.dart';
 import '../../../util/unit_converter.dart' as uc;
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
 
 /// 레시피 수정 페이지
 class RecipeEditPage extends StatefulWidget {
@@ -506,7 +507,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                       ),
                                     ),
                                     Text(
-                                      '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale)}',
+                                      '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)}',
                                       style: AppTextStyles.bodySmall.copyWith(
                                         color: AppColors.textSecondary,
                                       ),
@@ -621,7 +622,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                 initialValue: amount > 0
                                     ? NumberFormatter.formatNumber(
                                         amount.toInt(),
-                                        currentLocale,
+                                        context.watch<NumberFormatCubit>().state,
                                       )
                                     : null,
                                 onChanged: (value) async {
@@ -670,6 +671,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                         NumberFormatter.formatCurrency(
                                           cost,
                                           currentLocale,
+                                          context.watch<NumberFormatCubit>().state,
                                         ),
                                         style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                                         textAlign: TextAlign.left,
@@ -745,7 +747,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                       text: entry.amount > 0
                           ? NumberFormatter.formatNumber(
                               entry.amount.toInt(),
-                              currentLocale,
+                              context.watch<NumberFormatCubit>().state,
                             )
                           : '',
                     ),
@@ -788,7 +790,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                             ? 'ml'
                                             : '개';
                                         return Text(
-                                          '1$unitId당 ${NumberFormatter.formatCurrency(unitCost, currentLocale)}',
+                                          '1$unitId당 ${NumberFormatter.formatCurrency(unitCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
                                           style: AppTextStyles.bodySmall
                                               .copyWith(
                                                 color: AppColors.textSecondary,
@@ -848,7 +850,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                   controller.text =
                                       NumberFormatter.formatNumber(
                                         converted.toInt(),
-                                        context.read<LocaleCubit>().state,
+                                        context.watch<NumberFormatCubit>().state,
                                       );
                                   await context
                                       .read<rc.RecipeCubit>()
@@ -948,6 +950,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                               NumberFormatter.formatCurrency(
                                                 cost,
                                                 currentLocale,
+                                                context.watch<NumberFormatCubit>().state,
                                               ),
                                               style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                                               textAlign: TextAlign.left,
@@ -1058,6 +1061,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                           NumberFormatter.formatCurrency(
                             ingredientSum,
                             currentLocale,
+                            context.watch<NumberFormatCubit>().state,
                           ),
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w600,
@@ -1071,10 +1075,11 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                       children: [
                         Text(AppStrings.getSauceCostLabel(currentLocale)),
                         Text(
-                          NumberFormatter.formatCurrency(
-                            sauceSum,
-                            currentLocale,
-                          ),
+                                              NumberFormatter.formatCurrency(
+                                                sauceSum,
+                                                currentLocale,
+                                                context.watch<NumberFormatCubit>().state,
+                                              ),
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -1092,7 +1097,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                           ),
                         ),
                         Text(
-                          NumberFormatter.formatCurrency(total, currentLocale),
+                          NumberFormatter.formatCurrency(total, currentLocale, context.watch<NumberFormatCubit>().state),
                           style: AppTextStyles.headline4.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w700,
@@ -1182,13 +1187,13 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${NumberFormatter.formatCurrency(ingredient.purchasePrice, currentLocale)} / ${_formatNumber(ingredient.purchaseAmount)} ${_getUnitName(ingredient.purchaseUnitId)}',
+                                '${NumberFormatter.formatCurrency(ingredient.purchasePrice, currentLocale, context.watch<NumberFormatCubit>().state)} / ${_formatNumber(ingredient.purchaseAmount)} ${_getUnitName(ingredient.purchaseUnitId)}',
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
                               ),
                               Text(
-                                '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale)}',
+                                '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)}',
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.accent,
                                   fontWeight: FontWeight.w600,
@@ -1391,7 +1396,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                             ),
                           ),
                           Text(
-                            '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale)}',
+                            '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)}',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.accent,
                             ),
@@ -1413,7 +1418,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
               initialValue: currentAmount > 0
                   ? NumberFormatter.formatNumber(
                       currentAmount.toInt(),
-                      currentLocale,
+                      context.watch<NumberFormatCubit>().state,
                     )
                   : null,
               onChanged: (value) {
@@ -1442,6 +1447,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                     NumberFormatter.formatCurrency(
                       _ingredientCosts[ingredient.id] ?? 0.0,
                       currentLocale,
+                      context.watch<NumberFormatCubit>().state,
                     ),
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: AppColors.accent,

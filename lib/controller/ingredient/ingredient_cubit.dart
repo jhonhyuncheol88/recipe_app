@@ -59,7 +59,7 @@ class IngredientCubit extends Cubit<IngredientState> {
     try {
       developer.log('재료 추가 시작', name: 'IngredientCubit');
       developer.log(
-        '입력 데이터: name=$name, price=$purchasePrice, amount=$purchaseAmount, unit=$purchaseUnitId',
+        '입력 데이터: name=$name, price=$purchasePrice (type: ${purchasePrice.runtimeType}), amount=$purchaseAmount, unit=$purchaseUnitId',
         name: 'IngredientCubit',
       );
 
@@ -78,6 +78,10 @@ class IngredientCubit extends Cubit<IngredientState> {
 
       developer.log(
         'Ingredient 객체 생성 완료: ${ingredient.toJson()}',
+        name: 'IngredientCubit',
+      );
+      developer.log(
+        'purchasePrice 상세: value=${ingredient.purchasePrice}, isInteger=${ingredient.purchasePrice == ingredient.purchasePrice.roundToDouble()}',
         name: 'IngredientCubit',
       );
 

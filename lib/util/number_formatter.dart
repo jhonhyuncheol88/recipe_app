@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'app_locale.dart';
+import 'number_format_style.dart';
 import 'unit_converter.dart' as uc;
 
 // ThousandsSeparatorInputFormatter를 export
@@ -38,133 +39,133 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
 
 /// 국가별 숫자 포맷팅 유틸리티
 class NumberFormatter {
-  static final Map<AppLocale, NumberFormat> _currencyFormatters = {
-    AppLocale.korea: NumberFormat.currency(
-      locale: 'ko_KR',
-      symbol: '₩',
-      decimalDigits: 0,
-    ),
-    AppLocale.japan: NumberFormat.currency(
-      locale: 'ja_JP',
-      symbol: '¥',
-      decimalDigits: 0, // 엔은 정수로만 표시
-    ),
-    AppLocale.china: NumberFormat.currency(
-      locale: 'zh_CN',
-      symbol: '¥',
-      decimalDigits: 2, // 위안은 소수점 2자리
-    ),
-    AppLocale.usa: NumberFormat.currency(
-      locale: 'en_US',
-      symbol: '\$',
-      decimalDigits: 2, // 달러는 소수점 2자리
-    ),
-    AppLocale.euro: NumberFormat.currency(
-      locale: 'de_DE',
-      symbol: '€',
-      decimalDigits: 2,
-    ),
-    AppLocale.vietnam: NumberFormat.currency(
-      locale: 'vi_VN',
-      symbol: '₫',
-      decimalDigits: 0, // 동은 정수로만 표시
-    ),
-  };
-
-  static final Map<AppLocale, NumberFormat> _numberFormatters = {
-    AppLocale.korea: NumberFormat('#,###', 'ko_KR'),
-    AppLocale.japan: NumberFormat('#,###', 'ja_JP'),
-    AppLocale.china: NumberFormat('#,###', 'zh_CN'),
-    AppLocale.usa: NumberFormat('#,###', 'en_US'),
-    AppLocale.euro: NumberFormat('#,###', 'de_DE'),
-    AppLocale.vietnam: NumberFormat('#,###', 'vi_VN'),
-  };
-
-  static final Map<AppLocale, NumberFormat> _decimalFormatters = {
-    AppLocale.korea: NumberFormat('#,##0.00', 'ko_KR'),
-    AppLocale.japan: NumberFormat('#,##0.00', 'ja_JP'),
-    AppLocale.china: NumberFormat('#,##0.00', 'zh_CN'),
-    AppLocale.usa: NumberFormat('#,##0.00', 'en_US'),
-    AppLocale.euro: NumberFormat('#,##0.00', 'de_DE'),
-    AppLocale.vietnam: NumberFormat('#,##0.00', 'vi_VN'),
-  };
-
-  static final Map<AppLocale, NumberFormat> _percentFormatters = {
-    AppLocale.korea: NumberFormat.percentPattern('ko_KR'),
-    AppLocale.japan: NumberFormat.percentPattern('ja_JP'),
-    AppLocale.china: NumberFormat.percentPattern('zh_CN'),
-    AppLocale.usa: NumberFormat.percentPattern('en_US'),
-    AppLocale.euro: NumberFormat.percentPattern('de_DE'),
-    AppLocale.vietnam: NumberFormat.percentPattern('vi_VN'),
-  };
-
-  /// 통화 포맷팅
-  static String formatCurrency(double amount, AppLocale locale) {
-    return _currencyFormatters[locale]?.format(amount) ?? amount.toString();
-  }
-
-  /// 숫자 포맷팅 (천 단위 구분자)
-  static String formatNumber(int number, AppLocale locale) {
-    return _numberFormatters[locale]?.format(number) ?? number.toString();
-  }
-
-  /// 소수점 숫자 포맷팅
-  static String formatDecimal(double number, AppLocale locale) {
-    return _decimalFormatters[locale]?.format(number) ?? number.toString();
-  }
-
-  /// 퍼센트 포맷팅
-  static String formatPercent(double percent, AppLocale locale) {
-    return _percentFormatters[locale]?.format(percent) ?? '${percent}%';
-  }
-
-  /// 가격 포맷팅 (원화는 정수, 달러는 소수점 2자리, 위안은 소수점 2자리, 엔은 정수)
-  static String formatPrice(double price, AppLocale locale) {
-    switch (locale) {
-      case AppLocale.korea:
-        return NumberFormat.currency(
-          locale: 'ko_KR',
-          symbol: '₩',
-          decimalDigits: 0,
-        ).format(price);
-      case AppLocale.japan:
-        return NumberFormat.currency(
-          locale: 'ja_JP',
-          symbol: '¥',
-          decimalDigits: 0, // 엔은 정수로만 표시
-        ).format(price);
-      case AppLocale.china:
-        return NumberFormat.currency(
-          locale: 'zh_CN',
-          symbol: '¥',
-          decimalDigits: 2, // 위안은 소수점 2자리
-          customPattern: '¥#,##0.00', // 천 단위 구분자 사용
-        ).format(price);
-      case AppLocale.usa:
-        return NumberFormat.currency(
-          locale: 'en_US',
-          symbol: '\$',
-          decimalDigits: 2, // 달러는 소수점 2자리
-        ).format(price);
-      case AppLocale.euro:
-        return NumberFormat.currency(
-          locale: 'de_DE',
-          symbol: '€',
-          decimalDigits: 2,
-        ).format(price);
-      case AppLocale.vietnam:
-        return NumberFormat.currency(
-          locale: 'vi_VN',
-          symbol: '₫',
-          decimalDigits: 0, // 동은 정수로만 표시
-        ).format(price);
+  /// NumberFormatStyle에 따른 NumberFormat 생성
+  static NumberFormat _getNumberFormatter(
+    NumberFormatStyle style, {
+    bool includeDecimals = false,
+  }) {
+    switch (style) {
+      case NumberFormatStyle.thousandsComma:
+        return NumberFormat(
+          includeDecimals ? '#,##0.00' : '#,###',
+          'en_US',
+        );
+      case NumberFormatStyle.dollarStyle:
+        return NumberFormat(
+          includeDecimals ? '#,##0.00' : '#,###',
+          'en_US',
+        );
+      case NumberFormatStyle.europeanStyle:
+        // 유럽식: 천단위 점, 소수점 콤마
+        // NumberFormat 패턴은 항상 .을 소수점으로 사용하고, locale이 자동 변환
+        return NumberFormat(
+          includeDecimals ? '#,##0.00' : '#,###',
+          'de_DE',
+        );
     }
   }
 
+  /// 통화 심볼 가져오기 (AppLocale 기반)
+  static String _getCurrencySymbol(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '₩';
+      case AppLocale.japan:
+        return '¥';
+      case AppLocale.china:
+        return '¥';
+      case AppLocale.usa:
+        return '\$';
+      case AppLocale.euro:
+        return '€';
+      case AppLocale.vietnam:
+        return '₫';
+    }
+  }
+
+  /// 통화 소수점 자릿수 가져오기 (AppLocale 기반)
+  static int _getCurrencyDecimalDigits(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 0;
+      case AppLocale.japan:
+        return 0;
+      case AppLocale.china:
+        return 2;
+      case AppLocale.usa:
+        return 2;
+      case AppLocale.euro:
+        return 2;
+      case AppLocale.vietnam:
+        return 0;
+    }
+  }
+
+  /// 통화 포맷팅
+  /// 소수점 2자리까지 표시하되, .00인 경우는 생략
+  static String formatCurrency(
+    double amount,
+    AppLocale locale,
+    NumberFormatStyle formatStyle,
+  ) {
+    final symbol = _getCurrencySymbol(locale);
+
+    // 항상 소수점 2자리까지 포맷팅
+    final formatter = _getNumberFormatter(
+      formatStyle,
+      includeDecimals: true,
+    );
+
+    // 통화 심볼을 수동으로 추가
+    String formatted = formatter.format(amount);
+
+    // .00 또는 ,00으로 끝나면 제거 (유럽식은 ,00)
+    if (formatted.endsWith('.00')) {
+      formatted = formatted.substring(0, formatted.length - 3);
+    } else if (formatted.endsWith(',00')) {
+      // 유럽식 포맷 (천단위 점, 소수점 콤마)
+      formatted = formatted.substring(0, formatted.length - 3);
+    }
+
+    return '$symbol$formatted';
+  }
+
+  /// 숫자 포맷팅 (천 단위 구분자)
+  static String formatNumber(int number, NumberFormatStyle formatStyle) {
+    final formatter = _getNumberFormatter(formatStyle);
+    return formatter.format(number);
+  }
+
+  /// 소수점 숫자 포맷팅
+  static String formatDecimal(double number, NumberFormatStyle formatStyle) {
+    final formatter = _getNumberFormatter(formatStyle, includeDecimals: true);
+    return formatter.format(number);
+  }
+
+  /// 퍼센트 포맷팅
+  static String formatPercent(double percent, NumberFormatStyle formatStyle) {
+    // 퍼센트는 기본적으로 소수점 포함
+    final formatter = _getNumberFormatter(formatStyle, includeDecimals: true);
+    return '${formatter.format(percent / 100)}%';
+  }
+
+  /// 가격 포맷팅 (원화는 정수, 달러는 소수점 2자리, 위안은 소수점 2자리, 엔은 정수)
+  static String formatPrice(
+    double price,
+    AppLocale locale,
+    NumberFormatStyle formatStyle,
+  ) {
+    return formatCurrency(price, locale, formatStyle);
+  }
+
   /// 무게 포맷팅
-  static String formatWeight(double weight, String unit, AppLocale locale) {
-    final formattedNumber =
-        _decimalFormatters[locale]?.format(weight) ?? weight.toString();
+  static String formatWeight(
+    double weight,
+    String unit,
+    AppLocale locale,
+    NumberFormatStyle formatStyle,
+  ) {
+    final formattedNumber = formatDecimal(weight, formatStyle);
 
     switch (locale) {
       case AppLocale.korea:
@@ -183,9 +184,12 @@ class NumberFormatter {
   }
 
   /// 수량 포맷팅
-  static String formatQuantity(int quantity, AppLocale locale) {
-    final formattedNumber =
-        _numberFormatters[locale]?.format(quantity) ?? quantity.toString();
+  static String formatQuantity(
+    int quantity,
+    AppLocale locale,
+    NumberFormatStyle formatStyle,
+  ) {
+    final formattedNumber = formatNumber(quantity, formatStyle);
 
     switch (locale) {
       case AppLocale.korea:
@@ -209,9 +213,9 @@ class NumberFormatter {
     String fromUnit,
     String toUnit,
     AppLocale locale,
+    NumberFormatStyle formatStyle,
   ) {
-    final formattedValue =
-        _decimalFormatters[locale]?.format(value) ?? value.toString();
+    final formattedValue = formatDecimal(value, formatStyle);
 
     switch (locale) {
       case AppLocale.korea:
@@ -270,6 +274,7 @@ class NumberFormatter {
     double unitPrice,
     String unitId,
     AppLocale locale,
+    NumberFormatStyle formatStyle,
   ) {
     final unitType = uc.UnitConverter.getUnitType(unitId);
     final label = unitType == uc.UnitType.count
@@ -277,7 +282,7 @@ class NumberFormatter {
         : unitType == uc.UnitType.weight
             ? 'g당'
             : 'ml당';
-    return '$label ${formatCurrency(unitPrice, locale)}';
+    return '$label ${formatCurrency(unitPrice, locale, formatStyle)}';
   }
 
   /// 기본 단위 기준 단가 (예: ₩120 / g)
@@ -285,6 +290,7 @@ class NumberFormatter {
     double unitPrice,
     String unitId,
     AppLocale locale,
+    NumberFormatStyle formatStyle,
   ) {
     final unitType = uc.UnitConverter.getUnitType(unitId);
     final baseSymbol = unitType == uc.UnitType.count
@@ -292,15 +298,19 @@ class NumberFormatter {
         : unitType == uc.UnitType.weight
             ? 'g'
             : 'ml';
-    return '${formatCurrency(unitPrice, locale)} / $baseSymbol';
+    return '${formatCurrency(unitPrice, locale, formatStyle)} / $baseSymbol';
   }
 
   /// AI 분석 결과용 가격 포맷팅 (천 단위 구분자 포함)
-  static String formatAiPrice(dynamic value, AppLocale locale) {
-    if (value == null) return formatCurrency(0, locale);
+  static String formatAiPrice(
+    dynamic value,
+    AppLocale locale,
+    NumberFormatStyle formatStyle,
+  ) {
+    if (value == null) return formatCurrency(0, locale, formatStyle);
 
     final strValue = value.toString().trim();
-    if (strValue.isEmpty) return formatCurrency(0, locale);
+    if (strValue.isEmpty) return formatCurrency(0, locale, formatStyle);
 
     // 이미 통화 기호가 포함되어 있으면 그대로 반환
     if (strValue.contains('₩') ||
@@ -316,7 +326,7 @@ class NumberFormatter {
     if (RegExp(r'^\d+(\.\d+)?$').hasMatch(strValue)) {
       final number = double.tryParse(strValue);
       if (number != null) {
-        return formatCurrency(number, locale);
+        return formatCurrency(number, locale, formatStyle);
       }
     }
 
@@ -324,11 +334,14 @@ class NumberFormatter {
   }
 
   /// AI 분석 결과용 퍼센트 포맷팅
-  static String formatAiPercentage(dynamic value, AppLocale locale) {
-    if (value == null) return formatPercent(0, locale);
+  static String formatAiPercentage(
+    dynamic value,
+    NumberFormatStyle formatStyle,
+  ) {
+    if (value == null) return formatPercent(0, formatStyle);
 
     final strValue = value.toString().trim();
-    if (strValue.isEmpty) return formatPercent(0, locale);
+    if (strValue.isEmpty) return formatPercent(0, formatStyle);
 
     // 이미 "%"가 포함되어 있으면 그대로 반환
     if (strValue.contains('%')) return strValue;
@@ -337,7 +350,7 @@ class NumberFormatter {
     if (RegExp(r'^\d+(\.\d+)?$').hasMatch(strValue)) {
       final number = double.tryParse(strValue);
       if (number != null) {
-        return formatPercent(number, locale);
+        return formatPercent(number, formatStyle);
       }
     }
 
@@ -345,17 +358,20 @@ class NumberFormatter {
   }
 
   /// AI 분석 결과용 숫자 포맷팅 (천 단위 구분자만)
-  static String formatAiNumber(dynamic value, AppLocale locale) {
-    if (value == null) return formatNumber(0, locale);
+  static String formatAiNumber(
+    dynamic value,
+    NumberFormatStyle formatStyle,
+  ) {
+    if (value == null) return formatNumber(0, formatStyle);
 
     final strValue = value.toString().trim();
-    if (strValue.isEmpty) return formatNumber(0, locale);
+    if (strValue.isEmpty) return formatNumber(0, formatStyle);
 
     // 숫자만 있으면 천 단위 구분자만 적용
     if (RegExp(r'^\d+(\.\d+)?$').hasMatch(strValue)) {
       final number = double.tryParse(strValue);
       if (number != null) {
-        return formatNumber(number.round(), locale);
+        return formatNumber(number.round(), formatStyle);
       }
     }
 
@@ -363,14 +379,25 @@ class NumberFormatter {
   }
 
   /// 가격 문자열을 double로 파싱 (천 단위 구분자, 통화 기호 제거)
-  static double? parsePrice(String priceText) {
+  static double? parsePrice(String priceText, NumberFormatStyle formatStyle) {
     if (priceText.isEmpty) return null;
 
     // 통화 기호와 천 단위 구분자 제거
-    final cleanText = priceText
-        .replaceAll(RegExp(r'[₩¥\$€₫원]'), '')
-        .replaceAll(',', '')
-        .trim();
+    String cleanText = priceText.replaceAll(RegExp(r'[₩¥\$€₫원]'), '').trim();
+
+    // 포맷팅 스타일에 따라 구분자 제거
+    switch (formatStyle) {
+      case NumberFormatStyle.thousandsComma:
+      case NumberFormatStyle.dollarStyle:
+        // 콤마 제거
+        cleanText = cleanText.replaceAll(',', '');
+        break;
+      case NumberFormatStyle.europeanStyle:
+        // 유럽식: 점을 제거하고 콤마를 점으로 변환
+        cleanText = cleanText.replaceAll('.', '');
+        cleanText = cleanText.replaceAll(',', '.');
+        break;
+    }
 
     return double.tryParse(cleanText);
   }

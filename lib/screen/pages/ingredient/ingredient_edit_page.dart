@@ -9,6 +9,7 @@ import '../../../util/number_formatter.dart';
 import 'package:intl/intl.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
 
 import '../../../model/ingredient.dart';
 import '../../../model/tag.dart';
@@ -49,12 +50,8 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   void _initializeControllers() {
     _nameController = TextEditingController(text: widget.ingredient.name);
-    _priceController = TextEditingController(
-      text: NumberFormatter.formatCurrency(
-        widget.ingredient.purchasePrice,
-        AppLocale.korea,
-      ),
-    );
+    // _priceController는 build에서 초기화 (context 필요)
+    _priceController = TextEditingController();
     _amountController = TextEditingController(
       text: NumberFormat(
         '#,##0',
@@ -66,6 +63,16 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
     _selectedTagId = widget.ingredient.tagIds.isNotEmpty
         ? widget.ingredient.tagIds.first
         : '';
+  }
+
+  void _initializePriceController(BuildContext context) {
+    if (_priceController.text.isEmpty) {
+      _priceController.text = NumberFormatter.formatCurrency(
+        widget.ingredient.purchasePrice,
+        context.watch<LocaleCubit>().state,
+        context.watch<NumberFormatCubit>().state,
+      );
+    }
   }
 
   void _loadInitialData() {
@@ -108,6 +115,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    _initializePriceController(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -193,6 +201,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
           locale: currentLocale,
           onChanged: (price) {
             // 가격이 변경될 때 처리
+            print('CurrencyInputField onChanged: price=$price (type: ${price.runtimeType})');
           },
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
@@ -425,10 +434,15 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
     }
   }
 
-  // 포맷팅된 가격 파싱
+  // 포맷팅된 가격 파싱 (소수점 포함)
   double? _parseFormattedPrice(String value) {
-    final numbers = value.replaceAll(RegExp(r'[^\d]'), '');
-    return double.tryParse(numbers);
+    if (value.isEmpty) return null;
+    // 숫자와 소수점만 추출 (천 단위 구분자 제거)
+    final cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
+    final parsed = double.tryParse(cleanValue);
+    // 디버그 로그
+    print('_parseFormattedPrice: input="$value", clean="$cleanValue", parsed=$parsed');
+    return parsed;
   }
 
   // 포맷팅된 수량 파싱
@@ -458,14 +472,24 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
     });
 
     try {
+      final parsedPrice = _parseFormattedPrice(_priceController.text) ?? 0.0;
+      final parsedAmount = _parseFormattedAmount(_amountController.text) ?? 0.0;
+      
+      // 디버그 로그
+      print('_updateIngredient: priceController.text="${_priceController.text}"');
+      print('_updateIngredient: parsedPrice=$parsedPrice');
+      print('_updateIngredient: parsedAmount=$parsedAmount');
+      
       final updatedIngredient = widget.ingredient.copyWith(
         name: _nameController.text.trim(),
-        purchasePrice: _parseFormattedPrice(_priceController.text) ?? 0.0,
-        purchaseAmount: _parseFormattedAmount(_amountController.text) ?? 0.0,
+        purchasePrice: parsedPrice,
+        purchaseAmount: parsedAmount,
         purchaseUnitId: _selectedUnitId,
         expiryDate: _expiryDate,
         tagIds: _selectedTagId.isNotEmpty ? [_selectedTagId] : [],
       );
+      
+      print('_updateIngredient: updatedIngredient.purchasePrice=${updatedIngredient.purchasePrice}');
 
       context.read<IngredientCubit>().updateIngredient(updatedIngredient);
 

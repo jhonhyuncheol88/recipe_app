@@ -1042,4 +1042,73 @@ mixin AppStringsSettings {
         return 'Đang lưu nguyên liệu...';
     }
   }
+
+  /// 숫자 포맷팅 설정
+  static String getNumberFormatSettings(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '숫자 포맷팅 설정';
+      case AppLocale.japan:
+        return '数値フォーマット設定';
+      case AppLocale.china:
+        return '数字格式设置';
+      case AppLocale.usa:
+        return 'Number Format Settings';
+      case AppLocale.euro:
+        return 'Zahlenformat-Einstellungen';
+      case AppLocale.vietnam:
+        return 'Cài đặt định dạng số';
+    }
+  }
+
+  static String getNumberFormatThousandsComma(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '천단위 콤마식 (1,000,000)';
+      case AppLocale.japan:
+        return '千の位カンマ式 (1,000,000)';
+      case AppLocale.china:
+        return '千位逗号式 (1,000,000)';
+      case AppLocale.usa:
+        return 'Thousands Comma (1,000,000)';
+      case AppLocale.euro:
+        return 'Tausender-Komma (1,000,000)';
+      case AppLocale.vietnam:
+        return 'Dấu phẩy hàng nghìn (1,000,000)';
+    }
+  }
+
+  static String getNumberFormatDollarStyle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '달러식 (1,000.00)';
+      case AppLocale.japan:
+        return 'ドル式 (1,000.00)';
+      case AppLocale.china:
+        return '美元式 (1,000.00)';
+      case AppLocale.usa:
+        return 'Dollar Style (1,000.00)';
+      case AppLocale.euro:
+        return 'Dollar-Stil (1,000.00)';
+      case AppLocale.vietnam:
+        return 'Kiểu đô la (1,000.00)';
+    }
+  }
+
+  static String getNumberFormatEuropeanStyle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '유럽식 (100.000.000)';
+      case AppLocale.japan:
+        return 'ヨーロッパ式 (100.000.000)';
+      case AppLocale.china:
+        return '欧洲式 (100.000.000)';
+      case AppLocale.usa:
+        return 'European Style (100.000.000)';
+      case AppLocale.euro:
+        return 'Europäischer Stil (100.000.000)';
+      case AppLocale.vietnam:
+        return 'Kiểu châu Âu (100.000.000)';
+    }
+  }
 }

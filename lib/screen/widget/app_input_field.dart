@@ -4,7 +4,10 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/app_locale.dart';
 import '../../util/date_formatter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../util/number_formatter.dart';
+import '../../util/number_format_style.dart';
+import '../../controller/setting/number_format_cubit.dart';
 
 /// 앱에서 사용하는 공통 입력 필드 위젯
 class AppInputField extends StatelessWidget {
@@ -155,14 +158,14 @@ class NumberInputField extends StatelessWidget {
     final effectiveController =
         controller ??
         TextEditingController(
-          text: initialValue != null ? _formatNumber(initialValue!) : '',
+          text: initialValue != null ? _formatNumber(initialValue!, context) : '',
         );
 
     // controller가 있고 초기값이 있으면 포맷팅
     if (controller != null && controller!.text.isNotEmpty) {
       final number = double.tryParse(controller!.text);
       if (number != null) {
-        controller!.text = _formatNumber(number);
+        controller!.text = _formatNumber(number, context);
       }
     }
 
@@ -185,16 +188,16 @@ class NumberInputField extends StatelessWidget {
       },
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[\d,]')),
-        _NumberInputFormatter(locale),
+        _NumberInputFormatter(context.watch<NumberFormatCubit>().state),
       ],
       prefixIcon: const Icon(Icons.scale, color: AppColors.textSecondary),
     );
   }
 
   // 숫자 포맷팅 (천 단위 구분자, 정수만)
-  String _formatNumber(double number) {
+  String _formatNumber(double number, BuildContext context) {
     final asInt = number.round();
-    return NumberFormatter.formatNumber(asInt, locale);
+    return NumberFormatter.formatNumber(asInt, context.watch<NumberFormatCubit>().state);
   }
 }
 
@@ -285,9 +288,9 @@ class DateInputField extends StatelessWidget {
 
 /// 숫자 입력 포맷터
 class _NumberInputFormatter extends TextInputFormatter {
-  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
 
-  _NumberInputFormatter(this.locale);
+  _NumberInputFormatter(this.formatStyle);
 
   @override
   TextEditingValue formatEditUpdate(
@@ -307,7 +310,7 @@ class _NumberInputFormatter extends TextInputFormatter {
     }
 
     // 포맷팅된 값 생성 (천 단위 구분자, 정수만)
-    final formatted = NumberFormatter.formatNumber(number.round(), locale);
+    final formatted = NumberFormatter.formatNumber(number.round(), formatStyle);
 
     return TextEditingValue(
       text: formatted,
@@ -369,7 +372,7 @@ class CurrencyInputField extends StatelessWidget {
       },
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
-        _CurrencyInputFormatter(locale),
+        _CurrencyInputFormatter(context.watch<NumberFormatCubit>().state),
       ],
       prefixIcon: Icon(Icons.attach_money, color: AppColors.textSecondary),
     );
@@ -378,9 +381,9 @@ class CurrencyInputField extends StatelessWidget {
 
 /// 통화 입력 포맷터 (소수점 2자리 제한, 천 단위 구분자 포함)
 class _CurrencyInputFormatter extends TextInputFormatter {
-  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
 
-  _CurrencyInputFormatter(this.locale);
+  _CurrencyInputFormatter(this.formatStyle);
 
   @override
   TextEditingValue formatEditUpdate(
@@ -442,7 +445,7 @@ class _CurrencyInputFormatter extends TextInputFormatter {
       } else {
         final integerNumber = int.tryParse(integerPart);
         if (integerNumber != null) {
-          formattedText = '${NumberFormatter.formatNumber(integerNumber, locale)}.$decimalPart';
+          formattedText = '${NumberFormatter.formatNumber(integerNumber, formatStyle)}.$decimalPart';
         } else {
           formattedText = text;
         }
@@ -454,7 +457,7 @@ class _CurrencyInputFormatter extends TextInputFormatter {
       } else {
         final integerNumber = int.tryParse(integerPart);
         if (integerNumber != null) {
-          formattedText = NumberFormatter.formatNumber(integerNumber, locale);
+          formattedText = NumberFormatter.formatNumber(integerNumber, formatStyle);
         } else {
           formattedText = text;
         }

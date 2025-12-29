@@ -50,3 +50,4 @@ class RecipePriceHistory extends Equatable {
 }
 
 
+

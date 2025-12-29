@@ -13,6 +13,7 @@ import '../../../util/app_locale.dart';
 import '../../../util/number_formatter.dart';
 import '../../../util/unit_converter.dart' as uc;
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
 
 class SauceEditPage extends StatefulWidget {
   final Sauce sauce;
@@ -415,7 +416,7 @@ class _PerUnitPriceText extends StatelessWidget {
     final unitPrice = ingredient.purchasePrice / baseAmount;
     // 레이블과 심볼은 NumberFormatter 헬퍼에서 처리
     return Text(
-      '(${NumberFormatter.formatPerUnitText(unitPrice, ingredient.purchaseUnitId, AppLocale.korea)}: ${NumberFormatter.formatPerBaseUnitPrice(unitPrice, ingredient.purchaseUnitId, AppLocale.korea)})',
+      '(${NumberFormatter.formatPerUnitText(unitPrice, ingredient.purchaseUnitId, AppLocale.korea, context.watch<NumberFormatCubit>().state)}: ${NumberFormatter.formatPerBaseUnitPrice(unitPrice, ingredient.purchaseUnitId, AppLocale.korea, context.watch<NumberFormatCubit>().state)})',
       style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
     );
   }

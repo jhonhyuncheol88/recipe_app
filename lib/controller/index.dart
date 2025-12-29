@@ -25,6 +25,7 @@ export 'notification/notification_permission_cubit.dart';
 
 // 설정/로케일 관련
 export 'setting/locale_cubit.dart';
+export 'setting/number_format_cubit.dart';
 
 // 온보딩 관련
 export 'onboarding/onboarding_cubit.dart';

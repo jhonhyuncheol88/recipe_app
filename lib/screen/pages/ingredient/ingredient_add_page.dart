@@ -194,6 +194,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
           locale: currentLocale,
           onChanged: (price) {
             // 가격이 변경될 때 처리
+            print('CurrencyInputField onChanged: price=$price (type: ${price.runtimeType})');
           },
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
@@ -425,9 +426,12 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
   // 포맷팅된 가격 파싱 (소수점 포함)
   double? _parseFormattedPrice(String value) {
     if (value.isEmpty) return null;
-    // 숫자와 소수점만 추출
+    // 숫자와 소수점만 추출 (천 단위 구분자 제거)
     final cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
-    return double.tryParse(cleanValue);
+    final parsed = double.tryParse(cleanValue);
+    // 디버그 로그
+    print('_parseFormattedPrice: input="$value", clean="$cleanValue", parsed=$parsed');
+    return parsed;
   }
 
   // 포맷팅된 수량 파싱
@@ -457,16 +461,26 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
     });
 
     try {
+      final parsedPrice = _parseFormattedPrice(_priceController.text) ?? 0.0;
+      final parsedAmount = _parseFormattedAmount(_amountController.text) ?? 0.0;
+      
+      // 디버그 로그
+      print('_saveIngredient: priceController.text="${_priceController.text}"');
+      print('_saveIngredient: parsedPrice=$parsedPrice');
+      print('_saveIngredient: parsedAmount=$parsedAmount');
+      
       final ingredient = Ingredient(
         id: '', // Cubit에서 생성
         name: _nameController.text.trim(),
-        purchasePrice: _parseFormattedPrice(_priceController.text) ?? 0.0,
-        purchaseAmount: _parseFormattedAmount(_amountController.text) ?? 0.0,
+        purchasePrice: parsedPrice,
+        purchaseAmount: parsedAmount,
         purchaseUnitId: _selectedUnitId,
         expiryDate: _expiryDate,
         createdAt: DateTime.now(),
         tagIds: _selectedTagId.isNotEmpty ? [_selectedTagId] : [],
       );
+      
+      print('_saveIngredient: ingredient.purchasePrice=${ingredient.purchasePrice}');
 
       context.read<IngredientCubit>().addIngredient(
         name: ingredient.name,

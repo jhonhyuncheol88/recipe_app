@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/app_strings.dart';
 import '../../util/app_locale.dart';
 import '../../util/number_formatter.dart';
+import '../../controller/setting/number_format_cubit.dart';
 
 import '../../model/recipe.dart';
 
@@ -322,7 +324,7 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    NumberFormatter.formatCurrency(totalPrice, widget.locale),
+                    NumberFormatter.formatCurrency(totalPrice, widget.locale, context.watch<NumberFormatCubit>().state),
                     style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                     textAlign: TextAlign.left,
                   ),

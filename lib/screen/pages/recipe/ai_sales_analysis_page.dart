@@ -10,6 +10,7 @@ import '../../../service/admob_service.dart';
 import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/ad/ad_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
 import '../../../model/recipe.dart';
 import '../../widget/ai_sales_analysis_widget.dart';
 import '../../widget/index.dart';
@@ -206,6 +207,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
                     NumberFormatter.formatCurrency(
                       (widget.recipe?.totalCost ?? 0).toDouble(),
                       locale,
+                      context.watch<NumberFormatCubit>().state,
                     ),
                   ),
                 ),
@@ -216,6 +218,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
                     NumberFormatter.formatQuantity(
                       widget.recipe?.ingredients.length ?? 0,
                       locale,
+                      context.watch<NumberFormatCubit>().state,
                     ),
                   ),
                 ),

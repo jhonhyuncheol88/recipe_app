@@ -26,6 +26,7 @@ import '../../../data/index.dart';
 import '../../../service/sauce_cost_service.dart';
 import '../../../util/unit_converter.dart' as uc;
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
 // import '../../../model/index.dart' as models;
 
 /// 레시피 추가 페이지
@@ -309,7 +310,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                             fit: BoxFit.scaleDown,
                                             alignment: Alignment.centerLeft,
                                             child: Text(
-                                              '1${ps.unitId}당 ${NumberFormatter.formatCurrency(unitCost, currentLocale)}',
+                                              '1${ps.unitId}당 ${NumberFormatter.formatCurrency(unitCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
                                               style: AppTextStyles.bodySmall
                                                   .copyWith(
                                                 color: AppColors.textSecondary,
@@ -393,10 +394,11 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                           fit: BoxFit.scaleDown,
                                           alignment: Alignment.centerLeft,
                                           child: Text(
-                                            NumberFormatter.formatCurrency(
-                                              cost,
-                                              currentLocale,
-                                            ),
+NumberFormatter.formatCurrency(
+                                          cost,
+                                          currentLocale,
+                                          context.watch<NumberFormatCubit>().state,
+                                        ),
                                             style: AppTextStyles.bodyMedium
                                                 .copyWith(
                                               color: AppColors.accent,
@@ -483,7 +485,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
         text: amount > 0
             ? NumberFormatter.formatNumber(
                 amount.toInt(),
-                context.read<LocaleCubit>().state,
+                context.watch<NumberFormatCubit>().state,
               )
             : '',
       );
@@ -501,7 +503,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
         text: current.amount > 0
             ? NumberFormatter.formatNumber(
                 current.amount.toInt(),
-                context.read<LocaleCubit>().state,
+                context.watch<NumberFormatCubit>().state,
               )
             : '',
       );
@@ -717,7 +719,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-                                      '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale)}',
+                                      '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)}',
                                       style: AppTextStyles.bodySmall.copyWith(
                                         color: AppColors.textSecondary,
                                       ),
@@ -807,7 +809,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                 amountController.text =
                                     NumberFormatter.formatNumber(
                                   converted.toInt(),
-                                  context.read<LocaleCubit>().state,
+                                  context.watch<NumberFormatCubit>().state,
                                 );
                                 setState(() {
                                   _ingredientUnitIds[ingredient.id] = v;
@@ -860,10 +862,11 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-                                      NumberFormatter.formatCurrency(
-                                        cost,
-                                        currentLocale,
-                                      ),
+NumberFormatter.formatCurrency(
+                                          cost,
+                                          currentLocale,
+                                          context.watch<NumberFormatCubit>().state,
+                                        ),
                                       style: AppTextStyles.bodyMedium.copyWith(
                                         color: AppColors.accent,
                                         fontWeight: FontWeight.w600,
@@ -952,7 +955,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                '1$baseU당 ${NumberFormatter.formatCurrency(uCost, currentLocale)}',
+                                '1$baseU당 ${NumberFormatter.formatCurrency(uCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
@@ -1139,6 +1142,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                             NumberFormatter.formatCurrency(
                               ingredientSum,
                               currentLocale,
+                              context.watch<NumberFormatCubit>().state,
                             ),
                             style: AppTextStyles.bodyMedium.copyWith(
                               fontWeight: FontWeight.w600,
@@ -1166,6 +1170,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                             NumberFormatter.formatCurrency(
                               sauceSum,
                               currentLocale,
+                              context.watch<NumberFormatCubit>().state,
                             ),
                             style: AppTextStyles.bodyMedium.copyWith(
                               fontWeight: FontWeight.w600,
@@ -1194,7 +1199,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                           alignment: Alignment.centerRight,
                           child: Text(
                             NumberFormatter.formatCurrency(
-                                total, currentLocale),
+                                total, currentLocale, context.watch<NumberFormatCubit>().state),
                             style: AppTextStyles.headline4.copyWith(
                               color: AppColors.accent,
                               fontWeight: FontWeight.w700,
@@ -1313,7 +1318,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              '${NumberFormatter.formatCurrency(ing.purchasePrice, currentLocale)} / ${_formatNumber(ing.purchaseAmount)} ${_getUnitName(ing.purchaseUnitId)} (1${_getUnitName(ing.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale)})',
+                              '${NumberFormatter.formatCurrency(ing.purchasePrice, currentLocale, context.watch<NumberFormatCubit>().state)} / ${_formatNumber(ing.purchaseAmount)} ${_getUnitName(ing.purchaseUnitId)} (1${_getUnitName(ing.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)})',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),

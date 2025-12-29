@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/number_formatter.dart';
 import '../../util/app_locale.dart';
 import '../../util/app_strings.dart';
 import '../../model/recipe.dart';
+import '../../controller/setting/number_format_cubit.dart';
 
 /// 앱에서 사용하는 공통 카드 위젯
 class AppCard extends StatelessWidget {
@@ -132,7 +134,11 @@ class IngredientCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                NumberFormatter.formatCurrency(price, locale),
+                NumberFormatter.formatCurrency(
+                  price,
+                  locale,
+                  context.watch<NumberFormatCubit>().state,
+                ),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.accent,
@@ -140,7 +146,7 @@ class IngredientCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                '${NumberFormatter.formatNumber(amount.toInt(), locale)} $unit',
+                '${NumberFormatter.formatNumber(amount.toInt(), context.watch<NumberFormatCubit>().state)} $unit',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -150,7 +156,7 @@ class IngredientCard extends StatelessWidget {
           if (unitPrice != null) ...[
             const SizedBox(height: 4),
             Text(
-              '${NumberFormatter.formatCurrency(unitPrice!, locale)}/$unit',
+              '${NumberFormatter.formatCurrency(unitPrice!, locale, context.watch<NumberFormatCubit>().state)}/$unit',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textLight,
                     fontStyle: FontStyle.italic,
@@ -407,7 +413,7 @@ class RecipeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${NumberFormatter.formatQuantity(ingredientCount, locale)} ${AppStrings.getUnitPiece(locale)}',
+                      '${NumberFormatter.formatQuantity(ingredientCount, locale, context.watch<NumberFormatCubit>().state)} ${AppStrings.getUnitPiece(locale)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
@@ -428,7 +434,7 @@ class RecipeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${NumberFormatter.formatNumber(totalWeight.toInt(), locale)} $weightUnit',
+                      '${NumberFormatter.formatNumber(totalWeight.toInt(), context.watch<NumberFormatCubit>().state)} $weightUnit',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
@@ -455,6 +461,7 @@ class RecipeCard extends StatelessWidget {
                         NumberFormatter.formatCurrency(
                           totalCost,
                           locale,
+                          context.watch<NumberFormatCubit>().state,
                         ),
                         style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                         textAlign: TextAlign.right,

@@ -266,6 +266,11 @@ class MyApp extends StatelessWidget {
         // 로케일 관련 BLoC
         BlocProvider<LocaleCubit>(create: (context) => LocaleCubit()),
 
+        // 숫자 포맷팅 관련 Cubit
+        BlocProvider<NumberFormatCubit>(
+          create: (context) => NumberFormatCubit(),
+        ),
+
         // OCR 관련 Cubit
         BlocProvider<OcrCubit>(create: (context) => OcrCubit()),
 

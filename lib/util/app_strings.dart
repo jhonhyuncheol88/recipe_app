@@ -995,4 +995,12 @@ class AppStrings {
       AppStringsSettings.getYearly(locale);
   static String getYesterday(AppLocale locale) =>
       AppStringsCommon.getYesterday(locale);
+  static String getNumberFormatSettings(AppLocale locale) =>
+      AppStringsSettings.getNumberFormatSettings(locale);
+  static String getNumberFormatThousandsComma(AppLocale locale) =>
+      AppStringsSettings.getNumberFormatThousandsComma(locale);
+  static String getNumberFormatDollarStyle(AppLocale locale) =>
+      AppStringsSettings.getNumberFormatDollarStyle(locale);
+  static String getNumberFormatEuropeanStyle(AppLocale locale) =>
+      AppStringsSettings.getNumberFormatEuropeanStyle(locale);
 }

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../controller/ocr/ocr_cubit.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/number_formatter.dart';
@@ -125,7 +126,7 @@ class _OcrResultPageState extends State<OcrResultPage> {
             _priceControllers.add(
               TextEditingController(
                 text: suggestedPrice > 0
-                    ? NumberFormatter.formatPrice(suggestedPrice, currentLocale)
+                    ? NumberFormatter.formatPrice(suggestedPrice, currentLocale, context.watch<NumberFormatCubit>().state)
                     : '',
               ),
             );
@@ -286,6 +287,7 @@ class _OcrResultPageState extends State<OcrResultPage> {
         try {
           final price = NumberFormatter.parsePrice(
             ingredientData['purchasePrice'].toString(),
+            context.watch<NumberFormatCubit>().state,
           );
           final amount = NumberFormatter.parseAmount(
             ingredientData['purchaseAmount'].toString(),
@@ -1184,7 +1186,7 @@ class _OcrResultPageState extends State<OcrResultPage> {
                   ThousandsSeparatorInputFormatter(),
                 ],
                 onChanged: (value) {
-                  final price = NumberFormatter.parsePrice(value.toString());
+                  final price = NumberFormatter.parsePrice(value.toString(), context.watch<NumberFormatCubit>().state);
                   if (price != null) {
                     _updateIngredient(index, 'purchasePrice', price);
                   }
