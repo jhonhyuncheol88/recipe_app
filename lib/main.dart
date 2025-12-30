@@ -102,9 +102,9 @@ Future<void> _postAppInitialization(Logger logger) async {
     logger.i('📱 AdMob 초기화 시도 (Android, post-frame)');
     try {
       await AdMobService.instance.initialize();
-      logger.i('✅ AdMob 초기화 완료');
-      // 앱 시작 시 전면 광고 1회 노출 시도 (실패 무시)
-      await AdMobService.instance.showInterstitialAd();
+      logger.i('✅ AdMob 초기화 완료 (광고 미리 로드 시작됨)');
+      // initialize() 내부에서 자동으로 광고를 미리 로드하므로
+      // 여기서는 추가 작업 불필요
     } catch (e) {
       logger.e('⚠️ AdMob 초기화 실패(무시): $e');
     }

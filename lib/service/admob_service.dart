@@ -65,6 +65,9 @@ class AdMobService {
       } else {
         _logger.i('릴리즈 모드로 실행 중');
       }
+
+      // 초기화 후 광고 미리 로드 시작 (백그라운드에서)
+      _preloadInterstitialAdInBackground();
     } catch (e) {
       _logger.e('AdMob 초기화 실패: $e');
       rethrow;
@@ -273,17 +276,37 @@ class AdMobService {
     }
   }
 
-  /// 전면 광고 표시
+  /// 전면 광고 표시 (미리 로드된 광고 우선 사용)
   Future<bool> showInterstitialAd() async {
     _logger.d('전면 광고 표시 요청');
     print('AdMobService: 전면 광고 표시 요청');
     _adCubit?.startAdLoading();
 
     try {
-      final interstitialAd = await loadInterstitialAd();
+      InterstitialAd? interstitialAd;
+
+      // 1. 먼저 미리 로드된 광고가 있는지 확인
+      if (_preloadedInterstitialAd != null) {
+        _logger.i('✅ 미리 로드된 광고 사용');
+        print('AdMobService: 미리 로드된 광고 사용');
+        interstitialAd = _preloadedInterstitialAd;
+        _preloadedInterstitialAd = null; // 사용 후 제거하여 중복 사용 방지
+        
+        // 미리 로드된 광고를 사용하는 동안 다음 광고를 백그라운드에서 미리 로드
+        _preloadInterstitialAdInBackground();
+      } else {
+        // 2. 미리 로드된 광고가 없으면 새로 로드
+        _logger.i('⚠️ 미리 로드된 광고 없음, 새로 로드 시작');
+        print('AdMobService: 미리 로드된 광고 없음, 새로 로드 시작');
+        interstitialAd = await loadInterstitialAd();
+        
+        // 광고 로드 후 다음 광고를 백그라운드에서 미리 로드
+        _preloadInterstitialAdInBackground();
+      }
+
       if (interstitialAd != null) {
-        _logger.i('전면 광고 로드 성공, 표시 시도 중...');
-        print('AdMobService: 전면 광고 로드 성공, 표시 시도 중...');
+        _logger.i('전면 광고 준비 완료, 표시 시도 중...');
+        print('AdMobService: 전면 광고 준비 완료, 표시 시도 중...');
 
         _adCubit?.adLoaded();
         _adCubit?.startAdShowing();
@@ -377,8 +400,47 @@ class AdMobService {
 
   /// 전면 광고 미리 로드 (성능 향상)
   InterstitialAd? _preloadedInterstitialAd;
+  bool _isPreloading = false;
 
+  /// 백그라운드에서 전면 광고 미리 로드 (에러 무시)
+  void _preloadInterstitialAdInBackground() {
+    // 이미 로드 중이거나 이미 로드된 광고가 있으면 스킵
+    if (_isPreloading || _preloadedInterstitialAd != null) {
+      _logger.d('광고 미리 로드 스킵 (이미 로드 중이거나 로드 완료)');
+      return;
+    }
+
+    _isPreloading = true;
+    _logger.d('📥 백그라운드에서 전면 광고 미리 로드 시작');
+    
+    // 비동기로 실행하되 에러는 무시
+    Future(() async {
+      try {
+        final interstitialAd = await loadInterstitialAd();
+        if (interstitialAd != null) {
+          _preloadedInterstitialAd = interstitialAd;
+          _logger.i('✅ 전면 광고 미리 로드 완료 (다음 광고 준비됨)');
+          print('AdMobService: 전면 광고 미리 로드 완료');
+        } else {
+          _logger.w('⚠️ 전면 광고 미리 로드 실패: 광고를 로드할 수 없음');
+        }
+      } catch (e) {
+        _logger.w('⚠️ 전면 광고 미리 로드 중 오류 (무시): $e');
+        // 에러 발생 시에도 앱 실행에 영향을 주지 않음
+      } finally {
+        _isPreloading = false;
+      }
+    });
+  }
+
+  /// 전면 광고 미리 로드 (수동 호출용)
   Future<void> preloadInterstitialAd() async {
+    if (_isPreloading || _preloadedInterstitialAd != null) {
+      _logger.d('광고 미리 로드 스킵 (이미 로드 중이거나 로드 완료)');
+      return;
+    }
+
+    _isPreloading = true;
     _logger.d('전면 광고 사전 로드 시작');
     try {
       final interstitialAd = await loadInterstitialAd();
@@ -391,28 +453,14 @@ class AdMobService {
     } catch (e) {
       _logger.e('전면 광고 사전 로드 실패: $e');
       // 에러 발생 시에도 앱 실행에 영향을 주지 않음
+    } finally {
+      _isPreloading = false;
     }
   }
 
-  /// 사전 로드된 전면 광고 표시
+  /// 사전 로드된 전면 광고 표시 (레거시 메서드, showInterstitialAd 사용 권장)
+  @Deprecated('showInterstitialAd()를 사용하세요. 이 메서드는 자동으로 미리 로드된 광고를 사용합니다.')
   Future<bool> showPreloadedInterstitialAd() async {
-    if (_preloadedInterstitialAd != null) {
-      _logger.d('사전 로드된 전면 광고 표시');
-      try {
-        await _preloadedInterstitialAd!.show();
-        _preloadedInterstitialAd = null; // 사용 후 제거
-        _logger.i('사전 로드된 전면 광고 표시 성공');
-        return true;
-      } catch (e) {
-        _logger.e('사전 로드된 전면 광고 표시 실패: $e');
-        _preloadedInterstitialAd = null;
-        // 에러 발생 시에도 다음 함수 실행을 위해 true 반환
-        return true;
-      }
-    } else {
-      _logger.w('사전 로드된 전면 광고가 없음');
-      // 사전 로드된 광고가 없어도 다음 함수 실행을 위해 true 반환
-      return true;
-    }
+    return await showInterstitialAd();
   }
 }
