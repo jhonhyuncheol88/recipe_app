@@ -6,7 +6,7 @@ import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/number_formatter.dart';
-import '../../../service/admob_service.dart';
+import '../../../service/admob_forward.dart';
 import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/ad/ad_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
@@ -43,7 +43,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
 
     // AdMobService에 AdCubit 설정
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AdMobService.instance.setAdCubit(_adCubit);
+      AdMobForwardService.instance.setAdCubit(_adCubit);
     });
   }
 
@@ -65,7 +65,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
   Future<void> _showAdAndAnalyze() async {
     try {
       // 전면 광고 표시 시도
-      await AdMobService.instance.showInterstitialAd();
+      await AdMobForwardService.instance.showInterstitialAd();
 
       // 광고 성공/실패와 관계없이 AI 분석 진행
       if (mounted) {

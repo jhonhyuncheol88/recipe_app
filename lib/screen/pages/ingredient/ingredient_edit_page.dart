@@ -201,7 +201,8 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
           locale: currentLocale,
           onChanged: (price) {
             // 가격이 변경될 때 처리
-            print('CurrencyInputField onChanged: price=$price (type: ${price.runtimeType})');
+            print(
+                'CurrencyInputField onChanged: price=$price (type: ${price.runtimeType})');
           },
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
@@ -239,8 +240,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value:
-                  _selectedUnitId.isNotEmpty &&
+              value: _selectedUnitId.isNotEmpty &&
                       _availableUnits.any((unit) => unit.id == _selectedUnitId)
                   ? _selectedUnitId
                   : null,
@@ -441,7 +441,8 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
     final cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
     final parsed = double.tryParse(cleanValue);
     // 디버그 로그
-    print('_parseFormattedPrice: input="$value", clean="$cleanValue", parsed=$parsed');
+    print(
+        '_parseFormattedPrice: input="$value", clean="$cleanValue", parsed=$parsed');
     return parsed;
   }
 
@@ -474,12 +475,13 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
     try {
       final parsedPrice = _parseFormattedPrice(_priceController.text) ?? 0.0;
       final parsedAmount = _parseFormattedAmount(_amountController.text) ?? 0.0;
-      
+
       // 디버그 로그
-      print('_updateIngredient: priceController.text="${_priceController.text}"');
+      print(
+          '_updateIngredient: priceController.text="${_priceController.text}"');
       print('_updateIngredient: parsedPrice=$parsedPrice');
       print('_updateIngredient: parsedAmount=$parsedAmount');
-      
+
       final updatedIngredient = widget.ingredient.copyWith(
         name: _nameController.text.trim(),
         purchasePrice: parsedPrice,
@@ -488,8 +490,9 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         expiryDate: _expiryDate,
         tagIds: _selectedTagId.isNotEmpty ? [_selectedTagId] : [],
       );
-      
-      print('_updateIngredient: updatedIngredient.purchasePrice=${updatedIngredient.purchasePrice}');
+
+      print(
+          '_updateIngredient: updatedIngredient.purchasePrice=${updatedIngredient.purchasePrice}');
 
       context.read<IngredientCubit>().updateIngredient(updatedIngredient);
 
@@ -546,8 +549,8 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
     );
     if (confirmed == true) {
       await context.read<IngredientCubit>().deleteIngredient(
-        widget.ingredient.id,
-      );
+            widget.ingredient.id,
+          );
       if (!mounted) return;
       context.pop();
       ScaffoldMessenger.of(context).showSnackBar(

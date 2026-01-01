@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../model/ingredient.dart';
 import '../model/unit.dart';
+import '../util/app_locale.dart';
 
 /// Gemini AI 서비스를 통한 레시피 생성 및 이미지 분석
 class GeminiService {
@@ -729,5 +730,205 @@ Now, generate a creative, fusion-style recipe that showcases the same ingredient
     }
 
     return false;
+  }
+
+  /// 레시피 이름들을 대상 언어로 번역
+  Future<Map<String, String>> translateRecipeNames(
+    List<String> recipeNames, {
+    required AppLocale targetLocale,
+  }) async {
+    try {
+      if (recipeNames.isEmpty) {
+        return {};
+      }
+
+      final prompt = _buildTranslationPrompt(recipeNames, targetLocale);
+      final response = await _model.generateContent([Content.text(prompt)]);
+      final responseText = response.text ?? '';
+
+      // JSON 응답 파싱
+      return _parseTranslationResponse(responseText, recipeNames);
+    } catch (e) {
+      throw Exception('레시피 이름 번역 중 오류가 발생했습니다: $e');
+    }
+  }
+
+  /// 번역 프롬프트 구성
+  String _buildTranslationPrompt(List<String> recipeNames, AppLocale targetLocale) {
+    final namesList = recipeNames
+        .asMap()
+        .entries
+        .map((entry) => '${entry.key + 1}. ${entry.value}')
+        .join('\n');
+
+    // 대상 언어명 설정
+    String targetLanguage;
+    String translationExample;
+    switch (targetLocale) {
+      case AppLocale.usa:
+        targetLanguage = '영어';
+        translationExample = '비빔밥 → Bibimbap';
+        break;
+      case AppLocale.china:
+        targetLanguage = '중국어';
+        translationExample = '비빔밥 → 拌饭';
+        break;
+      case AppLocale.japan:
+        targetLanguage = '일본어';
+        translationExample = '비빔밥 → ビビンバ';
+        break;
+      case AppLocale.vietnam:
+        targetLanguage = '베트남어';
+        translationExample = '비빔밥 → Cơm trộn';
+        break;
+      default:
+        targetLanguage = '영어';
+        translationExample = '비빔밥 → Bibimbap';
+    }
+
+    return '''
+다음 한국어 레시피 이름들을 $targetLanguage로 번역해주세요.
+레시피 이름들은 한국 음식의 전통적인 이름입니다.
+
+레시피 이름들:
+$namesList
+
+응답은 JSON 형식으로 다음과 같이 반환해주세요:
+{
+  "${recipeNames[0]}": "$targetLanguage 번역",
+  "${recipeNames.length > 1 ? recipeNames[1] : ''}": "$targetLanguage 번역",
+  ...
+}
+
+주의사항:
+- 각 레시피 이름을 $targetLanguage로 정확하게 번역해야 합니다
+- 한국 음식의 전통적인 $targetLanguage 이름이 있다면 그것을 사용하세요 (예: $translationExample)
+- $targetLanguage 사용자가 이해할 수 있는 자연스러운 표현을 사용하세요
+- JSON 형식만 반환하고 다른 설명은 포함하지 마세요
+- 모든 레시피 이름을 반드시 번역해야 합니다
+''';
+  }
+
+  /// 번역 응답 파싱
+  Map<String, String> _parseTranslationResponse(
+    String response,
+    List<String> originalNames,
+  ) {
+    try {
+      // JSON 부분만 추출 (```json``` 블록이 있는 경우)
+      String jsonText = response;
+      if (response.contains('```json')) {
+        final startIndex = response.indexOf('```json') + 7;
+        final endIndex = response.lastIndexOf('```');
+        if (endIndex > startIndex) {
+          jsonText = response.substring(startIndex, endIndex).trim();
+        }
+      } else if (response.contains('```')) {
+        // ```json이 없고 ```만 있는 경우
+        final startIndex = response.indexOf('```') + 3;
+        final endIndex = response.lastIndexOf('```');
+        if (endIndex > startIndex) {
+          jsonText = response.substring(startIndex, endIndex).trim();
+        }
+      }
+
+      // JSON 파싱
+      final Map<String, dynamic> translationMap =
+          json.decode(jsonText) as Map<String, dynamic>;
+
+      // String으로 변환
+      final result = <String, String>{};
+      for (final name in originalNames) {
+        if (translationMap.containsKey(name)) {
+          result[name] = translationMap[name].toString().trim();
+        } else {
+          // 번역되지 않은 경우 원본 이름 유지
+          result[name] = name;
+        }
+      }
+
+      return result;
+    } catch (e) {
+      // 파싱 실패 시 원본 이름 반환
+      final result = <String, String>{};
+      for (final name in originalNames) {
+        result[name] = name;
+      }
+      return result;
+    }
+  }
+
+  /// 텍스트를 대상 언어로 번역
+  Future<String> translateText(
+    String text, {
+    required AppLocale targetLocale,
+  }) async {
+    try {
+      if (text.isEmpty) {
+        return text;
+      }
+
+      final prompt = _buildTextTranslationPrompt(text, targetLocale);
+      final response = await _model.generateContent([Content.text(prompt)]);
+      final responseText = response.text ?? '';
+
+      // 응답에서 번역된 텍스트 추출 (JSON 블록 제거)
+      String translatedText = responseText.trim();
+      if (translatedText.contains('```json')) {
+        final startIndex = translatedText.indexOf('```json') + 7;
+        final endIndex = translatedText.lastIndexOf('```');
+        if (endIndex > startIndex) {
+          translatedText = translatedText.substring(startIndex, endIndex).trim();
+        }
+      } else if (translatedText.contains('```')) {
+        final startIndex = translatedText.indexOf('```') + 3;
+        final endIndex = translatedText.lastIndexOf('```');
+        if (endIndex > startIndex) {
+          translatedText = translatedText.substring(startIndex, endIndex).trim();
+        }
+      }
+
+      return translatedText;
+    } catch (e) {
+      throw Exception('텍스트 번역 중 오류가 발생했습니다: $e');
+    }
+  }
+
+  /// 텍스트 번역 프롬프트 구성
+  String _buildTextTranslationPrompt(String text, AppLocale targetLocale) {
+    // 대상 언어명 설정
+    String targetLanguage;
+    switch (targetLocale) {
+      case AppLocale.usa:
+        targetLanguage = '영어';
+        break;
+      case AppLocale.china:
+        targetLanguage = '중국어';
+        break;
+      case AppLocale.japan:
+        targetLanguage = '일본어';
+        break;
+      case AppLocale.vietnam:
+        targetLanguage = '베트남어';
+        break;
+      default:
+        targetLanguage = '영어';
+    }
+
+    return '''
+다음 한국어 텍스트를 $targetLanguage로 번역해주세요.
+조리 방법이나 설명 텍스트입니다.
+
+원본 텍스트:
+$text
+
+번역 규칙:
+- 자연스럽고 이해하기 쉬운 $targetLanguage로 번역해주세요
+- 줄바꿈은 그대로 유지해주세요
+- 요리 용어는 $targetLanguage 사용자가 이해할 수 있도록 번역해주세요
+- 번역된 텍스트만 반환하고 다른 설명은 포함하지 마세요
+
+번역된 텍스트:
+''';
   }
 }

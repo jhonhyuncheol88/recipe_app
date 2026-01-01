@@ -14,6 +14,7 @@ import '../../../model/ingredient.dart';
 import '../../../service/ingredient_comparison_service.dart';
 import '../../../data/ingredient_repository.dart';
 import '../../../util/number_formatter.dart';
+import '../../../util/number_format_style.dart';
 import '../../widget/index.dart';
 
 /// AI 레시피 상세 페이지
@@ -62,8 +63,8 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
 
       // RecipeCubit에서 AI 레시피 상세 정보 로드
       final aiRecipe = await context.read<RecipeCubit>().getAiRecipeDetail(
-        widget.aiRecipeId,
-      );
+            widget.aiRecipeId,
+          );
 
       if (aiRecipe != null) {
         _aiRecipe = aiRecipe;
@@ -455,7 +456,6 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
               ],
             ),
             const SizedBox(height: 12),
-
             if (isAvailable && matchedIngredient != null) ...[
               // 보유 재료 정보
               Row(
@@ -486,8 +486,7 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
                       hint: '0',
                       keyboardType: TextInputType.number,
                       controller: TextEditingController(
-                        text:
-                            _inputAmounts[result.aiIngredient.name]
+                        text: _inputAmounts[result.aiIngredient.name]
                                 ?.toString() ??
                             '',
                       ),
@@ -521,7 +520,7 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
                             NumberFormatter.formatCurrency(
                               _calculateIngredientCost(result),
                               locale,
-                              context.watch<NumberFormatCubit>().state,
+                              NumberFormatStyle.defaultStyle,
                             ),
                             style: AppTextStyles.bodyMedium.copyWith(
                               color: AppColors.accent,
@@ -659,7 +658,8 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
                   children: [
                     Text(AppStrings.getAiRecipeTotalCost(locale)),
                     Text(
-                      NumberFormatter.formatCurrency(totalCost, locale, context.watch<NumberFormatCubit>().state),
+                      NumberFormatter.formatCurrency(totalCost, locale,
+                          context.watch<NumberFormatCubit>().state),
                       style: AppTextStyles.headline4.copyWith(
                         color: AppColors.accent,
                         fontWeight: FontWeight.w700,
@@ -769,9 +769,8 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
   /// 현재 투입량을 반영한 비교 결과 요약
   Map<String, dynamic> _getCurrentComparisonSummary() {
     final totalIngredients = _comparisonResults.length;
-    final availableIngredients = _comparisonResults
-        .where((r) => r.isAvailable)
-        .length;
+    final availableIngredients =
+        _comparisonResults.where((r) => r.isAvailable).length;
     final unavailableIngredients = totalIngredients - availableIngredients;
 
     double totalCost = 0.0;
@@ -787,12 +786,10 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
       'totalIngredients': totalIngredients,
       'availableIngredients': availableIngredients,
       'unavailableIngredients': unavailableIngredients,
-      'availabilityRate': totalIngredients > 0
-          ? availableIngredients / totalIngredients
-          : 0.0,
+      'availabilityRate':
+          totalIngredients > 0 ? availableIngredients / totalIngredients : 0.0,
       'totalCost': totalCost,
-      'canConvert':
-          unavailableIngredients == 0 &&
+      'canConvert': unavailableIngredients == 0 &&
           totalIngredients > 0, // 모든 재료가 있고 최소 1개 이상이면 변환 가능
     };
   }

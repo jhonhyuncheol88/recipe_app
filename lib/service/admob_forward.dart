@@ -6,14 +6,14 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logger/logger.dart';
 import '../controller/ad/ad_cubit.dart';
 
-class AdMobService {
-  static AdMobService? _instance;
-  static AdMobService get instance => _instance ??= AdMobService._internal();
+class AdMobForwardService {
+  static AdMobForwardService? _instance;
+  static AdMobForwardService get instance => _instance ??= AdMobForwardService._internal();
 
   late final Logger _logger;
   AdCubit? _adCubit;
 
-  AdMobService._internal() {
+  AdMobForwardService._internal() {
     _logger = Logger(
       printer: PrettyPrinter(
         methodCount: 0,
@@ -113,7 +113,7 @@ class AdMobService {
           ? 'ca-app-pub-3940256099942544/1033173712' // Android 테스트 전면
           : 'ca-app-pub-3940256099942544/4411468910'; // iOS 테스트 전면
       _logger.d('${Platform.operatingSystem} 테스트 전면 광고 ID: $testId');
-      print('AdMobService: 테스트 광고 ID 사용 - $testId');
+      print('AdMobForwardService: 테스트 광고 ID 사용 - $testId');
       return testId;
     }
     
@@ -122,7 +122,7 @@ class AdMobService {
       _logger.i('✅ 실제 전면 광고 ID 사용: $prodId');
       _logger.i('   - kDebugMode: $kDebugMode');
       _logger.i('   - forceProduction: $forceProduction');
-      print('AdMobService: 실제 광고 ID 사용 - $prodId');
+      print('AdMobForwardService: 실제 광고 ID 사용 - $prodId');
       return prodId;
     }
     
@@ -135,7 +135,7 @@ class AdMobService {
           ? 'ca-app-pub-3940256099942544/1033173712' // Android 테스트 전면
           : 'ca-app-pub-3940256099942544/4411468910'; // iOS 테스트 전면
       _logger.d('${Platform.operatingSystem} 테스트 전면 광고 ID: $testId');
-      print('AdMobService: 테스트 광고 ID 사용 - $testId');
+      print('AdMobForwardService: 테스트 광고 ID 사용 - $testId');
       return testId;
     }
 
@@ -169,7 +169,7 @@ class AdMobService {
       }
       
       print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('AdMobService: 광고 로드 시도 시작');
+      print('AdMobForwardService: 광고 로드 시도 시작');
       print('광고 단위 ID: $adUnitId');
       print('kDebugMode: $kDebugMode');
       print('Platform: ${Platform.operatingSystem}');
@@ -184,7 +184,7 @@ class AdMobService {
             _logger.i('광고 단위 ID: ${ad.adUnitId}');
             _logger.i('응답 정보: ${ad.responseInfo}');
             print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            print('✅✅✅ AdMobService: 전면 광고 로드 성공 ✅✅✅');
+            print('✅✅✅ AdMobForwardService: 전면 광고 로드 성공 ✅✅✅');
             print('광고 단위 ID: ${ad.adUnitId}');
             print('응답 정보: ${ad.responseInfo}');
             print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -225,7 +225,7 @@ class AdMobService {
             }
             
             print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            print('❌❌❌ AdMobService: 전면 광고 로드 실패 ❌❌❌');
+            print('❌❌❌ AdMobForwardService: 전면 광고 로드 실패 ❌❌❌');
             print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             print('에러 메시지: ${error.message}');
             print('에러 코드: ${error.code}');
@@ -245,7 +245,7 @@ class AdMobService {
         const Duration(seconds: 10),
         onTimeout: () {
           _logger.e('전면 광고 로드 타임아웃');
-          print('AdMobService: 전면 광고 로드 타임아웃');
+          print('AdMobForwardService: 전면 광고 로드 타임아웃');
           if (!completer.isCompleted) {
             completer.complete(null);
           }
@@ -255,7 +255,7 @@ class AdMobService {
 
       if (interstitialAd != null) {
         _logger.i('✅ 전면 광고 로드 완료 - 광고 객체 반환');
-        print('AdMobService: 전면 광고 로드 완료 - 광고 객체 반환');
+        print('AdMobForwardService: 전면 광고 로드 완료 - 광고 객체 반환');
       } else {
         _logger.w('⚠️ 전면 광고 로드 실패 - null 반환');
         _logger.w('⚠️ 광고 요청이 AdMob 서버에 전달되지 않았을 수 있습니다');
@@ -264,14 +264,14 @@ class AdMobService {
         _logger.w('   2. 실제 광고 단위 ID가 올바른지');
         _logger.w('   3. AdMob 콘솔에서 광고 단위가 활성화되어 있는지');
         print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        print('⚠️ AdMobService: 전면 광고 로드 실패 - null 반환');
+        print('⚠️ AdMobForwardService: 전면 광고 로드 실패 - null 반환');
         print('⚠️ 광고 요청이 AdMob 서버에 전달되지 않았을 수 있습니다');
         print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       }
       return interstitialAd;
     } catch (e) {
       _logger.e('전면 광고 로드 중 오류 발생: $e');
-      print('AdMobService: 전면 광고 로드 중 오류 발생: $e');
+      print('AdMobForwardService: 전면 광고 로드 중 오류 발생: $e');
       return null;
     }
   }
@@ -279,7 +279,7 @@ class AdMobService {
   /// 전면 광고 표시 (미리 로드된 광고 우선 사용)
   Future<bool> showInterstitialAd() async {
     _logger.d('전면 광고 표시 요청');
-    print('AdMobService: 전면 광고 표시 요청');
+    print('AdMobForwardService: 전면 광고 표시 요청');
     _adCubit?.startAdLoading();
 
     try {
@@ -288,7 +288,7 @@ class AdMobService {
       // 1. 먼저 미리 로드된 광고가 있는지 확인
       if (_preloadedInterstitialAd != null) {
         _logger.i('✅ 미리 로드된 광고 사용');
-        print('AdMobService: 미리 로드된 광고 사용');
+        print('AdMobForwardService: 미리 로드된 광고 사용');
         interstitialAd = _preloadedInterstitialAd;
         _preloadedInterstitialAd = null; // 사용 후 제거하여 중복 사용 방지
         
@@ -297,7 +297,7 @@ class AdMobService {
       } else {
         // 2. 미리 로드된 광고가 없으면 새로 로드
         _logger.i('⚠️ 미리 로드된 광고 없음, 새로 로드 시작');
-        print('AdMobService: 미리 로드된 광고 없음, 새로 로드 시작');
+        print('AdMobForwardService: 미리 로드된 광고 없음, 새로 로드 시작');
         interstitialAd = await loadInterstitialAd();
         
         // 광고 로드 후 다음 광고를 백그라운드에서 미리 로드
@@ -306,7 +306,7 @@ class AdMobService {
 
       if (interstitialAd != null) {
         _logger.i('전면 광고 준비 완료, 표시 시도 중...');
-        print('AdMobService: 전면 광고 준비 완료, 표시 시도 중...');
+        print('AdMobForwardService: 전면 광고 준비 완료, 표시 시도 중...');
 
         _adCubit?.adLoaded();
         _adCubit?.startAdShowing();
@@ -317,11 +317,11 @@ class AdMobService {
         interstitialAd.fullScreenContentCallback = FullScreenContentCallback(
           onAdShowedFullScreenContent: (ad) {
             _logger.d('전면 광고가 열렸습니다.');
-            print('AdMobService: 전면 광고가 열렸습니다.');
+            print('AdMobForwardService: 전면 광고가 열렸습니다.');
           },
           onAdDismissedFullScreenContent: (ad) {
             _logger.d('전면 광고가 닫혔습니다.');
-            print('AdMobService: 전면 광고가 닫혔습니다.');
+            print('AdMobForwardService: 전면 광고가 닫혔습니다.');
             ad.dispose();
 
             // AdCubit 상태 업데이트 (mounted 체크)
@@ -338,15 +338,15 @@ class AdMobService {
           },
           onAdImpression: (ad) {
             _logger.d('전면 광고가 노출되었습니다.');
-            print('AdMobService: 전면 광고가 노출되었습니다.');
+            print('AdMobForwardService: 전면 광고가 노출되었습니다.');
           },
           onAdClicked: (ad) {
             _logger.d('전면 광고가 클릭되었습니다.');
-            print('AdMobService: 전면 광고가 클릭되었습니다.');
+            print('AdMobForwardService: 전면 광고가 클릭되었습니다.');
           },
           onAdFailedToShowFullScreenContent: (ad, error) {
             _logger.e('전면 광고 표시 실패: ${error.message}');
-            print('AdMobService: 전면 광고 표시 실패 - ${error.message}');
+            print('AdMobForwardService: 전면 광고 표시 실패 - ${error.message}');
             ad.dispose();
 
             // AdCubit 상태 업데이트 (mounted 체크)
@@ -364,14 +364,14 @@ class AdMobService {
 
         await interstitialAd.show();
         _logger.i('전면 광고 표시 시작');
-        print('AdMobService: 전면 광고 표시 시작');
+        print('AdMobForwardService: 전면 광고 표시 시작');
 
         // 광고가 닫힐 때까지 기다림 (타임아웃 30초)
         final result = await completer.future.timeout(
           const Duration(seconds: 30),
           onTimeout: () {
             _logger.e('전면 광고 표시 타임아웃');
-            print('AdMobService: 전면 광고 표시 타임아웃');
+            print('AdMobForwardService: 전면 광고 표시 타임아웃');
             if (!completer.isCompleted) {
               completer.complete(false);
             }
@@ -380,18 +380,18 @@ class AdMobService {
         );
 
         _logger.i('전면 광고 시청 완료: $result');
-        print('AdMobService: 전면 광고 시청 완료: $result');
+        print('AdMobForwardService: 전면 광고 시청 완료: $result');
         return result;
       } else {
         _logger.w('전면 광고 로드 실패로 표시할 수 없음');
-        print('AdMobService: 전면 광고 로드 실패로 표시할 수 없음');
+        print('AdMobForwardService: 전면 광고 로드 실패로 표시할 수 없음');
         _adCubit?.adFailed('광고 로드 실패');
         // 광고 로드 실패 시에도 다음 함수 실행을 위해 true 반환
         return true;
       }
     } catch (e) {
       _logger.e('전면 광고 표시 중 오류 발생: $e');
-      print('AdMobService: 전면 광고 표시 중 오류 발생: $e');
+      print('AdMobForwardService: 전면 광고 표시 중 오류 발생: $e');
       _adCubit?.adFailed(e.toString());
       // 에러 발생 시에도 다음 함수 실행을 위해 true 반환
       return true;
@@ -420,7 +420,7 @@ class AdMobService {
         if (interstitialAd != null) {
           _preloadedInterstitialAd = interstitialAd;
           _logger.i('✅ 전면 광고 미리 로드 완료 (다음 광고 준비됨)');
-          print('AdMobService: 전면 광고 미리 로드 완료');
+          print('AdMobForwardService: 전면 광고 미리 로드 완료');
         } else {
           _logger.w('⚠️ 전면 광고 미리 로드 실패: 광고를 로드할 수 없음');
         }
@@ -464,3 +464,4 @@ class AdMobService {
     return await showInterstitialAd();
   }
 }
+

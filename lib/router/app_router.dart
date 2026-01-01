@@ -7,6 +7,7 @@ import 'package:recipe_app/util/app_strings.dart';
 import '../controller/setting/locale_cubit.dart';
 import '../controller/recipe/recipe_cubit.dart';
 import '../controller/ingredient/ingredient_cubit.dart';
+import '../controller/encyclopedia/encyclopedia_cubit.dart';
 import '../screen/pages/ingredient/ingredient_main_page.dart';
 import '../screen/pages/ingredient/ingredient_add_page.dart';
 import '../screen/pages/ingredient/ingredient_bulk_add_page.dart';
@@ -27,6 +28,8 @@ import '../screen/pages/ocr/ocr_main_page.dart';
 import '../screen/pages/ocr/ocr_result_page.dart';
 import '../screen/pages/onboarding/onboarding_page.dart';
 import '../screen/pages/language_selection_page.dart';
+import '../screen/pages/encyclopedia/encyclopedia_main_page.dart';
+import '../screen/pages/encyclopedia/encyclopedia_recipe_detail_page.dart';
 
 import '../theme/app_colors.dart';
 import '../util/app_locale.dart';
@@ -34,6 +37,7 @@ import '../util/app_locale.dart';
 import '../model/ingredient.dart';
 import '../model/recipe.dart';
 import '../model/ocr_result.dart';
+import '../model/encyclopedia_recipe.dart';
 
 /// 앱 라우터 설정
 class AppRouter {
@@ -62,6 +66,8 @@ class AppRouter {
   static const String accountInfo = '/account-info';
   static const String languageSelection = '/language-selection';
   static const String onboarding = '/onboarding';
+  static const String encyclopedia = '/encyclopedia';
+  static const String encyclopediaRecipeDetail = '/encyclopedia/recipe/:number';
 
   /// GoRouter 인스턴스 생성
   static GoRouter get router => GoRouter(
@@ -181,6 +187,43 @@ class AppRouter {
             builder: (context, state) {
               final recipe = state.extra as Recipe?;
               return RecipeEditPage(recipe: recipe!);
+            },
+          ),
+
+          // 백과사전 관련 라우트
+          GoRoute(
+            path: encyclopedia,
+            builder: (context, state) => const EncyclopediaMainPage(),
+          ),
+          GoRoute(
+            path: encyclopediaRecipeDetail,
+            builder: (context, state) {
+              // extra가 Map인 경우 (번역 정보 포함)
+              if (state.extra is Map<String, dynamic>) {
+                final extra = state.extra as Map<String, dynamic>;
+                final recipe = extra['recipe'] as EncyclopediaRecipe?;
+                if (recipe != null) {
+                  return EncyclopediaRecipeDetailPage(
+                    recipe: recipe,
+                    translationData: extra['translationData'] as Map<String, dynamic>?,
+                  );
+                }
+              }
+              
+              // extra가 EncyclopediaRecipe인 경우 (기존 호환성)
+              final recipe = state.extra as EncyclopediaRecipe?;
+              if (recipe != null) {
+                return EncyclopediaRecipeDetailPage(recipe: recipe);
+              }
+              
+              // extra가 없으면 번호로 찾기
+              final numberStr = state.pathParameters['number'] ?? '';
+              final number = int.tryParse(numberStr);
+              if (number == null) {
+                return const EncyclopediaMainPage();
+              }
+              // 번호로 레시피를 찾아야 하는데, 여기서는 간단하게 메인으로 리다이렉트
+              return const EncyclopediaMainPage();
             },
           ),
 
@@ -329,6 +372,7 @@ class _HomePageState extends State<HomePage> {
     const IngredientMainPage(),
     const RecipeMainPage(),
     const AiTabbarPage(),
+    const EncyclopediaMainPage(),
     const SettingsPage(),
   ];
 
@@ -359,6 +403,9 @@ class _HomePageState extends State<HomePage> {
                   } else if (index == 2) {
                     // AI 탭 - AI 레시피 목록 로드
                     context.read<RecipeCubit>().loadAiRecipes();
+                  } else if (index == 3) {
+                    // 백과사전 탭 - 페이지를 열 때마다 랜덤으로 섞기
+                    context.read<EncyclopediaCubit>().loadRecipes();
                   }
                 },
                 type: BottomNavigationBarType.fixed,
@@ -377,6 +424,10 @@ class _HomePageState extends State<HomePage> {
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.auto_awesome),
                     label: AppStrings.getAi(currentLocale),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.menu_book),
+                    label: AppStrings.getEncyclopediaTab(currentLocale),
                   ),
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.settings),

@@ -13,7 +13,7 @@ import '../../../controller/ad/ad_cubit.dart';
 import '../../../model/ingredient.dart';
 import '../../../model/tag.dart';
 import '../../../service/gemini_service.dart';
-import '../../../service/admob_service.dart';
+import '../../../service/admob_forward.dart';
 import '../../../router/router_helper.dart';
 import '../../widget/ai_analysis_ad_dialog.dart';
 import 'package:logger/logger.dart';
@@ -61,7 +61,7 @@ class _AiMainPageState extends State<AiMainPage> {
       // 재료 데이터를 await으로 로드하여 완료 보장
       await context.read<IngredientCubit>().loadIngredients();
       // AdMobService에 AdCubit 설정
-      AdMobService.instance.setAdCubit(_adCubit);
+      AdMobForwardService.instance.setAdCubit(_adCubit);
     });
   }
 
@@ -979,7 +979,7 @@ class _AiMainPageState extends State<AiMainPage> {
 
     try {
       // 전면 광고 표시 시도
-      final adResult = await AdMobService.instance.showInterstitialAd();
+      final adResult = await AdMobForwardService.instance.showInterstitialAd();
       print('광고 표시 결과: $adResult');
       _logger.i('광고 표시 결과: $adResult');
 
@@ -1008,7 +1008,7 @@ class _AiMainPageState extends State<AiMainPage> {
 
     try {
       // 전면 광고 표시 시도
-      final adResult = await AdMobService.instance.showInterstitialAd();
+      final adResult = await AdMobForwardService.instance.showInterstitialAd();
       print('광고 표시 결과: $adResult');
       _logger.i('광고 표시 결과: $adResult');
 

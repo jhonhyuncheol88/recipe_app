@@ -1,30 +1,36 @@
 /// 숫자 포맷팅 스타일
 enum NumberFormatStyle {
-  /// 천단위 콤마식: 1,000,000
-  thousandsComma('thousands_comma', '1,000,000'),
+  /// 천단위 콤마식 (1,000,000)
+  thousandsComma,
 
-  /// 달러식: 1,000.00 (천단위 콤마, 소수점 점)
-  dollarStyle('dollar_style', '1,000.00'),
+  /// 달러식 (1,000.00)
+  dollarStyle,
 
-  /// 유럽식: 100.000.000 (천단위 점, 소수점 콤마)
-  europeanStyle('european_style', '100.000.000');
+  /// 유럽식 (100.000.000)
+  europeanStyle;
 
-  const NumberFormatStyle(this.key, this.example);
-
-  final String key;
-  final String example;
-
-  /// 기본 포맷팅 스타일
+  /// 기본 스타일
   static NumberFormatStyle get defaultStyle => NumberFormatStyle.thousandsComma;
 
-  /// 키로부터 NumberFormatStyle 찾기
+  /// 키 값으로 스타일 찾기
   static NumberFormatStyle? fromKey(String key) {
-    try {
-      return values.firstWhere((style) => style.key == key);
-    } catch (e) {
-      return null;
+    for (final style in NumberFormatStyle.values) {
+      if (style.key == key) {
+        return style;
+      }
+    }
+    return null;
+  }
+
+  /// 스타일의 키 값
+  String get key {
+    switch (this) {
+      case NumberFormatStyle.thousandsComma:
+        return 'thousands_comma';
+      case NumberFormatStyle.dollarStyle:
+        return 'dollar_style';
+      case NumberFormatStyle.europeanStyle:
+        return 'european_style';
     }
   }
 }
-
-

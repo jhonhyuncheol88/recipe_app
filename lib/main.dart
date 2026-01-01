@@ -13,11 +13,13 @@ import 'data/index.dart';
 import 'service/sauce_cost_service.dart';
 import 'service/recipe_cost_service.dart';
 import 'service/sauce_expiry_service.dart';
-import 'service/admob_service.dart';
+import 'service/admob_forward.dart';
 import 'service/initial_data_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'service/notification_service.dart';
 import 'controller/ocr/ocr_cubit.dart';
+import 'controller/encyclopedia/encyclopedia_cubit.dart';
+import 'service/encyclopedia_service.dart';
 import 'package:logger/logger.dart';
 import 'dart:io' show Platform;
 import 'firebase_options.dart';
@@ -101,15 +103,55 @@ Future<void> _postAppInitialization(Logger logger) async {
   if (Platform.isAndroid) {
     logger.i('📱 AdMob 초기화 시도 (Android, post-frame)');
     try {
-      await AdMobService.instance.initialize();
+      await AdMobForwardService.instance.initialize();
       logger.i('✅ AdMob 초기화 완료 (광고 미리 로드 시작됨)');
-      // initialize() 내부에서 자동으로 광고를 미리 로드하므로
-      // 여기서는 추가 작업 불필요
+      
+      // 앱 실행 시 광고 표시 (10분 쿨다운)
+      await _showAppOpenAdWithCooldown(logger);
     } catch (e) {
       logger.e('⚠️ AdMob 초기화 실패(무시): $e');
     }
   } else {
     logger.i('ℹ️ iOS에서는 AdMob을 초기화하지 않습니다');
+  }
+}
+
+/// 앱 실행 시 광고 표시 (10분 쿨다운)
+Future<void> _showAppOpenAdWithCooldown(Logger logger) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    const String lastAdShownKey = 'last_ad_shown_time_millis';
+    
+    // 마지막으로 광고를 본 시간 가져오기
+    final lastAdShownTimeMillis = prefs.getInt(lastAdShownKey) ?? 0;
+    final currentTimeMillis = DateTime.now().millisecondsSinceEpoch;
+    const tenMinutesInMillis = 10 * 60 * 1000; // 10분
+    
+    if (currentTimeMillis - lastAdShownTimeMillis < tenMinutesInMillis) {
+      final remainingMinutes = (tenMinutesInMillis - (currentTimeMillis - lastAdShownTimeMillis)) ~/ (60 * 1000);
+      logger.d('ℹ️ 광고 쿨다운 중. ${remainingMinutes + 1}분 후 다시 표시 가능.');
+      return;
+    }
+
+    logger.i('📺 앱 오픈 광고 표시 시도');
+    
+    // 광고가 로드될 때까지 잠시 대기
+    await Future.delayed(const Duration(seconds: 2));
+    
+    try {
+      final shown = await AdMobForwardService.instance.showInterstitialAd();
+      if (shown) {
+        // 광고가 성공적으로 표시되었으면 현재 시간 기록
+        await prefs.setInt(lastAdShownKey, currentTimeMillis);
+        logger.i('✅ 앱 오픈 광고 표시 완료 (10분 후 다시 표시 가능)');
+      } else {
+        logger.w('⚠️ 앱 오픈 광고 표시 실패 (광고 로드 실패)');
+      }
+    } catch (e) {
+      logger.w('⚠️ 앱 오픈 광고 표시 중 오류: $e');
+    }
+  } catch (e) {
+    logger.w('⚠️ 앱 오픈 광고 표시 체크 중 오류 (무시): $e');
   }
 }
 
@@ -273,6 +315,13 @@ class MyApp extends StatelessWidget {
 
         // OCR 관련 Cubit
         BlocProvider<OcrCubit>(create: (context) => OcrCubit()),
+
+        // 백과사전 관련 Cubit
+        BlocProvider<EncyclopediaCubit>(
+          create: (context) => EncyclopediaCubit(
+            service: EncyclopediaService(),
+          ),
+        ),
 
         // Firebase 인증 관련 BLoC
         BlocProvider<AuthBloc>(

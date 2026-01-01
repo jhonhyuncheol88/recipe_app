@@ -20,10 +20,10 @@ class IngredientCubit extends Cubit<IngredientState> {
     required IngredientRepository ingredientRepository,
     required TagRepository tagRepository,
     ExpiryNotificationCubit? expiryNotificationCubit,
-  }) : _ingredientRepository = ingredientRepository,
-       _tagRepository = tagRepository,
-       _expiryNotificationCubit = expiryNotificationCubit,
-       super(const IngredientInitial());
+  })  : _ingredientRepository = ingredientRepository,
+        _tagRepository = tagRepository,
+        _expiryNotificationCubit = expiryNotificationCubit,
+        super(const IngredientInitial());
 
   // 재료 목록 로드
   Future<void> loadIngredients() async {
@@ -103,12 +103,10 @@ class IngredientCubit extends Cubit<IngredientState> {
 
       // 유통기한 순 정렬 확인을 위한 로그
       if (ingredients.isNotEmpty) {
-        final withExpiry = ingredients
-            .where((i) => i.expiryDate != null)
-            .toList();
-        final withoutExpiry = ingredients
-            .where((i) => i.expiryDate == null)
-            .toList();
+        final withExpiry =
+            ingredients.where((i) => i.expiryDate != null).toList();
+        final withoutExpiry =
+            ingredients.where((i) => i.expiryDate == null).toList();
 
         if (withExpiry.isNotEmpty) {
           developer.log(
@@ -268,8 +266,8 @@ class IngredientCubit extends Cubit<IngredientState> {
   Future<void> filterIngredientsByExpiryStatus(ExpiryStatus status) async {
     try {
       emit(const IngredientLoading());
-      final ingredients = await _ingredientRepository
-          .getIngredientsByExpiryStatus(status);
+      final ingredients =
+          await _ingredientRepository.getIngredientsByExpiryStatus(status);
 
       if (ingredients.isEmpty) {
         emit(const IngredientEmpty());

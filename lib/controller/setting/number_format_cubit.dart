@@ -26,5 +26,3 @@ class NumberFormatCubit extends Cubit<NumberFormatStyle> {
     await prefs.setString(_prefsKey, style.key);
   }
 }
-
-

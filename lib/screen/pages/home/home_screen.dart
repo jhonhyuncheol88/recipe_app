@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../../controller/auth/auth_bloc.dart';
 import '../../../controller/auth/auth_event.dart';
 import '../../../controller/auth/auth_state.dart';

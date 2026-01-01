@@ -394,11 +394,11 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                           fit: BoxFit.scaleDown,
                                           alignment: Alignment.centerLeft,
                                           child: Text(
-NumberFormatter.formatCurrency(
-                                          cost,
-                                          currentLocale,
+                                            NumberFormatter.formatCurrency(
+                                              cost,
+                                              currentLocale,
                                           context.watch<NumberFormatCubit>().state,
-                                        ),
+                                            ),
                                             style: AppTextStyles.bodyMedium
                                                 .copyWith(
                                               color: AppColors.accent,
@@ -862,11 +862,11 @@ NumberFormatter.formatCurrency(
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-NumberFormatter.formatCurrency(
-                                          cost,
-                                          currentLocale,
+                                      NumberFormatter.formatCurrency(
+                                        cost,
+                                        currentLocale,
                                           context.watch<NumberFormatCubit>().state,
-                                        ),
+                                      ),
                                       style: AppTextStyles.bodyMedium.copyWith(
                                         color: AppColors.accent,
                                         fontWeight: FontWeight.w600,

@@ -9,6 +9,7 @@ import 'app_strings/app_strings_settings.dart';
 import 'app_strings/app_strings_common.dart';
 import 'app_strings/app_strings_onboarding.dart';
 import 'app_strings/app_strings_ad.dart';
+import 'app_strings/app_strings_encyclopedia.dart';
 
 import 'app_locale.dart';
 
@@ -1003,4 +1004,44 @@ class AppStrings {
       AppStringsSettings.getNumberFormatDollarStyle(locale);
   static String getNumberFormatEuropeanStyle(AppLocale locale) =>
       AppStringsSettings.getNumberFormatEuropeanStyle(locale);
+  static String getEncyclopedia(AppLocale locale) =>
+      AppStringsEncyclopedia.getEncyclopedia(locale);
+  static String getEncyclopediaTab(AppLocale locale) =>
+      AppStringsEncyclopedia.getEncyclopediaTab(locale);
+  static String getLoadMore(AppLocale locale) =>
+      AppStringsEncyclopedia.getLoadMore(locale);
+  static String getTranslate(AppLocale locale) =>
+      AppStringsEncyclopedia.getTranslate(locale);
+  static String getShowOriginal(AppLocale locale) =>
+      AppStringsEncyclopedia.getShowOriginal(locale);
+  static String getTranslating(AppLocale locale) =>
+      AppStringsEncyclopedia.getTranslating(locale);
+
+  static String getAddIngredients(AppLocale locale) =>
+      AppStringsEncyclopedia.getAddIngredients(locale);
+  static String getAddSauces(AppLocale locale) =>
+      AppStringsEncyclopedia.getAddSauces(locale);
+  static String getAddAll(AppLocale locale) =>
+      AppStringsEncyclopedia.getAddAll(locale);
+  static String getAddIndividual(AppLocale locale) =>
+      AppStringsEncyclopedia.getAddIndividual(locale);
+  static String getRecipeInfo(AppLocale locale) =>
+      AppStringsEncyclopedia.getRecipeInfo(locale);
+  static String getIngredientsList(AppLocale locale) =>
+      AppStringsEncyclopedia.getIngredientsList(locale);
+  static String getSaucesList(AppLocale locale) =>
+      AppStringsEncyclopedia.getSaucesList(locale);
+  static String getCookingMethod(AppLocale locale) =>
+      AppStringsEncyclopedia.getCookingMethod(locale);
+  static String getRecipeNumber(AppLocale locale) =>
+      AppStringsEncyclopedia.getRecipeNumber(locale);
+  static String getPage(AppLocale locale) =>
+      AppStringsEncyclopedia.getPage(locale);
+
+  static String getLoadingRecipes(AppLocale locale) =>
+      AppStringsEncyclopedia.getLoadingRecipes(locale);
+  static String getLoadRecipesFailed(AppLocale locale) =>
+      AppStringsEncyclopedia.getLoadRecipesFailed(locale);
+  static String getNoCookingMethod(AppLocale locale) =>
+      AppStringsEncyclopedia.getNoCookingMethod(locale);
 }

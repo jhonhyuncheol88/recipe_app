@@ -64,9 +64,8 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
     _descriptionController = TextEditingController(
       text: widget.recipe.description,
     );
-    _selectedTagId = widget.recipe.tagIds.isNotEmpty
-        ? widget.recipe.tagIds.first
-        : '';
+    _selectedTagId =
+        widget.recipe.tagIds.isNotEmpty ? widget.recipe.tagIds.first : '';
 
     // 레시피 재료들을 초기화
     _selectedIngredients = [];
@@ -131,8 +130,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
             // 폴백: 저장소에서 직접 조회하여 실제 이름을 사용
             final repo = context.read<IngredientRepository>();
             final fetched = await repo.getIngredientById(ri.ingredientId);
-            ing =
-                fetched ??
+            ing = fetched ??
                 Ingredient(
                   id: ri.ingredientId,
                   name: '재료',
@@ -259,9 +257,8 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
       ingredient.purchaseAmount,
       ingredient.purchaseUnitId,
     );
-    final baseUnitPrice = purchaseBase > 0
-        ? ingredient.purchasePrice / purchaseBase
-        : 0.0;
+    final baseUnitPrice =
+        purchaseBase > 0 ? ingredient.purchasePrice / purchaseBase : 0.0;
     // 입력 단위 사용량을 기본단위로 환산
     final selectedUnitId =
         _ingredientUnitIds[ingredientId] ?? ingredient.purchaseUnitId;
@@ -284,9 +281,9 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
   // 숫자 포맷팅 (천 단위 콤마)
   String _formatNumber(double number) {
     return number.toInt().toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match match) => '${match[1]},',
-    );
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match match) => '${match[1]},',
+        );
   }
 
   // 텍스트에서 숫자 추출 (천 단위 구분자 제거)
@@ -583,15 +580,16 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                   if (v == null) return;
                                   final prevUnitId =
                                       _ingredientUnitIds[ingredient.id] ??
-                                      ingredient.purchaseUnitId;
+                                          ingredient.purchaseUnitId;
                                   final currentAmount =
                                       _ingredientAmounts[ingredient.id] ?? 0.0;
                                   final baseUsage = uc.UnitConverter.toBaseUnit(
                                     currentAmount,
                                     prevUnitId,
                                   );
-                                  final converted = uc
-                                      .UnitConverter.fromBaseUnit(baseUsage, v);
+                                  final converted =
+                                      uc.UnitConverter.fromBaseUnit(
+                                          baseUsage, v);
                                   setState(() {
                                     _ingredientUnitIds[ingredient.id] = v;
                                     _ingredientAmounts[ingredient.id] =
@@ -622,7 +620,9 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                 initialValue: amount > 0
                                     ? NumberFormatter.formatNumber(
                                         amount.toInt(),
-                                        context.watch<NumberFormatCubit>().state,
+                                        context
+                                            .watch<NumberFormatCubit>()
+                                            .state,
                                       )
                                     : null,
                                 onChanged: (value) async {
@@ -635,7 +635,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                   );
                                   final unitForIngredient =
                                       _ingredientUnitIds[ingredient.id] ??
-                                      ingredient.purchaseUnitId;
+                                          ingredient.purchaseUnitId;
                                   await context
                                       .read<rc.RecipeCubit>()
                                       .updateRecipeIngredientUnitAndAmount(
@@ -671,9 +671,12 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                         NumberFormatter.formatCurrency(
                                           cost,
                                           currentLocale,
-                                          context.watch<NumberFormatCubit>().state,
+                                          context
+                                              .watch<NumberFormatCubit>()
+                                              .state,
                                         ),
-                                        style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
+                                        style: AppTextStyles
+                                            .costEmphasized, // 크고 굵은 오렌지색
                                         textAlign: TextAlign.left,
                                       ),
                                     ),
@@ -783,18 +786,18 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                         }
                                         final unitCost =
                                             agg.totalCost / agg.totalBaseAmount;
-                                        final unitId =
-                                            agg.unitType == uc.UnitType.weight
+                                        final unitId = agg.unitType ==
+                                                uc.UnitType.weight
                                             ? 'g'
                                             : agg.unitType == uc.UnitType.volume
-                                            ? 'ml'
-                                            : '개';
+                                                ? 'ml'
+                                                : '개';
                                         return Text(
                                           '1$unitId당 ${NumberFormatter.formatCurrency(unitCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
-                                          style: AppTextStyles.bodySmall
-                                              .copyWith(
-                                                color: AppColors.textSecondary,
-                                              ),
+                                          style:
+                                              AppTextStyles.bodySmall.copyWith(
+                                            color: AppColors.textSecondary,
+                                          ),
                                         );
                                       },
                                     ),
@@ -845,13 +848,14 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                     currentAmount,
                                     entry.unitId,
                                   );
-                                  final converted = uc
-                                      .UnitConverter.fromBaseUnit(baseUsage, v);
+                                  final converted =
+                                      uc.UnitConverter.fromBaseUnit(
+                                          baseUsage, v);
                                   controller.text =
                                       NumberFormatter.formatNumber(
-                                        converted.toInt(),
-                                        context.watch<NumberFormatCubit>().state,
-                                      );
+                                    converted.toInt(),
+                                    context.watch<NumberFormatCubit>().state,
+                                  );
                                   await context
                                       .read<rc.RecipeCubit>()
                                       .updateRecipeSauceUnit(
@@ -921,15 +925,14 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                         RegExp(r'[^\d]'),
                                         '',
                                       );
-                                      final amount =
-                                          (double.tryParse(clean) ??
-                                                  entry.amount)
-                                              .toDouble();
+                                      final amount = (double.tryParse(clean) ??
+                                              entry.amount)
+                                          .toDouble();
                                       final baseUsage =
                                           uc.UnitConverter.toBaseUnit(
-                                            amount,
-                                            entry.unitId,
-                                          );
+                                        amount,
+                                        entry.unitId,
+                                      );
                                       final cost = unitCost * baseUsage;
                                       return Column(
                                         crossAxisAlignment:
@@ -939,9 +942,8 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                             AppStrings.getCost(currentLocale),
                                             style: AppTextStyles.bodySmall
                                                 .copyWith(
-                                                  color:
-                                                      AppColors.textSecondary,
-                                                ),
+                                              color: AppColors.textSecondary,
+                                            ),
                                           ),
                                           FittedBox(
                                             fit: BoxFit.scaleDown,
@@ -950,9 +952,12 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                               NumberFormatter.formatCurrency(
                                                 cost,
                                                 currentLocale,
-                                                context.watch<NumberFormatCubit>().state,
+                                                context
+                                                    .watch<NumberFormatCubit>()
+                                                    .state,
                                               ),
-                                              style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
+                                              style: AppTextStyles
+                                                  .costEmphasized, // 크고 굵은 오렌지색
                                               textAlign: TextAlign.left,
                                             ),
                                           ),
@@ -1007,9 +1012,8 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                 selectedColor: AppColors.accent.withOpacity(0.2),
                 checkmarkColor: AppColors.accent,
                 labelStyle: AppTextStyles.bodySmall.copyWith(
-                  color: isSelected
-                      ? AppColors.accent
-                      : AppColors.textSecondary,
+                  color:
+                      isSelected ? AppColors.accent : AppColors.textSecondary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 ),
               );
@@ -1075,11 +1079,11 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                       children: [
                         Text(AppStrings.getSauceCostLabel(currentLocale)),
                         Text(
-                                              NumberFormatter.formatCurrency(
-                                                sauceSum,
-                                                currentLocale,
-                                                context.watch<NumberFormatCubit>().state,
-                                              ),
+                          NumberFormatter.formatCurrency(
+                            sauceSum,
+                            currentLocale,
+                            context.watch<NumberFormatCubit>().state,
+                          ),
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -1097,7 +1101,8 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                           ),
                         ),
                         Text(
-                          NumberFormatter.formatCurrency(total, currentLocale, context.watch<NumberFormatCubit>().state),
+                          NumberFormatter.formatCurrency(total, currentLocale,
+                              context.watch<NumberFormatCubit>().state),
                           style: AppTextStyles.headline4.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w700,
@@ -1329,11 +1334,11 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                 final amount = double.tryParse(clean) ?? 0;
                 if (s != null && amount > 0) {
                   await context.read<rc.RecipeCubit>().addSauceToRecipe(
-                    recipeId: widget.recipe.id,
-                    sauceId: s.id,
-                    amount: amount,
-                    unitId: unitId,
-                  );
+                        recipeId: widget.recipe.id,
+                        sauceId: s.id,
+                        amount: amount,
+                        unitId: unitId,
+                      );
                   if (mounted) setState(() {});
                 }
                 if (context.mounted) Navigator.pop(context);
@@ -1350,9 +1355,9 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
 
   void _removeSauce(RecipeSauce entry) async {
     await context.read<rc.RecipeCubit>().removeSauceFromRecipe(
-      recipeId: widget.recipe.id,
-      sauceId: entry.sauceId,
-    );
+          recipeId: widget.recipe.id,
+          sauceId: entry.sauceId,
+        );
     if (mounted) setState(() {});
   }
 
@@ -1516,8 +1521,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
               recipeId: widget.recipe.id,
               ingredientId: ingredient.id,
               amount: amount,
-              unitId:
-                  _ingredientUnitIds[ingredient.id] ??
+              unitId: _ingredientUnitIds[ingredient.id] ??
                   ingredient.purchaseUnitId,
               calculatedCost: _ingredientCosts[ingredient.id] ?? 0.0,
             ),

@@ -4,7 +4,7 @@ import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
 import '../../../controller/setting/locale_cubit.dart';
-import '../../../service/admob_service.dart';
+import '../../../service/admob_forward.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// AI 기능을 위한 광고 시청 알럿 다이얼로그 (공통)
@@ -140,7 +140,7 @@ class AiAnalysisAdDialog extends StatelessWidget {
     try {
       // 전면 광고 표시
       print('📺 전면 광고 표시 시작');
-      final adWatched = await AdMobService.instance.showInterstitialAd();
+      final adWatched = await AdMobForwardService.instance.showInterstitialAd();
       print('📺 전면 광고 결과: $adWatched');
 
       if (adWatched) {

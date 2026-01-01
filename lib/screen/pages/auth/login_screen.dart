@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../controller/auth/auth_bloc.dart';
-import '../../../controller/auth/auth_event.dart';
-import '../../../controller/auth/auth_state.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';

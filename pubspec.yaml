@@ -130,6 +130,7 @@ flutter:
     - .env
     - assets/png/
     - assets/images/
+    - assets/json/korea_recipe.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

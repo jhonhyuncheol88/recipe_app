@@ -324,7 +324,8 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    NumberFormatter.formatCurrency(totalPrice, widget.locale, context.watch<NumberFormatCubit>().state),
+                    NumberFormatter.formatCurrency(totalPrice, widget.locale,
+                        context.watch<NumberFormatCubit>().state),
                     style: AppTextStyles.costEmphasized, // 크고 굵은 오렌지색
                     textAlign: TextAlign.left,
                   ),
