@@ -139,8 +139,12 @@ class AppRouter {
               final args = state.extra as Map<String, dynamic>?;
               final preFilledIngredientName =
                   args?['preFilledIngredientName'] as String?;
+              final preFilledAmount = args?['preFilledAmount'] as String?;
+              final preFilledUnit = args?['preFilledUnit'] as String?;
               return IngredientAddPage(
                 preFilledIngredientName: preFilledIngredientName,
+                preFilledAmount: preFilledAmount,
+                preFilledUnit: preFilledUnit,
               );
             },
           ),

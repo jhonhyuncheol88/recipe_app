@@ -8,7 +8,6 @@ import '../../../util/app_locale.dart';
 import '../../../util/date_formatter.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
-import '../../../model/ingredient.dart';
 import '../../../model/tag.dart';
 import '../../../model/unit.dart';
 import '../../widget/index.dart';
@@ -90,13 +89,27 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
           // 기존 데이터 초기화
           _ingredients.clear();
 
-          // 전달받은 데이터로 채우기 (이름만 미리 설정, 나머지는 기본값)
+          // 전달받은 데이터로 채우기
           for (final ingredientData in prefilledIngredients) {
+            // amount와 unit이 있으면 사용, 없으면 기본값
+            final amount = ingredientData['amount'];
+            final unit = ingredientData['unit'] ?? '개';
+            
+            // amount를 숫자로 변환 시도
+            double? parsedAmount;
+            if (amount != null) {
+              if (amount is num) {
+                parsedAmount = amount.toDouble();
+              } else if (amount is String) {
+                parsedAmount = double.tryParse(amount);
+              }
+            }
+            
             _ingredients.add({
-              'name': ingredientData['name'] ?? '', // 이름만 미리 설정
+              'name': ingredientData['name'] ?? '', // 이름
               'purchasePrice': 0.0, // 사용자가 입력할 수 있도록 0으로 설정
-              'purchaseAmount': 0.0, // 사용자가 입력할 수 있도록 0으로 설정
-              'purchaseUnitId': '개', // 기본값으로 설정
+              'purchaseAmount': parsedAmount ?? 0.0, // 전달받은 수량 또는 0
+              'purchaseUnitId': unit, // 전달받은 단위 또는 기본값
               'expiryDate': null, // 사용자가 선택할 수 있도록 null로 설정
               'tagIds': <String>[], // 사용자가 선택할 수 있도록 빈 배열로 설정
             });
@@ -107,13 +120,21 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
           _priceControllers.clear();
           _amountControllers.clear();
 
-          for (final ingredient in _ingredients) {
-            // 이름만 미리 채워넣고, 가격과 수량은 빈 값으로 설정
+          for (int i = 0; i < _ingredients.length; i++) {
+            final ingredient = _ingredients[i];
+            // 이름 미리 채우기
             _nameControllers.add(
               TextEditingController(text: ingredient['name']?.toString() ?? ''),
             );
-            _priceControllers.add(TextEditingController()); // 빈 값으로 시작
-            _amountControllers.add(TextEditingController()); // 빈 값으로 시작
+            // 가격은 빈 값으로 시작
+            _priceControllers.add(TextEditingController());
+            // 수량은 전달받은 값이 있으면 채우기
+            final amount = ingredient['purchaseAmount'] as double?;
+            _amountControllers.add(
+              TextEditingController(
+                text: amount != null && amount > 0 ? amount.toString() : '',
+              ),
+            );
           }
         });
       }
@@ -137,7 +158,6 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
 
   void _addIngredient() {
     setState(() {
-      final index = _ingredients.length;
       _ingredients.add({
         'name': '',
         'purchasePrice': 0.0,
@@ -219,7 +239,6 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
   }
 
   void _showValidationError(String fieldName, int index) {
-    final currentLocale = context.read<LocaleCubit>().state;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${index + 1}번째 재료의 $fieldName을(를) 확인해주세요'),

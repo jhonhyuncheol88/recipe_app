@@ -18,8 +18,15 @@ import '../../../controller/setting/locale_cubit.dart';
 /// 재료 추가 페이지
 class IngredientAddPage extends StatefulWidget {
   final String? preFilledIngredientName;
+  final String? preFilledAmount;
+  final String? preFilledUnit;
 
-  const IngredientAddPage({super.key, this.preFilledIngredientName});
+  const IngredientAddPage({
+    super.key,
+    this.preFilledIngredientName,
+    this.preFilledAmount,
+    this.preFilledUnit,
+  });
 
   @override
   State<IngredientAddPage> createState() => _IngredientAddPageState();
@@ -78,8 +85,24 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
         Unit(id: '장', name: '장', type: 'count', conversionFactor: 1.0),
         Unit(id: '인분', name: '인분', type: 'count', conversionFactor: 1.0),
       ];
-      if (_availableUnits.isNotEmpty) {
+      
+      // 미리 입력된 단위가 있으면 해당 단위 선택, 없으면 첫 번째 단위
+      if (widget.preFilledUnit != null) {
+        // 전달받은 단위가 목록에 있는지 확인
+        final matchedUnit = _availableUnits.firstWhere(
+          (unit) => unit.id == widget.preFilledUnit || unit.name == widget.preFilledUnit,
+          orElse: () => _availableUnits.first,
+        );
+        _selectedUnitId = matchedUnit.id;
+      } else if (_availableUnits.isNotEmpty) {
         _selectedUnitId = _availableUnits.first.id;
+      }
+      
+      // 미리 입력된 수량이 있으면 설정
+      if (widget.preFilledAmount != null && widget.preFilledAmount!.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _amountController.text = widget.preFilledAmount!;
+        });
       }
     });
   }

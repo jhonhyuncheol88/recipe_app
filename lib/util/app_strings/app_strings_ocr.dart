@@ -58,68 +58,68 @@ mixin AppStringsOcr {
   static String getOcrMainTitle(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
-        return '영수증 OCR';
+        return '영수증을 찍어서 재료를 쉽게 추가하세요';
       case AppLocale.japan:
-        return 'レシートOCR';
+        return 'レシートを撮影して材料を簡単に追加';
       case AppLocale.china:
-        return '收据OCR';
+        return '拍摄收据，轻松添加材料';
       case AppLocale.usa:
-        return 'Receipt OCR';
+        return 'Take a photo of your receipt to easily add ingredients';
       case AppLocale.euro:
-        return 'Receipt OCR';
+        return 'Fotografieren Sie Ihren Beleg, um Zutaten einfach hinzuzufügen';
       case AppLocale.vietnam:
-        return 'OCR hóa đơn';
+        return 'Chụp ảnh hóa đơn để dễ dàng thêm nguyên liệu';
     }
   }
 
   static String getSelectReceiptFromGallery(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
-        return '갤러리에서 영수증 선택';
+        return '영수증 사진 선택하기';
       case AppLocale.japan:
-        return 'ギャラリーからレシート選択';
+        return 'レシート写真を選択';
       case AppLocale.china:
-        return '从相册选择收据';
+        return '选择收据照片';
       case AppLocale.usa:
-        return 'Select Receipt from Gallery';
+        return 'Select Receipt Photo';
       case AppLocale.euro:
-        return 'Select Receipt from Gallery';
+        return 'Kassenbon-Foto auswählen';
       case AppLocale.vietnam:
-        return 'Chọn hóa đơn từ thư viện';
+        return 'Chọn ảnh hóa đơn';
     }
   }
 
   static String getOcrProcessing(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
-        return 'OCR 처리 중...';
+        return '영수증 분석 중...';
       case AppLocale.japan:
-        return 'OCR処理中...';
+        return 'レシート分析中...';
       case AppLocale.china:
-        return 'OCR处理中...';
+        return '收据分析中...';
       case AppLocale.usa:
-        return 'Processing OCR...';
+        return 'Analyzing receipt...';
       case AppLocale.euro:
-        return 'Processing OCR...';
+        return 'Beleg wird analysiert...';
       case AppLocale.vietnam:
-        return 'Đang xử lý OCR...';
+        return 'Đang phân tích hóa đơn...';
     }
   }
 
   static String getOcrCompleted(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
-        return 'OCR 완료';
+        return '영수증에서 재료를 자동으로 인식해드립니다';
       case AppLocale.japan:
-        return 'OCR完了';
+        return 'レシートから材料を自動認識します';
       case AppLocale.china:
-        return 'OCR完成';
+        return '自动识别收据中的材料';
       case AppLocale.usa:
-        return 'OCR Completed';
+        return 'Automatically recognizes ingredients from your receipt';
       case AppLocale.euro:
-        return 'OCR Completed';
+        return 'Erkennt automatisch Zutaten aus Ihrem Beleg';
       case AppLocale.vietnam:
-        return 'OCR hoàn tất';
+        return 'Tự động nhận diện nguyên liệu từ hóa đơn';
     }
   }
 
@@ -333,17 +333,17 @@ mixin AppStringsOcr {
   static String getParsingSummary(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:
-        return '파싱 요약';
+        return '이렇게 작동해요';
       case AppLocale.japan:
-        return '解析サマリー';
+        return '使い方';
       case AppLocale.china:
-        return '解析摘要';
+        return '使用方法';
       case AppLocale.usa:
-        return 'Parsing Summary';
+        return 'How It Works';
       case AppLocale.euro:
-        return 'Parsing Summary';
+        return 'So funktioniert es';
       case AppLocale.vietnam:
-        return 'Tóm tắt phân tích';
+        return 'Cách hoạt động';
     }
   }
 

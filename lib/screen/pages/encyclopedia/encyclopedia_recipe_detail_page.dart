@@ -33,6 +33,7 @@ class _EncyclopediaRecipeDetailPageState
   String? _translatedRecipeName;
   Map<String, String> _translatedIngredientNames = {};
   Map<String, String> _translatedSauceNames = {};
+  Map<String, String> _translatedUnits = {}; // 단위 번역 맵
   String? _translatedCookingMethod;
   bool _isTranslating = false;
   final GeminiService _geminiService = GeminiService();
@@ -219,6 +220,39 @@ class _EncyclopediaRecipeDetailPageState
         }
       }
 
+      // 단위 번역 수행
+      final unitsToTranslate = <String>[];
+      for (final ingredient in widget.recipe.ingredients) {
+        final unit = ingredient.normalizedUnit;
+        if (unit.isNotEmpty && !_translatedUnits.containsKey(unit)) {
+          unitsToTranslate.add(unit);
+        }
+      }
+      for (final sauce in widget.recipe.sauces) {
+        final unit = sauce.normalizedUnit;
+        if (unit.isNotEmpty && !_translatedUnits.containsKey(unit)) {
+          unitsToTranslate.add(unit);
+        }
+      }
+
+      if (unitsToTranslate.isNotEmpty) {
+        try {
+          final unitTranslations = await _geminiService.translateUnits(
+            unitsToTranslate,
+            targetLocale: currentLocale,
+          );
+
+          if (mounted) {
+            setState(() {
+              _translatedUnits.addAll(unitTranslations);
+            });
+          }
+        } catch (e) {
+          // 단위 번역 실패는 무시 (이름 번역은 성공했을 수 있음)
+          print('단위 번역 실패: $e');
+        }
+      }
+
       // 조리 방법 번역
       if (widget.recipe.cookingMethod.isNotEmpty &&
           _translatedCookingMethod == null) {
@@ -401,7 +435,9 @@ class _EncyclopediaRecipeDetailPageState
                         ),
                       ),
                       Text(
-                        '${ingredient.amount}${ingredient.unit}',
+                        _isTranslated && _translatedUnits.containsKey(ingredient.normalizedUnit)
+                            ? '${ingredient.amount}${_translatedUnits[ingredient.normalizedUnit]!}'
+                            : '${ingredient.amount}${ingredient.unit}',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -420,7 +456,18 @@ class _EncyclopediaRecipeDetailPageState
                                       .containsKey(ingredient.name)
                               ? _translatedIngredientNames[ingredient.name]!
                               : ingredient.name;
-                          _addIndividualIngredient(context, name);
+                          
+                          // 단위도 번역된 것이 있으면 사용
+                          final unit = _isTranslated && _translatedUnits.containsKey(ingredient.normalizedUnit)
+                              ? _translatedUnits[ingredient.normalizedUnit]!
+                              : ingredient.normalizedUnit;
+                          
+                          _addIndividualIngredient(
+                            context,
+                            name,
+                            amount: ingredient.amount,
+                            unit: unit,
+                          );
                         },
                         tooltip: AppStrings.getAddIndividual(currentLocale),
                       ),
@@ -527,7 +574,9 @@ class _EncyclopediaRecipeDetailPageState
                         ),
                       ),
                       Text(
-                        '${sauce.amount}${sauce.unit}',
+                        _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
+                            ? '${sauce.amount}${_translatedUnits[sauce.normalizedUnit]!}'
+                            : '${sauce.amount}${sauce.unit}',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -545,7 +594,18 @@ class _EncyclopediaRecipeDetailPageState
                                   _translatedSauceNames.containsKey(sauce.name)
                               ? _translatedSauceNames[sauce.name]!
                               : sauce.name;
-                          _addIndividualIngredient(context, name);
+                          
+                          // 단위도 번역된 것이 있으면 사용
+                          final unit = _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
+                              ? _translatedUnits[sauce.normalizedUnit]!
+                              : sauce.normalizedUnit;
+                          
+                          _addIndividualIngredient(
+                            context,
+                            name,
+                            amount: sauce.amount,
+                            unit: unit,
+                          );
                         },
                         tooltip: AppStrings.getAddIndividual(currentLocale),
                       ),
@@ -673,8 +733,16 @@ class _EncyclopediaRecipeDetailPageState
               _translatedIngredientNames.containsKey(ingredient.name)
           ? _translatedIngredientNames[ingredient.name]!
           : ingredient.name;
+      
+      // 단위도 번역된 것이 있으면 사용
+      final unit = _isTranslated && _translatedUnits.containsKey(ingredient.normalizedUnit)
+          ? _translatedUnits[ingredient.normalizedUnit]!
+          : ingredient.normalizedUnit;
+      
       return {
         'name': name.trim(),
+        'amount': ingredient.amount,
+        'unit': unit,
       };
     }).toList();
 
@@ -693,8 +761,16 @@ class _EncyclopediaRecipeDetailPageState
               _translatedSauceNames.containsKey(sauce.name)
           ? _translatedSauceNames[sauce.name]!
           : sauce.name;
+      
+      // 단위도 번역된 것이 있으면 사용
+      final unit = _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
+          ? _translatedUnits[sauce.normalizedUnit]!
+          : sauce.normalizedUnit;
+      
       return {
         'name': name.trim(),
+        'amount': sauce.amount,
+        'unit': unit,
       };
     }).toList();
 
@@ -714,8 +790,16 @@ class _EncyclopediaRecipeDetailPageState
                 _translatedIngredientNames.containsKey(ingredient.name)
             ? _translatedIngredientNames[ingredient.name]!
             : ingredient.name;
+        
+        // 단위도 번역된 것이 있으면 사용
+        final unit = _isTranslated && _translatedUnits.containsKey(ingredient.normalizedUnit)
+            ? _translatedUnits[ingredient.normalizedUnit]!
+            : ingredient.normalizedUnit;
+        
         return {
           'name': name.trim(),
+          'amount': ingredient.amount,
+          'unit': unit,
         };
       }),
       ...widget.recipe.sauces.map((sauce) {
@@ -723,8 +807,16 @@ class _EncyclopediaRecipeDetailPageState
                 _translatedSauceNames.containsKey(sauce.name)
             ? _translatedSauceNames[sauce.name]!
             : sauce.name;
+        
+        // 단위도 번역된 것이 있으면 사용
+        final unit = _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
+            ? _translatedUnits[sauce.normalizedUnit]!
+            : sauce.normalizedUnit;
+        
         return {
           'name': name.trim(),
+          'amount': sauce.amount,
+          'unit': unit,
         };
       }),
     ];
@@ -741,8 +833,18 @@ class _EncyclopediaRecipeDetailPageState
     );
   }
 
-  void _addIndividualIngredient(BuildContext context, String ingredientName) {
-    RouterHelper.goToIngredientAddWithName(context, ingredientName);
+  void _addIndividualIngredient(
+    BuildContext context,
+    String ingredientName, {
+    String? amount,
+    String? unit,
+  }) {
+    RouterHelper.goToIngredientAddWithName(
+      context,
+      ingredientName,
+      amount: amount,
+      unit: unit,
+    );
   }
 }
 

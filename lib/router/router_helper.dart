@@ -60,11 +60,17 @@ class RouterHelper {
   /// 재료 추가 페이지로 이동 (재료 이름 미리 입력)
   static void goToIngredientAddWithName(
     BuildContext context,
-    String ingredientName,
-  ) {
+    String ingredientName, {
+    String? amount,
+    String? unit,
+  }) {
     context.push(
       AppRouter.ingredientAdd,
-      extra: {'preFilledIngredientName': ingredientName},
+      extra: {
+        'preFilledIngredientName': ingredientName,
+        if (amount != null) 'preFilledAmount': amount,
+        if (unit != null) 'preFilledUnit': unit,
+      },
     );
   }
 

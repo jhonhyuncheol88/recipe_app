@@ -101,14 +101,6 @@ class _OcrMainPageState extends State<OcrMainPage> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          Text(
-            AppStrings.getSelectReceiptFromGallery(locale),
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );

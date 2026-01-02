@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../model/ingredient.dart';
-import '../model/unit.dart';
 import '../util/app_locale.dart';
 
 /// Gemini AI 서비스를 통한 레시피 생성 및 이미지 분석
@@ -514,9 +513,6 @@ Now, generate a creative, fusion-style recipe that showcases the same ingredient
   ) {
     try {
       final recipeIngredients = recipe['ingredients'] as List? ?? [];
-      final availableIngredientNames = availableIngredients
-          .map((e) => e.name.toLowerCase())
-          .toList();
 
       final availableForRecipe = <Map<String, dynamic>>[];
       final missingIngredients = <Map<String, dynamic>>[];
@@ -929,6 +925,147 @@ $text
 - 번역된 텍스트만 반환하고 다른 설명은 포함하지 마세요
 
 번역된 텍스트:
+''';
+  }
+
+  /// 단위를 대상 언어로 번역
+  Future<Map<String, String>> translateUnits(
+    List<String> units, {
+    required AppLocale targetLocale,
+  }) async {
+    try {
+      if (units.isEmpty) {
+        return {};
+      }
+
+      // 중복 제거
+      final uniqueUnits = units.toSet().toList();
+      
+      // 국제 표준 단위는 번역 불필요
+      final standardUnits = ['g', 'kg', 'ml', 'L'];
+      final unitsToTranslate = uniqueUnits
+          .where((unit) => !standardUnits.contains(unit))
+          .toList();
+
+      if (unitsToTranslate.isEmpty) {
+        // 모든 단위가 표준 단위인 경우 원본 반환
+        final result = <String, String>{};
+        for (final unit in uniqueUnits) {
+          result[unit] = unit;
+        }
+        return result;
+      }
+
+      final prompt = _buildUnitTranslationPrompt(unitsToTranslate, targetLocale);
+      final response = await _model.generateContent([Content.text(prompt)]);
+      final responseText = response.text ?? '';
+
+      // JSON 응답 파싱
+      final translations = _parseTranslationResponse(responseText, unitsToTranslate);
+
+      // 표준 단위도 결과에 포함
+      final result = <String, String>{...translations};
+      for (final unit in uniqueUnits) {
+        if (standardUnits.contains(unit)) {
+          result[unit] = unit;
+        }
+      }
+
+      return result;
+    } catch (e) {
+      // 번역 실패 시 원본 단위 반환
+      final result = <String, String>{};
+      for (final unit in units.toSet()) {
+        result[unit] = unit;
+      }
+      return result;
+    }
+  }
+
+  /// 단위 번역 프롬프트 구성
+  String _buildUnitTranslationPrompt(List<String> units, AppLocale targetLocale) {
+    final unitsList = units
+        .asMap()
+        .entries
+        .map((entry) => '${entry.key + 1}. ${entry.value}')
+        .join('\n');
+
+    // 대상 언어명 설정
+    String targetLanguage;
+    Map<String, String> unitExamples;
+    switch (targetLocale) {
+      case AppLocale.usa:
+        targetLanguage = '영어';
+        unitExamples = {
+          '개': 'pieces',
+          '마리': 'heads',
+          '장': 'sheets',
+          '인분': 'servings',
+        };
+        break;
+      case AppLocale.china:
+        targetLanguage = '중국어';
+        unitExamples = {
+          '개': '个',
+          '마리': '只',
+          '장': '张',
+          '인분': '份',
+        };
+        break;
+      case AppLocale.japan:
+        targetLanguage = '일본어';
+        unitExamples = {
+          '개': '個',
+          '마리': '匹',
+          '장': '枚',
+          '인분': '人前',
+        };
+        break;
+      case AppLocale.vietnam:
+        targetLanguage = '베트남어';
+        unitExamples = {
+          '개': 'cái',
+          '마리': 'con',
+          '장': 'tờ',
+          '인분': 'phần',
+        };
+        break;
+      default:
+        targetLanguage = '영어';
+        unitExamples = {
+          '개': 'pieces',
+          '마리': 'heads',
+          '장': 'sheets',
+          '인분': 'servings',
+        };
+    }
+
+    final examplesText = unitExamples.entries
+        .map((e) => '${e.key} → ${e.value}')
+        .join(', ');
+
+    return '''
+다음 한국어 단위들을 $targetLanguage로 번역해주세요.
+요리 재료의 수량 단위입니다.
+
+단위 목록:
+$unitsList
+
+응답은 JSON 형식으로 다음과 같이 반환해주세요:
+{
+  "${units[0]}": "$targetLanguage 번역",
+  "${units.length > 1 ? units[1] : ''}": "$targetLanguage 번역",
+  ...
+}
+
+참고 예시:
+$examplesText
+
+주의사항:
+- 각 단위를 $targetLanguage로 정확하게 번역해야 합니다
+- 요리에서 사용되는 일반적인 $targetLanguage 단위 표현을 사용하세요
+- JSON 형식만 반환하고 다른 설명은 포함하지 마세요
+- 모든 단위를 반드시 번역해야 합니다
 ''';
   }
 }
