@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/number_formatter.dart';
 import '../../util/app_locale.dart';
@@ -33,24 +32,29 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     Widget cardWidget = Container(
       margin: margin ?? const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.surface, // 흰색 카드 배경
+        color: backgroundColor ?? colorScheme.surface,
         borderRadius: borderRadius ?? BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.divider, // 카드 테두리 추가 (배경과 구분)
+          color: isDark ? Colors.white10 : colorScheme.outlineVariant,
           width: 1,
         ),
         boxShadow: elevation != null && elevation! > 0
             ? [
                 BoxShadow(
-                  color: AppColors.shadow,
+                  color: isDark
+                      ? Colors.transparent
+                      : colorScheme.shadow.withValues(alpha: 0.05),
                   blurRadius: elevation!,
-                  offset: const Offset(0, 1), // Flat 디자인: 최소 그림자
+                  offset: const Offset(0, 1),
                 ),
               ]
-            : null, // Flat 디자인: elevation이 0이면 그림자 없음
+            : null,
       ),
       child: Padding(
         padding: padding ?? const EdgeInsets.all(16),
@@ -112,7 +116,7 @@ class IngredientCard extends StatelessWidget {
                   name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                 ),
               ),
@@ -120,13 +124,16 @@ class IngredientCard extends StatelessWidget {
                 IconButton(
                   onPressed: onEdit,
                   icon: const Icon(Icons.edit, size: 20),
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
               if (onDelete != null)
                 IconButton(
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete, size: 20),
-                  color: AppColors.error,
+                  color: Theme.of(context).colorScheme.error,
                 ),
             ],
           ),
@@ -141,14 +148,17 @@ class IngredientCard extends StatelessWidget {
                 ),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.accent,
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
               ),
               const SizedBox(width: 8),
               Text(
                 '${NumberFormatter.formatNumber(amount.toInt(), context.watch<NumberFormatCubit>().state)} $unit',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
                     ),
               ),
             ],
@@ -158,7 +168,10 @@ class IngredientCard extends StatelessWidget {
             Text(
               '${NumberFormatter.formatCurrency(unitPrice!, locale, context.watch<NumberFormatCubit>().state)}/$unit',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textLight,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
                     fontStyle: FontStyle.italic,
                   ),
             ),
@@ -181,7 +194,10 @@ class IngredientCard extends StatelessWidget {
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: AppColors.textLight,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.5),
               shape: BoxShape.circle,
             ),
           ),
@@ -189,7 +205,10 @@ class IngredientCard extends StatelessWidget {
           Text(
             AppStrings.getNoExpiryDate(locale),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textLight,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5),
                   fontWeight: FontWeight.w500,
                 ),
           ),
@@ -199,21 +218,22 @@ class IngredientCard extends StatelessWidget {
 
     final now = DateTime.now();
     final daysUntilExpiry = expiryDate!.difference(now).inDays;
+    final colorScheme = Theme.of(context).colorScheme;
 
     Color statusColor;
     String statusText;
 
     if (daysUntilExpiry < 0) {
-      statusColor = AppColors.expiryExpired;
+      statusColor = colorScheme.error;
       statusText = AppStrings.getExpired(locale);
     } else if (daysUntilExpiry <= 3) {
-      statusColor = AppColors.expiryDanger;
+      statusColor = colorScheme.error;
       statusText = AppStrings.getDanger(locale);
     } else if (daysUntilExpiry <= 7) {
-      statusColor = AppColors.expiryWarning;
+      statusColor = Colors.orange;
       statusText = AppStrings.getWarning(locale);
     } else {
-      statusColor = AppColors.expiryNormal;
+      statusColor = colorScheme.primary;
       statusText = AppStrings.getNormal(locale);
     }
 
@@ -280,12 +300,13 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       onTap: onTap,
       isClickable: true,
       backgroundColor: isSelected
-          ? AppColors.primaryLight.withAlpha(51)
-          : AppColors.surface, // 흰색 카드 배경
+          ? colorScheme.primary.withValues(alpha: 0.1)
+          : colorScheme.surface,
       elevation: 0, // Flat 디자인
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,7 +318,7 @@ class RecipeCard extends StatelessWidget {
                   name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                 ),
               ),
@@ -305,15 +326,15 @@ class RecipeCard extends StatelessWidget {
               if (onAiAnalysis != null)
                 TextButton.icon(
                   onPressed: onAiAnalysis,
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.auto_awesome,
                     size: 14,
-                    color: AppColors.accent,
+                    color: colorScheme.secondary,
                   ),
                   label: Text(
                     AppStrings.getAnalyzeWithAi(locale),
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.accent,
+                      color: colorScheme.secondary,
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
                     ),
@@ -327,9 +348,9 @@ class RecipeCard extends StatelessWidget {
                 ),
               if (onPriceChart != null)
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.show_chart,
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   onPressed: onPriceChart,
                   tooltip: AppStrings.getPriceChart(locale),
@@ -338,9 +359,9 @@ class RecipeCard extends StatelessWidget {
                 ),
               if (onEdit != null || onDelete != null)
                 PopupMenuButton<String>(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.more_vert,
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   onSelected: (value) {
                     switch (value) {
@@ -372,12 +393,12 @@ class RecipeCard extends StatelessWidget {
                             Icon(
                               Icons.delete,
                               size: 16,
-                              color: AppColors.error,
+                              color: colorScheme.error,
                             ),
                             SizedBox(width: 8),
                             Text(
                               AppStrings.getDelete(locale),
-                              style: TextStyle(color: AppColors.error),
+                              style: TextStyle(color: colorScheme.error),
                             ),
                           ],
                         ),
@@ -392,7 +413,8 @@ class RecipeCard extends StatelessWidget {
               description,
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+              ).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.6)),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -408,7 +430,7 @@ class RecipeCard extends StatelessWidget {
                     Text(
                       AppStrings.getIngredientCountSimple(locale),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                     ),
                     const SizedBox(height: 4),
@@ -416,7 +438,7 @@ class RecipeCard extends StatelessWidget {
                       '${NumberFormatter.formatQuantity(ingredientCount, locale, context.watch<NumberFormatCubit>().state)} ${AppStrings.getUnitPiece(locale)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                   ],
@@ -429,7 +451,7 @@ class RecipeCard extends StatelessWidget {
                     Text(
                       AppStrings.getTotalWeight(locale),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                     ),
                     const SizedBox(height: 4),
@@ -437,7 +459,7 @@ class RecipeCard extends StatelessWidget {
                       '${NumberFormatter.formatNumber(totalWeight.toInt(), context.watch<NumberFormatCubit>().state)} $weightUnit',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                   ],
@@ -450,7 +472,7 @@ class RecipeCard extends StatelessWidget {
                     Text(
                       AppStrings.getTotalCost(locale),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                     ),
                     const SizedBox(height: 4),
@@ -480,7 +502,6 @@ class RecipeCard extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: onViewQuick,
-                icon: const Icon(Icons.visibility, size: 20),
                 label: Text(
                   AppStrings.getViewRecipeQuick(locale),
                   style: AppTextStyles.buttonMedium.copyWith(
@@ -488,8 +509,8 @@ class RecipeCard extends StatelessWidget {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.buttonText,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 12,

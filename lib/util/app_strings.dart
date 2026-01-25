@@ -224,6 +224,10 @@ class AppStrings {
       AppStringsAi.getConvertToRecipe(locale);
   static String getConvertToRecipeDescription(AppLocale locale) =>
       AppStringsAi.getConvertToRecipeDescription(locale);
+  static String getConvertToRecipeMessage(AppLocale locale) =>
+      AppStringsAi.getConvertToRecipeMessage(locale);
+  static String getConvertToRecipeTitle(AppLocale locale) =>
+      AppStringsAi.getConvertToRecipeTitle(locale);
   static String getConverted(AppLocale locale) =>
       AppStringsAi.getConverted(locale);
   static String getConvertedRecipes(AppLocale locale) =>
@@ -730,6 +734,8 @@ class AppStrings {
       AppStringsRecipe.getRecipeAddError(locale);
   static String getRecipeAdded(AppLocale locale) =>
       AppStringsRecipe.getRecipeAdded(locale);
+  static String getRecipeConverted(AppLocale locale) =>
+      AppStringsAi.getRecipeConverted(locale);
   static String getRecipeDescription(AppLocale locale) =>
       AppStringsAi.getRecipeDescription(locale);
   static String getRecipeDescriptionHint(AppLocale locale) =>
@@ -782,10 +788,16 @@ class AppStrings {
       AppStringsRecipe.getRecipeTagWestern(locale);
   static String getRecipeTags(AppLocale locale) =>
       AppStringsRecipe.getRecipeTags(locale);
-  static String getRecipeUpdateError(AppLocale locale) =>
-      AppStringsRecipe.getRecipeUpdateError(locale);
+  static String getRecipeUpdateError(AppLocale locale, [String? error]) =>
+      AppStringsRecipe.getRecipeUpdateError(locale, error);
   static String getRecipeUpdated(AppLocale locale) =>
       AppStringsRecipe.getRecipeUpdated(locale);
+  static String getSelectRecipeIngredients(AppLocale locale) =>
+      AppStringsRecipe.getSelectRecipeIngredients(locale);
+  static String getSelectedIngredients(AppLocale locale) =>
+      AppStringsRecipe.getSelectedIngredients(locale);
+  static String getComplete(AppLocale locale) =>
+      AppStringsRecipe.getComplete(locale);
   static String getRecipes(AppLocale locale) =>
       AppStringsRecipe.getRecipes(locale);
   static String getRecognizedText(AppLocale locale) =>
@@ -866,8 +878,6 @@ class AppStrings {
       AppStringsIngredient.getSelectIngredient(locale);
   static String getSelectIngredientsToUse(AppLocale locale) =>
       AppStringsAi.getSelectIngredientsToUse(locale);
-  static String getSelectedIngredients(AppLocale locale) =>
-      AppStringsAi.getSelectedIngredients(locale);
   static String getSelectReceiptFromGallery(AppLocale locale) =>
       AppStringsOcr.getSelectReceiptFromGallery(locale);
   static String getSelectSauce(AppLocale locale) =>
@@ -1004,6 +1014,18 @@ class AppStrings {
       AppStringsSettings.getNumberFormatDollarStyle(locale);
   static String getNumberFormatEuropeanStyle(AppLocale locale) =>
       AppStringsSettings.getNumberFormatEuropeanStyle(locale);
+
+  static String getDisplaySettings(AppLocale locale) =>
+      AppStringsSettings.getDisplaySettings(locale);
+  static String getThemeColor(AppLocale locale) =>
+      AppStringsSettings.getThemeColor(locale);
+  static String getDarkMode(AppLocale locale) =>
+      AppStringsSettings.getDarkMode(locale);
+  static String getOn(AppLocale locale) => AppStringsSettings.getOn(locale);
+  static String getOff(AppLocale locale) => AppStringsSettings.getOff(locale);
+  static String getThemeColorSelection(AppLocale locale) =>
+      AppStringsSettings.getThemeColorSelection(locale);
+
   static String getEncyclopedia(AppLocale locale) =>
       AppStringsEncyclopedia.getEncyclopedia(locale);
   static String getEncyclopediaTab(AppLocale locale) =>

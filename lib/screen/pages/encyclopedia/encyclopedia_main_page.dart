@@ -5,12 +5,11 @@ import '../../../controller/encyclopedia/encyclopedia_cubit.dart';
 import '../../../controller/encyclopedia/encyclopedia_state.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../model/encyclopedia_recipe.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
 import '../../../service/admob_forward.dart';
-import '../../../service/gemini_service.dart';
+import '../../../service/ai_analysis_service.dart';
 
 /// 백과사전 메인 페이지
 class EncyclopediaMainPage extends StatefulWidget {
@@ -23,16 +22,15 @@ class EncyclopediaMainPage extends StatefulWidget {
 class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  int _displayCount = 10; // 처음에 표시할 레시피 개수
-  bool _isTranslated = false; // 번역 상태 추적
-  Map<String, String> _translatedNames = {}; // 번역된 이름 저장 (원본 이름 → 번역된 이름)
-  bool _isTranslating = false; // 번역 진행 중 상태
-  final GeminiService _geminiService = GeminiService();
+  int _displayCount = 10;
+  bool _isTranslated = false;
+  final Map<String, String> _translatedNames = {};
+  bool _isTranslating = false;
+  final AiAnalysisService _aiAnalysisService = AiAnalysisService();
 
   @override
   void initState() {
     super.initState();
-    // 페이지를 열 때마다 랜덤으로 로드
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<EncyclopediaCubit>().loadRecipes();
     });
@@ -50,45 +48,38 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
     if (query != _searchQuery) {
       setState(() {
         _searchQuery = query;
-        _displayCount = 10; // 검색 시 표시 개수 초기화
-        _isTranslated = false; // 검색 시 번역 상태 초기화
+        _displayCount = 10;
+        _isTranslated = false;
         _translatedNames.clear();
       });
       context.read<EncyclopediaCubit>().searchRecipes(query);
     }
   }
 
-  /// 더보기 버튼 클릭 핸들러
   Future<void> _handleLoadMore(AppLocale currentLocale) async {
-    // 광고 시청
     final adWatched = await AdMobForwardService.instance.showInterstitialAd();
-    
+
     if (adWatched && mounted) {
       setState(() {
-        _displayCount += 10; // 10개 더 표시
+        _displayCount += 10;
       });
-      
-      // 번역 상태가 활성화되어 있고, 새로 표시된 레시피가 있다면 번역
+
       if (_isTranslated && _translatedNames.isNotEmpty) {
         _translateDisplayedRecipes(currentLocale);
       }
     }
   }
 
-  /// 번역하기/원본 보기 토글 핸들러
   Future<void> _handleTranslateToggle(AppLocale currentLocale) async {
     if (_isTranslated) {
-      // 원본 보기
       setState(() {
         _isTranslated = false;
       });
     } else {
-      // 번역하기
       await _translateDisplayedRecipes(currentLocale);
     }
   }
 
-  /// 현재 표시된 레시피들 번역
   Future<void> _translateDisplayedRecipes(AppLocale currentLocale) async {
     if (_isTranslating) return;
 
@@ -97,10 +88,9 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
     });
 
     try {
-      // 현재 표시된 레시피들 가져오기
       final recipes = context.read<EncyclopediaCubit>().state;
       List<EncyclopediaRecipe> displayedRecipes = [];
-      
+
       if (recipes is EncyclopediaLoaded) {
         displayedRecipes = recipes.recipes.take(_displayCount).toList();
       } else if (recipes is EncyclopediaSearchResult) {
@@ -114,20 +104,15 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
         return;
       }
 
-      // 번역이 필요한 레시피 이름들만 추출 (아직 번역되지 않은 것들)
       final namesToTranslate = <String>[];
-      final recipeMap = <String, EncyclopediaRecipe>{};
-      
       for (final recipe in displayedRecipes) {
         if (!_translatedNames.containsKey(recipe.menuName)) {
           namesToTranslate.add(recipe.menuName);
-          recipeMap[recipe.menuName] = recipe;
         }
       }
 
-      // 번역이 필요한 이름들이 있을 때만 번역 수행
       if (namesToTranslate.isNotEmpty) {
-        final translations = await _geminiService.translateRecipeNames(
+        final translations = await _aiAnalysisService.translateRecipeNames(
           namesToTranslate,
           targetLocale: currentLocale,
         );
@@ -140,7 +125,6 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
           });
         }
       } else {
-        // 이미 번역된 경우 상태만 업데이트
         if (mounted) {
           setState(() {
             _isTranslated = true;
@@ -153,15 +137,15 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
         setState(() {
           _isTranslating = false;
         });
-        
-        // 에러 메시지 표시
+
+        final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               '번역 중 오류가 발생했습니다: ${e.toString()}',
               style: const TextStyle(color: Colors.white),
             ),
-            backgroundColor: AppColors.error,
+            backgroundColor: colorScheme.error,
           ),
         );
       }
@@ -171,18 +155,18 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(
           AppStrings.getEncyclopedia(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         actions: [
-          // 한국어가 아닐 때만 번역 버튼 표시
           if (currentLocale != AppLocale.korea)
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
@@ -196,14 +180,14 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.accent,
+                          color: colorScheme.primary,
                         ),
                       )
                     : Icon(
                         _isTranslated ? Icons.visibility : Icons.translate,
                         color: _isTranslating
-                            ? AppColors.textSecondary
-                            : AppColors.accent,
+                            ? colorScheme.onSurface.withValues(alpha: 0.4)
+                            : colorScheme.primary,
                       ),
                 label: Text(
                   _isTranslating
@@ -213,8 +197,8 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
                           : AppStrings.getTranslate(currentLocale)),
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: _isTranslating
-                        ? AppColors.textSecondary
-                        : AppColors.accent,
+                        ? colorScheme.onSurface.withValues(alpha: 0.4)
+                        : colorScheme.primary,
                   ),
                 ),
               ),
@@ -230,7 +214,7 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
                 if (state is EncyclopediaLoading) {
                   return Center(
                     child: CircularProgressIndicator(
-                      color: AppColors.accent,
+                      color: colorScheme.primary,
                     ),
                   );
                 }
@@ -243,13 +227,13 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
                         Icon(
                           Icons.error_outline,
                           size: 64,
-                          color: AppColors.error,
+                          color: colorScheme.error,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           state.message,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -259,8 +243,8 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
                             context.read<EncyclopediaCubit>().loadRecipes();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.accent,
-                            foregroundColor: AppColors.buttonText,
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
                           ),
                           child: Text(AppStrings.getRetry(currentLocale)),
                         ),
@@ -277,13 +261,13 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
                         Icon(
                           Icons.menu_book_outlined,
                           size: 64,
-                          color: AppColors.textSecondary,
+                          color: colorScheme.onSurface.withOpacity(0.4),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           AppStrings.getNoRecipes(currentLocale),
                           style: AppTextStyles.headline4.copyWith(
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -306,13 +290,13 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
                         Icon(
                           Icons.menu_book_outlined,
                           size: 64,
-                          color: AppColors.textSecondary,
+                          color: colorScheme.onSurface.withOpacity(0.4),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           AppStrings.getNoRecipes(currentLocale),
                           style: AppTextStyles.headline4.copyWith(
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -330,17 +314,20 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
   }
 
   Widget _buildSearchBar(AppLocale currentLocale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
-      color: AppColors.surface,
+      color: colorScheme.surface,
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
           hintText: AppStrings.getSearchRecipeHint(currentLocale),
-          prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+          prefixIcon: Icon(Icons.search,
+              color: colorScheme.onSurface.withValues(alpha: 0.4)),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
-                  icon: Icon(Icons.clear, color: AppColors.textSecondary),
+                  icon: Icon(Icons.clear,
+                      color: colorScheme.onSurface.withValues(alpha: 0.4)),
                   onPressed: () {
                     setState(() {
                       _searchController.clear();
@@ -349,35 +336,34 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
                 )
               : null,
           filled: true,
-          fillColor: AppColors.background,
+          fillColor: colorScheme.surface,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.divider),
+            borderSide: BorderSide(color: colorScheme.outlineVariant),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.divider),
+            borderSide: BorderSide(color: colorScheme.outlineVariant),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.accent, width: 2),
+            borderSide: BorderSide(color: colorScheme.primary, width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 12,
           ),
         ),
-        style: AppTextStyles.bodyMedium,
+        style: AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
       ),
     );
   }
 
-  /// 레시피 리스트 생성
   Widget _buildRecipeList(
     List<EncyclopediaRecipe> recipes,
     AppLocale currentLocale,
   ) {
-    // 표시할 레시피 개수 제한
+    final colorScheme = Theme.of(context).colorScheme;
     final displayedRecipes = recipes.take(_displayCount).toList();
     final hasMore = recipes.length > _displayCount;
 
@@ -392,15 +378,14 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
             },
           ),
         ),
-        // 더보기 버튼 (더 표시할 레시피가 있을 때만)
         if (hasMore)
           Container(
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
               onPressed: () => _handleLoadMore(currentLocale),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: AppColors.buttonText,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 16,
@@ -416,13 +401,13 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
                     AppStrings.getLoadMore(currentLocale),
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.buttonText,
+                      color: colorScheme.onPrimary,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Icon(
                     Icons.arrow_downward,
-                    color: AppColors.buttonText,
+                    color: colorScheme.onPrimary,
                   ),
                 ],
               ),
@@ -433,17 +418,21 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
   }
 
   Widget _buildRecipeCard(EncyclopediaRecipe recipe, AppLocale currentLocale) {
-    // 번역된 이름이 있으면 사용, 없으면 원본 이름 사용
-    final displayName = _isTranslated &&
-            _translatedNames.containsKey(recipe.menuName)
-        ? _translatedNames[recipe.menuName]!
-        : recipe.menuName;
+    final colorScheme = Theme.of(context).colorScheme;
+    final displayName =
+        _isTranslated && _translatedNames.containsKey(recipe.menuName)
+            ? _translatedNames[recipe.menuName]!
+            : recipe.menuName;
 
     return Card(
+      color: colorScheme.surface,
       margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
       child: InkWell(
         onTap: () {
-          // 번역 정보를 상세 페이지로 전달 (메인 페이지의 번역 상태 전달)
           final translationData = _isTranslated
               ? {
                   'translatedRecipeName': _translatedNames[recipe.menuName],
@@ -470,7 +459,7 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
               Text(
                 displayName,
                 style: AppTextStyles.headline4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -478,7 +467,7 @@ class _EncyclopediaMainPageState extends State<EncyclopediaMainPage> {
               Text(
                 '${AppStrings.getIngredientsList(currentLocale)}: ${recipe.ingredients.length}개 | ${AppStrings.getSaucesList(currentLocale)}: ${recipe.sauces.length}개',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ],

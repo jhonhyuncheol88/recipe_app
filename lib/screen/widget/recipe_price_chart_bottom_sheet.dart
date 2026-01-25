@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:uuid/uuid.dart';
-import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/app_strings.dart';
 import '../../util/app_locale.dart';
@@ -220,7 +219,7 @@ class _RecipePriceChartBottomSheetState
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -238,6 +237,7 @@ class _RecipePriceChartBottomSheetState
                       Text(
                         widget.recipeName,
                         style: AppTextStyles.headline3.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -245,7 +245,10 @@ class _RecipePriceChartBottomSheetState
                       Text(
                         AppStrings.getPriceChart(widget.locale),
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.6),
                         ),
                       ),
                     ],
@@ -253,6 +256,7 @@ class _RecipePriceChartBottomSheetState
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
+                  color: Theme.of(context).colorScheme.onSurface,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -283,7 +287,10 @@ class _RecipePriceChartBottomSheetState
                         child: Text(
                           AppStrings.getNoPriceData(widget.locale),
                           style: AppTextStyles.bodyLarge.copyWith(
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.5),
                           ),
                         ),
                       )
@@ -296,7 +303,9 @@ class _RecipePriceChartBottomSheetState
                               drawVerticalLine: false,
                               getDrawingHorizontalLine: (value) {
                                 return FlLine(
-                                  color: AppColors.divider,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant,
                                   strokeWidth: 1,
                                 );
                               },
@@ -320,7 +329,10 @@ class _RecipePriceChartBottomSheetState
                                       return Text(
                                         labels[value.toInt()],
                                         style: AppTextStyles.bodySmall.copyWith(
-                                          color: AppColors.textSecondary,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withOpacity(0.5),
                                         ),
                                       );
                                     }
@@ -336,7 +348,10 @@ class _RecipePriceChartBottomSheetState
                                     return Text(
                                       value.toInt().toString(),
                                       style: AppTextStyles.bodySmall.copyWith(
-                                        color: AppColors.textSecondary,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withOpacity(0.5),
                                       ),
                                     );
                                   },
@@ -346,7 +361,9 @@ class _RecipePriceChartBottomSheetState
                             borderData: FlBorderData(
                               show: true,
                               border: Border.all(
-                                color: AppColors.divider,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant,
                               ),
                             ),
                             minX: 0,
@@ -359,7 +376,7 @@ class _RecipePriceChartBottomSheetState
                               LineChartBarData(
                                 spots: _getChartData(),
                                 isCurved: true,
-                                color: AppColors.primary,
+                                color: Theme.of(context).colorScheme.primary,
                                 barWidth: 3,
                                 isStrokeCapRound: true,
                                 dotData: FlDotData(
@@ -368,16 +385,20 @@ class _RecipePriceChartBottomSheetState
                                       (spot, percent, barData, index) {
                                     return FlDotCirclePainter(
                                       radius: 5,
-                                      color: AppColors.primary,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
                                       strokeWidth: 3,
-                                      strokeColor: Colors.grey[800]!,
+                                      strokeColor:
+                                          Theme.of(context).colorScheme.surface,
                                     );
                                   },
                                 ),
                                 belowBarData: BarAreaData(
                                   show: true,
-                                  color:
-                                      AppColors.primaryLight.withOpacity(0.3),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.1),
                                 ),
                               ),
                             ],
@@ -400,18 +421,23 @@ class _RecipePriceChartBottomSheetState
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : AppColors.background,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.divider,
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.outlineVariant,
             ),
           ),
           child: Center(
             child: Text(
               label,
               style: AppTextStyles.bodyMedium.copyWith(
-                color:
-                    isSelected ? AppColors.buttonText : AppColors.textPrimary,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -421,12 +447,3 @@ class _RecipePriceChartBottomSheetState
     );
   }
 }
-
-
-
-
-
-
-
-
-

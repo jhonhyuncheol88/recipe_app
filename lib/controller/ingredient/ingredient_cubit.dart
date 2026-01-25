@@ -485,7 +485,6 @@ class IngredientCubit extends Cubit<IngredientState> {
               ingredientData['suggested_amount'] as double? ?? 0.0;
           final suggestedUnit =
               ingredientData['suggested_unit'] as String? ?? '개';
-          final category = ingredientData['category'] as String? ?? '기타';
 
           if (name.isNotEmpty && suggestedPrice > 0 && suggestedAmount > 0) {
             final ingredient = Ingredient(

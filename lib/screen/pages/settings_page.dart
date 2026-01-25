@@ -6,16 +6,16 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 
-import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../theme/app_colors.dart';
 import '../../util/app_strings.dart';
 import '../../util/app_locale.dart';
 import '../../util/number_format_style.dart';
 import '../widget/index.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../controller/index.dart';
-import '../../controller/auth/auth_bloc.dart';
-import '../../controller/auth/auth_state.dart';
+import '../../controller/setting/theme_cubit.dart';
+
 import '../../data/index.dart';
 import '../../router/router_helper.dart';
 import 'package:go_router/go_router.dart';
@@ -30,16 +30,13 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  // 선택 언어는 LocaleCubit 상태를 사용하므로 별도 상태 보관 불필요
-  // 알림 토글은 Cubit(SharedPreferences 연동)에서 직접 읽어와 표시합니다
-
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is Unauthenticated) {
-          // 로그아웃 시 홈으로 이동
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (context.mounted) {
               context.go('/');
@@ -48,15 +45,15 @@ class _SettingsPageState extends State<SettingsPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: colorScheme.surface,
         appBar: AppBar(
           title: Text(
             AppStrings.getSettings(currentLocale),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
             ),
           ),
-          backgroundColor: AppColors.surface,
+          backgroundColor: colorScheme.surface,
           elevation: 0,
         ),
         body: ListView(
@@ -67,21 +64,14 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 8),
             _buildNotificationSettings(currentLocale),
-
-            // const SizedBox(height: 32),
-            // _buildSectionTitle(AppStrings.getAccountSettings(currentLocale)),
-            // const SizedBox(height: 8),
-            // _buildAccountSettings(currentLocale),
-
+            const SizedBox(height: 32),
+            _buildSectionTitle(AppStrings.getDisplaySettings(currentLocale)),
+            const SizedBox(height: 8),
+            _buildDisplaySettings(currentLocale),
             const SizedBox(height: 32),
             _buildSectionTitle(AppStrings.getAppSettings(currentLocale)),
             const SizedBox(height: 8),
             _buildAppSettings(currentLocale),
-
-            const SizedBox(height: 32),
-            // _buildSectionTitle(AppStrings.getInformation(currentLocale)),
-            // const SizedBox(height: 8),
-            // _buildAppInfo(currentLocale),
           ],
         ),
       ),
@@ -89,10 +79,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildSectionTitle(String title) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Text(
       title,
       style: AppTextStyles.headline4.copyWith(
-        color: AppColors.textPrimary,
+        color: colorScheme.onSurface,
         fontWeight: FontWeight.w600,
       ),
     );
@@ -100,6 +91,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildNotificationSettings(AppLocale locale) {
     final notifCubit = context.watch<ExpiryNotificationCubit>();
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         SettingsListTile(
@@ -113,7 +105,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     value,
                   );
             },
-            activeColor: AppColors.accent,
+            activeColor: colorScheme.primary,
           ),
           onTap: null,
         ),
@@ -129,7 +121,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       value,
                     );
               },
-              activeColor: AppColors.warning,
+              activeColor: Colors.orange,
             ),
             onTap: null,
           ),
@@ -142,7 +134,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onChanged: (value) {
                 context.read<ExpiryNotificationCubit>().setDangerEnabled(value);
               },
-              activeColor: AppColors.error,
+              activeColor: colorScheme.error,
             ),
             onTap: null,
           ),
@@ -157,11 +149,10 @@ class _SettingsPageState extends State<SettingsPage> {
                       value,
                     );
               },
-              activeColor: AppColors.error,
+              activeColor: colorScheme.error,
             ),
             onTap: null,
           ),
-          // 알람 시간 설정 추가
           SettingsListTile(
             title: AppStrings.getAlarmTimeSetting(locale),
             subtitle:
@@ -174,44 +165,98 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  // Widget _buildAccountSettings(AppLocale locale) {
-  //   return BlocBuilder<AuthBloc, AuthState>(
-  //     builder: (context, state) {
-  //       if (state is Authenticated) {
-  //         return Column(
-  //           children: [
-  //             SettingsListTile(
-  //               title: AppStrings.getSignedInAs(locale),
-  //               subtitle: state.user.displayName ?? state.user.email ?? '',
-  //               icon: Icons.account_circle,
-  //               trailing: Icon(
-  //                 Icons.chevron_right,
-  //                 color: AppColors.textSecondary,
-  //                 size: 20,
-  //               ),
-  //               onTap: () {
-  //                 RouterHelper.goToAccountInfo(context);
-  //               },
-  //             ),
-  //           ],
-  //         );
-  //       } else {
-  //         return Column(
-  //           children: [
-  //             SettingsListTile(
-  //               title: AppStrings.getNotSignedIn(locale),
-  //               subtitle: AppStrings.getLoginRequired(locale),
-  //               icon: Icons.account_circle_outlined,
-  //               onTap: () {
-  //                 RouterHelper.goToAccountInfo(context);
-  //               },
-  //             ),
-  //           ],
-  //         );
-  //       }
-  //     },
-  //   );
-  // }
+  Widget _buildDisplaySettings(AppLocale locale) {
+    final themeCubit = context.watch<ThemeCubit>();
+    final isDark = themeCubit.state.brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        SettingsListTile(
+          title: AppStrings.getThemeColor(locale),
+          subtitle: themeCubit.state.themeType.displayName,
+          icon: Icons.palette,
+          onTap: _showThemeDialog,
+          trailing: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              shape: BoxShape.circle,
+              border: Border.all(
+                  color: colorScheme.onSurface.withValues(alpha: 0.1)),
+            ),
+          ),
+        ),
+        SettingsListTile(
+          title: AppStrings.getDarkMode(locale),
+          subtitle:
+              isDark ? AppStrings.getOn(locale) : AppStrings.getOff(locale),
+          icon: isDark ? Icons.dark_mode : Icons.light_mode,
+          trailing: Switch(
+            value: isDark,
+            onChanged: (value) {
+              context.read<ThemeCubit>().toggleBrightness();
+            },
+            activeColor: colorScheme.primary,
+          ),
+          onTap: () {
+            context.read<ThemeCubit>().toggleBrightness();
+          },
+        ),
+      ],
+    );
+  }
+
+  void _showThemeDialog() {
+    final currentLocale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (context) {
+        final currentTheme = context.read<ThemeCubit>().state.themeType;
+        return AlertDialog(
+          backgroundColor: colorScheme.surface,
+          title: Text(AppStrings.getThemeColorSelection(currentLocale),
+              style: TextStyle(color: colorScheme.onSurface)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ThemeType.values.map((type) {
+              final typeColorScheme =
+                  AppColors.getColorScheme(type, Theme.of(context).brightness);
+              return RadioListTile<ThemeType>(
+                title: Text(type.displayName,
+                    style: TextStyle(color: colorScheme.onSurface)),
+                value: type,
+                groupValue: currentTheme,
+                activeColor: typeColorScheme.primary,
+                secondary: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: typeColorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                onChanged: (value) {
+                  if (value != null) {
+                    context.read<ThemeCubit>().changeTheme(value);
+                    Navigator.pop(context);
+                  }
+                },
+              );
+            }).toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppStrings.getClose(currentLocale)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Widget _buildAppSettings(AppLocale locale) {
     return Column(
@@ -267,47 +312,16 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  // ignore: unused_element
-  Widget _buildAppInfo(AppLocale locale) {
-    return Column(
-      children: [
-        SettingsListTile(
-          title: AppStrings.getAppVersion(locale),
-          subtitle: '1.0.0',
-          icon: Icons.info,
-          showChevron: false,
-          onTap: null,
-        ),
-        SettingsListTile(
-          title: AppStrings.getDeveloperInfo(locale),
-          subtitle: AppStrings.getDeveloperTeam(locale),
-          icon: Icons.person,
-          onTap: _showDeveloperInfo,
-        ),
-        SettingsListTile(
-          title: AppStrings.getPrivacyPolicy(locale),
-          subtitle: AppStrings.getPrivacyPolicyDescription(locale),
-          icon: Icons.privacy_tip,
-          onTap: _showPrivacyPolicy,
-        ),
-        SettingsListTile(
-          title: AppStrings.getTermsOfService(locale),
-          subtitle: AppStrings.getTermsOfServiceDescription(locale),
-          icon: Icons.description,
-          onTap: _showTermsOfService,
-        ),
-      ],
-    );
-  }
-
   void _showLanguageDialog() {
     final currentLocale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: colorScheme.surface,
         title: Text(
           AppStrings.getLanguageSelection(context.read<LocaleCubit>().state),
-          style: AppTextStyles.headline4,
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -327,9 +341,6 @@ class _SettingsPageState extends State<SettingsPage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               AppStrings.getCancel(currentLocale),
-              style: AppTextStyles.buttonMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
             ),
           ),
         ],
@@ -338,10 +349,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildLanguageOption(String title, AppLocale value) {
+    final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
-      title: Text(title),
+      title: Text(title, style: TextStyle(color: colorScheme.onSurface)),
       trailing: context.watch<LocaleCubit>().state == value
-          ? Icon(Icons.check, color: AppColors.accent)
+          ? Icon(Icons.check, color: colorScheme.primary)
           : null,
       onTap: () {
         context.read<LocaleCubit>().setLocale(value);
@@ -353,12 +365,14 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showNumberFormatDialog() {
     final currentLocale = context.read<LocaleCubit>().state;
     final currentFormat = context.read<NumberFormatCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: colorScheme.surface,
         title: Text(
           AppStrings.getNumberFormatSettings(currentLocale),
-          style: AppTextStyles.headline4,
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -385,9 +399,6 @@ class _SettingsPageState extends State<SettingsPage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               AppStrings.getCancel(currentLocale),
-              style: AppTextStyles.buttonMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
             ),
           ),
         ],
@@ -400,10 +411,11 @@ class _SettingsPageState extends State<SettingsPage> {
     NumberFormatStyle value,
     NumberFormatStyle currentValue,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
-      title: Text(title),
+      title: Text(title, style: TextStyle(color: colorScheme.onSurface)),
       trailing: currentValue == value
-          ? Icon(Icons.check, color: AppColors.accent)
+          ? Icon(Icons.check, color: colorScheme.primary)
           : null,
       onTap: () {
         context.read<NumberFormatCubit>().setFormatStyle(value);
@@ -428,18 +440,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _exportData() {
     final currentLocale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: colorScheme.surface,
       builder: (ctx) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.save_alt),
-                title: Text(AppStrings.getSaveToDevice(currentLocale)),
+                leading: Icon(Icons.save_alt, color: colorScheme.onSurface),
+                title: Text(AppStrings.getSaveToDevice(currentLocale),
+                    style: TextStyle(color: colorScheme.onSurface)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   try {
@@ -452,10 +466,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     String platformInfo;
 
                     if (Platform.isAndroid) {
-                      // 안드로이드: 다운로드 폴더에 저장
                       targetDir = Directory('/storage/emulated/0/Download');
                       if (!await targetDir.exists()) {
-                        // 다운로드 폴더가 없는 경우 Documents 폴더로 폴백
                         targetDir = await getApplicationDocumentsDirectory();
                         platformInfo = AppStrings.getDocumentsFolder(
                           currentLocale,
@@ -466,7 +478,6 @@ class _SettingsPageState extends State<SettingsPage> {
                         );
                       }
                     } else {
-                      // iOS: Documents 폴더에 저장
                       targetDir = await getApplicationDocumentsDirectory();
                       platformInfo = AppStrings.getDocumentsFolder(
                         currentLocale,
@@ -489,9 +500,10 @@ class _SettingsPageState extends State<SettingsPage> {
                             platformInfo,
                           ),
                         ),
-                        backgroundColor: AppColors.success,
+                        backgroundColor: colorScheme.primary,
                         action: SnackBarAction(
                           label: AppStrings.getShare(currentLocale),
+                          textColor: colorScheme.onPrimary,
                           onPressed: () async {
                             await Share.shareXFiles([
                               XFile(outPath),
@@ -510,15 +522,16 @@ class _SettingsPageState extends State<SettingsPage> {
                             e.toString(),
                           ),
                         ),
-                        backgroundColor: AppColors.error,
+                        backgroundColor: colorScheme.error,
                       ),
                     );
                   }
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.ios_share),
-                title: Text(AppStrings.getShare(currentLocale)),
+                leading: Icon(Icons.ios_share, color: colorScheme.onSurface),
+                title: Text(AppStrings.getShare(currentLocale),
+                    style: TextStyle(color: colorScheme.onSurface)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   try {
@@ -547,7 +560,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             e.toString(),
                           ),
                         ),
-                        backgroundColor: AppColors.error,
+                        backgroundColor: colorScheme.error,
                       ),
                     );
                   }
@@ -561,9 +574,10 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _importData() async {
+    final colorScheme = Theme.of(context).colorScheme;
     try {
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.any, // 모든 파일 타입 허용
+        type: FileType.any,
       );
 
       if (result == null || result.files.single.path == null) {
@@ -573,34 +587,30 @@ class _SettingsPageState extends State<SettingsPage> {
       final pickedPath = result.files.single.path!;
       final fileExtension = p.extension(pickedPath).toLowerCase();
 
-      // 파일 확장자 검증
       if (fileExtension != '.db') {
         if (!mounted) return;
         final currentLocale = context.read<LocaleCubit>().state;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppStrings.getDatabaseFileOnly(currentLocale)),
-            backgroundColor: AppColors.error,
+            backgroundColor: colorScheme.error,
           ),
         );
         return;
       }
 
-      // DB 닫기
       await DatabaseHelper().close();
       final dbPath = p.join(await getDatabasesPath(), 'recipe_app.db');
 
-      // 기존 DB 삭제 후 교체
       final dbFile = File(dbPath);
       if (await dbFile.exists()) {
         await dbFile.delete();
       }
       await File(pickedPath).copy(dbPath);
 
-      // 재오픈하여 마이그레이션이 필요하면 적용
       await DatabaseHelper().database;
 
-      // 화면 데이터 새로고침
+      if (!mounted) return;
       await Future.wait([
         context.read<IngredientCubit>().loadIngredients(),
         context.read<RecipeCubit>().loadRecipes(),
@@ -613,7 +623,7 @@ class _SettingsPageState extends State<SettingsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppStrings.getImportComplete(currentLocale)),
-          backgroundColor: AppColors.success,
+          backgroundColor: colorScheme.primary,
         ),
       );
     } catch (e) {
@@ -624,7 +634,7 @@ class _SettingsPageState extends State<SettingsPage> {
           content: Text(
             AppStrings.getImportFailedMessage(currentLocale, e.toString()),
           ),
-          backgroundColor: AppColors.error,
+          backgroundColor: colorScheme.error,
         ),
       );
     }
@@ -632,31 +642,30 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _resetData() {
     final currentLocale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: colorScheme.surface,
         title: Text(
           AppStrings.getDataReset(currentLocale),
-          style: AppTextStyles.headline4,
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
         content: Text(
           AppStrings.getDataResetWarning(currentLocale),
-          style: AppTextStyles.bodyMedium,
+          style:
+              AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               AppStrings.getCancel(currentLocale),
-              style: AppTextStyles.buttonMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
             ),
           ),
           TextButton(
             onPressed: () async {
               try {
-                // DB 닫기 및 파일 삭제
                 await DatabaseHelper().close();
                 final dbPath = p.join(
                   await getDatabasesPath(),
@@ -664,10 +673,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 );
                 await deleteDatabase(dbPath);
 
-                // 재오픈하여 새로 생성
                 await DatabaseHelper().database;
 
-                // 데이터 리로드
+                if (!mounted) return;
                 await Future.wait([
                   context.read<IngredientCubit>().loadIngredients(),
                   context.read<RecipeCubit>().loadRecipes(),
@@ -683,7 +691,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     content: Text(
                       AppStrings.getDataResetSuccess(currentLocale),
                     ),
-                    backgroundColor: AppColors.success,
+                    backgroundColor: colorScheme.primary,
                   ),
                 );
               } catch (e) {
@@ -698,7 +706,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         e.toString(),
                       ),
                     ),
-                    backgroundColor: AppColors.error,
+                    backgroundColor: colorScheme.error,
                   ),
                 );
               }
@@ -706,7 +714,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Text(
               AppStrings.getReset(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
-                color: AppColors.error,
+                color: colorScheme.error,
               ),
             ),
           ),
@@ -715,156 +723,47 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  /// 알람 시간 설정 다이얼로그
-  void _showTimePickerDialog() {
+  void _showTimePickerDialog() async {
     final notifCubit = context.read<ExpiryNotificationCubit>();
-    final currentTime = notifCubit.getNotificationTime();
+    final initialTime = notifCubit.getNotificationTime();
+    final colorScheme = Theme.of(context).colorScheme;
 
-    showTimePicker(
+    final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
-      initialTime: currentTime,
+      initialTime: initialTime,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            timePickerTheme: TimePickerThemeData(
-              backgroundColor: AppColors.surface,
-              hourMinuteTextColor: AppColors.textPrimary,
-              dayPeriodTextColor: AppColors.textPrimary,
-              dialHandColor: AppColors.accent,
-              dialBackgroundColor: AppColors.background,
-              entryModeIconColor: AppColors.accent,
-            ),
+            colorScheme: colorScheme,
           ),
           child: child!,
         );
       },
-    ).then((selectedTime) {
-      if (selectedTime != null) {
-        notifCubit.setNotificationTime(selectedTime);
-      }
-    });
-  }
-
-  void _showDeveloperInfo() {
-    final currentLocale = context.read<LocaleCubit>().state;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          AppStrings.getDeveloperInfo(currentLocale),
-          style: AppTextStyles.headline4,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppStrings.getDeveloperTeam(currentLocale),
-              style: AppTextStyles.bodyLarge.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              AppStrings.getAppDescription(currentLocale),
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              AppStrings.getVersion(currentLocale),
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textLight,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              AppStrings.getConfirm(currentLocale),
-              style: AppTextStyles.buttonMedium,
-            ),
-          ),
-        ],
-      ),
     );
+
+    if (pickedTime != null) {
+      notifCubit.setNotificationTime(pickedTime);
+    }
   }
 
-  void _showPrivacyPolicy() {
-    final currentLocale = context.read<LocaleCubit>().state;
-    // TODO: 개인정보 처리방침 페이지로 이동
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          AppStrings.getFeatureInProgress(
-            currentLocale,
-            AppStrings.getPrivacyPolicy(currentLocale),
-          ),
-        ),
-        backgroundColor: AppColors.info,
-      ),
-    );
-  }
-
-  void _showTermsOfService() {
-    final currentLocale = context.read<LocaleCubit>().state;
-    // TODO: 이용약관 페이지로 이동
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          AppStrings.getFeatureInProgress(
-            currentLocale,
-            AppStrings.getTermsOfService(currentLocale),
-          ),
-        ),
-        backgroundColor: AppColors.info,
-      ),
-    );
-  }
-
-  Future<void> _sendFeedbackEmail() async {
-    final currentLocale = context.read<LocaleCubit>().state;
-
+  void _sendFeedbackEmail() async {
     final Email email = Email(
-      body: AppStrings.getFeedbackEmailBody(currentLocale),
-      subject: AppStrings.getFeedbackEmailSubject(currentLocale),
-      recipients: ['jeon_hyun_cheol@jalam-kr.com'],
-      cc: [],
-      bcc: [],
-      attachmentPaths: [],
+      body: 'Feedback for Recipe App:\n\n',
+      subject: '[Recipe App] Feedback',
+      recipients: ['support@example.com'],
       isHTML: false,
     );
 
     try {
       await FlutterEmailSender.send(email);
     } catch (error) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(AppStrings.getMailAppUnavailable(currentLocale)),
-              content: Text(
-                AppStrings.getFeedbackEmailContactMessage(currentLocale),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(
-                    AppStrings.getConfirm(currentLocale),
-                    style: AppTextStyles.buttonMedium,
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open email app: $error'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 }

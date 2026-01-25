@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
@@ -37,8 +36,6 @@ class _AiTabbarPageState extends State<AiTabbarPage>
 
   void _onTabChanged() {
     if (_tabController.index == 1) {
-      // 두 번째 탭(AI 레시피 관리)으로 이동했을 때 데이터 로드
-      // 약간의 지연 후 데이터 로딩 (탭 애니메이션 완료 후)
       Future.delayed(const Duration(milliseconds: 100), () {
         if (mounted) {
           context.read<RecipeCubit>().loadAiRecipes();
@@ -49,25 +46,29 @@ class _AiTabbarPageState extends State<AiTabbarPage>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return BlocBuilder<LocaleCubit, AppLocale>(
       builder: (context, currentLocale) {
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: colorScheme.surface,
           appBar: AppBar(
             title: Text(
               AppStrings.getAiRecipeGeneration(currentLocale),
               style: AppTextStyles.headline3.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
               ),
             ),
-            backgroundColor: AppColors.surface,
+            backgroundColor: colorScheme.surface,
             elevation: 0,
+            iconTheme: IconThemeData(color: colorScheme.onSurface),
             bottom: TabBar(
               controller: _tabController,
-              labelColor: AppColors.accent,
-              unselectedLabelColor: AppColors.textSecondary,
-              indicatorColor: AppColors.accent,
+              labelColor: colorScheme.primary,
+              unselectedLabelColor:
+                  colorScheme.onSurface.withValues(alpha: 0.6),
+              indicatorColor: colorScheme.primary,
               indicatorWeight: 3,
+              dividerColor: Colors.transparent,
               labelStyle: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -76,11 +77,11 @@ class _AiTabbarPageState extends State<AiTabbarPage>
               ),
               tabs: [
                 Tab(
-                  icon: Icon(Icons.auto_awesome, size: 20),
+                  icon: const Icon(Icons.auto_awesome, size: 20),
                   text: AppStrings.getAiRecipeGenerationTab(currentLocale),
                 ),
                 Tab(
-                  icon: Icon(Icons.auto_awesome_outlined, size: 20),
+                  icon: const Icon(Icons.auto_awesome_outlined, size: 20),
                   text: AppStrings.getAiRecipeManagement(currentLocale),
                 ),
               ],
@@ -89,13 +90,11 @@ class _AiTabbarPageState extends State<AiTabbarPage>
           body: TabBarView(
             controller: _tabController,
             children: [
-              // 첫 번째 탭: AI 레시피 생성
               AiMainPage(
                 onTabChanged: (int index) {
                   _tabController.animateTo(index);
                 },
               ),
-              // 두 번째 탭: AI 레시피 관리
               const AiRecipePage(),
             ],
           ),

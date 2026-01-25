@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'dart:convert';
 import 'recipe_ingredient.dart';
+import 'recipe_sauce.dart';
 
 class Recipe extends Equatable {
   final String id;
@@ -13,6 +14,7 @@ class Recipe extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<RecipeIngredient> ingredients;
+  final List<RecipeSauce> sauces;
   final List<String> tagIds; // 태그 ID 목록
 
   Recipe({
@@ -26,6 +28,7 @@ class Recipe extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     this.ingredients = const [],
+    this.sauces = const [],
     this.tagIds = const [],
   });
 
@@ -88,6 +91,7 @@ class Recipe extends Equatable {
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       tagIds: tagIds,
+      sauces: [], // Initially empty, will be populated by Repository if needed
     );
   }
 
@@ -103,6 +107,7 @@ class Recipe extends Equatable {
     DateTime? createdAt,
     DateTime? updatedAt,
     List<RecipeIngredient>? ingredients,
+    List<RecipeSauce>? sauces,
     List<String>? tagIds,
   }) {
     return Recipe(
@@ -116,6 +121,7 @@ class Recipe extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       ingredients: ingredients ?? this.ingredients,
+      sauces: sauces ?? this.sauces,
       tagIds: tagIds ?? this.tagIds,
     );
   }
@@ -202,16 +208,17 @@ class Recipe extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    name,
-    description,
-    outputAmount,
-    outputUnit,
-    totalCost,
-    imagePath,
-    createdAt,
-    updatedAt,
-    ingredients,
-    tagIds,
-  ];
+        id,
+        name,
+        description,
+        outputAmount,
+        outputUnit,
+        totalCost,
+        imagePath,
+        createdAt,
+        updatedAt,
+        ingredients,
+        sauces,
+        tagIds,
+      ];
 }

@@ -2,18 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/number_formatter.dart';
-// import '../../../util/date_formatter.dart';
 
 import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/ingredient/ingredient_state.dart';
 
-// import '../../../model/recipe.dart';
 import '../../../model/ingredient.dart';
 import '../../../model/tag.dart';
 import '../../../model/unit.dart';
@@ -27,7 +24,7 @@ import '../../../service/sauce_cost_service.dart';
 import '../../../util/unit_converter.dart' as uc;
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
-// import '../../../model/index.dart' as models;
+import '../../../router/router_helper.dart';
 
 /// 레시피 추가 페이지
 class RecipeAddPage extends StatefulWidget {
@@ -54,11 +51,11 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
   List<Unit> _availableUnits = [];
   List<Ingredient> _selectedIngredients = [];
   List<Ingredient> _availableIngredients = [];
-  Map<String, double> _ingredientAmounts = {}; // 재료별 투입량
-  Map<String, double> _ingredientCosts = {}; // 재료별 원가
-  Map<String, String> _ingredientUnitIds = {}; // 재료별 선택 단위
-  Map<String, TextEditingController> _amountControllers = {}; // 투입량 컨트롤러
-  Map<String, TextEditingController> _sauceAmountControllers =
+  final Map<String, double> _ingredientAmounts = {}; // 재료별 투입량
+  final Map<String, double> _ingredientCosts = {}; // 재료별 원가
+  final Map<String, String> _ingredientUnitIds = {}; // 재료별 선택 단위
+  final Map<String, TextEditingController> _amountControllers = {}; // 투입량 컨트롤러
+  final Map<String, TextEditingController> _sauceAmountControllers =
       {}; // 소스 투입량 컨트롤러
   final List<_PendingSauce> _selectedSauces = [];
   double _totalCost = 0.0; // 총 원가
@@ -90,7 +87,6 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
   }
 
   void _loadTags() {
-    // TODO: TagCubit에서 태그 목록 가져오기
     final locale = context.read<LocaleCubit>().state;
     setState(() {
       _availableTags = DefaultTags.recipeTagsFor(locale);
@@ -98,7 +94,6 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
   }
 
   void _loadUnits() {
-    // TODO: UnitRepository에서 단위 목록 가져오기
     setState(() {
       _availableUnits = [
         Unit(id: '개', name: '개', type: 'count', conversionFactor: 1.0),
@@ -113,90 +108,29 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
   }
 
   void _loadIngredients() {
-    // IngredientCubit에서 실제 재료 목록 가져오기
     final currentState = context.read<IngredientCubit>().state;
     if (currentState is IngredientLoaded) {
       setState(() {
         _availableIngredients = currentState.ingredients;
       });
-    } else {
-      // 임시 데이터 (Cubit이 로드되지 않은 경우)
-      setState(() {
-        _availableIngredients = [
-          Ingredient(
-            id: '1',
-            name: '밀가루',
-            purchasePrice: 5000.0,
-            purchaseAmount: 1000.0,
-            purchaseUnitId: 'g',
-            expiryDate: DateTime.now().add(const Duration(days: 30)),
-            createdAt: DateTime.now(),
-            tagIds: ['baking'],
-          ),
-          Ingredient(
-            id: '2',
-            name: '버터',
-            purchasePrice: 8000.0,
-            purchaseAmount: 500.0,
-            purchaseUnitId: 'g',
-            expiryDate: DateTime.now().add(const Duration(days: 14)),
-            createdAt: DateTime.now(),
-            tagIds: ['dairy'],
-          ),
-          Ingredient(
-            id: '3',
-            name: '계란',
-            purchasePrice: 3000.0,
-            purchaseAmount: 30.0,
-            purchaseUnitId: '개',
-            expiryDate: DateTime.now().add(const Duration(days: 7)),
-            createdAt: DateTime.now(),
-            tagIds: ['dairy'],
-          ),
-          Ingredient(
-            id: '4',
-            name: '우유',
-            purchasePrice: 2500.0,
-            purchaseAmount: 1000.0,
-            purchaseUnitId: 'ml',
-            expiryDate: DateTime.now().add(const Duration(days: 5)),
-            createdAt: DateTime.now(),
-            tagIds: ['dairy'],
-          ),
-          Ingredient(
-            id: '5',
-            name: '설탕',
-            purchasePrice: 2000.0,
-            purchaseAmount: 1000.0,
-            purchaseUnitId: 'g',
-            expiryDate: DateTime.now().add(const Duration(days: 365)),
-            createdAt: DateTime.now(),
-            tagIds: ['baking'],
-          ),
-        ];
-      });
     }
   }
 
-  // 1g당(또는 개당) 재료 가격 계산
   double _calculateUnitPrice(Ingredient ingredient) {
     return ingredient.purchasePrice / ingredient.purchaseAmount;
   }
 
-  // 재료별 원가 계산
   void _calculateIngredientCost(String ingredientId, double amount) {
     final ingredient = _selectedIngredients.firstWhere(
       (i) => i.id == ingredientId,
     );
     final selectedUnitId =
         _ingredientUnitIds[ingredientId] ?? ingredient.purchaseUnitId;
-    // 구매 기준 → 기본단위(g/ml/pcs) 단가
     final purchaseBase = uc.UnitConverter.toBaseUnit(
       ingredient.purchaseAmount,
       ingredient.purchaseUnitId,
     );
     final baseUnitPrice = ingredient.purchasePrice / purchaseBase;
-    // 입력 단위 사용량을 기본단위로 환산
     final baseUsage = uc.UnitConverter.toBaseUnit(amount, selectedUnitId);
     final cost = baseUnitPrice * baseUsage;
 
@@ -208,9 +142,9 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
     });
   }
 
-  // ===== 소스 섹션 =====
   Widget _buildSaucesSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +155,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                 child: Text(
                   AppStrings.getSauces(currentLocale),
                   style: AppTextStyles.headline4.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -245,7 +179,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
               child: Text(
                 AppStrings.getNoRecipeSauces(currentLocale),
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -259,7 +193,12 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                 final ps = _selectedSauces[index];
                 final amountController = _getSauceAmountController(ps.sauceId);
                 return Card(
+                  color: colorScheme.surface,
                   margin: const EdgeInsets.only(bottom: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: colorScheme.outlineVariant),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -294,6 +233,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                           display.sauceName,
                                           style:
                                               AppTextStyles.bodyMedium.copyWith(
+                                            color: colorScheme.onSurface,
                                             fontWeight: FontWeight.w600,
                                           ),
                                           maxLines: 1,
@@ -313,7 +253,8 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                               '1${ps.unitId}당 ${NumberFormatter.formatCurrency(unitCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
                                               style: AppTextStyles.bodySmall
                                                   .copyWith(
-                                                color: AppColors.textSecondary,
+                                                color: colorScheme.onSurface
+                                                    .withValues(alpha: 0.6),
                                               ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
@@ -328,9 +269,9 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                             ),
                             IconButton(
                               onPressed: () => _removePendingSauce(ps.sauceId),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.delete,
-                                color: AppColors.error,
+                                color: colorScheme.error,
                               ),
                             ),
                           ],
@@ -363,9 +304,11 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                               child: Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryLight,
+                                  color: colorScheme.surfaceContainerHighest
+                                      .withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: AppColors.divider),
+                                  border: Border.all(
+                                      color: colorScheme.outlineVariant),
                                 ),
                                 child: FutureBuilder<double>(
                                   future: context
@@ -387,7 +330,8 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                           AppStrings.getCost(currentLocale),
                                           style:
                                               AppTextStyles.bodySmall.copyWith(
-                                            color: AppColors.textSecondary,
+                                            color: colorScheme.onSurface
+                                                .withValues(alpha: 0.5),
                                           ),
                                         ),
                                         FittedBox(
@@ -397,11 +341,13 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                             NumberFormatter.formatCurrency(
                                               cost,
                                               currentLocale,
-                                          context.watch<NumberFormatCubit>().state,
+                                              context
+                                                  .watch<NumberFormatCubit>()
+                                                  .state,
                                             ),
                                             style: AppTextStyles.bodyMedium
                                                 .copyWith(
-                                              color: AppColors.accent,
+                                              color: colorScheme.primary,
                                               fontWeight: FontWeight.w600,
                                             ),
                                             maxLines: 1,
@@ -427,20 +373,10 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
     );
   }
 
-  // 총 원가 계산
   void _calculateTotalCost() {
     _totalCost = _ingredientCosts.values.fold(0.0, (sum, cost) => sum + cost);
   }
 
-  // 숫자 포맷팅 (천 단위 콤마)
-  String _formatNumber(double number) {
-    return number.toInt().toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match match) => '${match[1]},',
-        );
-  }
-
-  // 텍스트 필드에서 숫자 추출
   int _extractNumberFromText(String text) {
     final cleanText = text.replaceAll(',', '');
     return int.tryParse(cleanText) ?? 0;
@@ -477,7 +413,6 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
     return results;
   }
 
-  // 투입량 컨트롤러 가져오기 또는 생성
   TextEditingController _getAmountController(String ingredientId) {
     if (!_amountControllers.containsKey(ingredientId)) {
       final amount = _ingredientAmounts[ingredientId] ?? 0.0;
@@ -524,8 +459,10 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    // 모든 투입량 컨트롤러 해제
     for (final controller in _amountControllers.values) {
+      controller.dispose();
+    }
+    for (final controller in _sauceAmountControllers.values) {
       controller.dispose();
     }
     super.dispose();
@@ -534,18 +471,19 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(
           AppStrings.getAddRecipe(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textSecondary),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
         ),
         actions: [
           TextButton(
@@ -553,12 +491,13 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                 ? null
                 : () {
                     _saveRecipe();
-                    // _saveRecipe 내부에서 성공 시 뒤로가기 처리됨
                   },
             child: Text(
               AppStrings.getSave(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
-                color: _isLoading ? AppColors.textLight : AppColors.accent,
+                color: _isLoading
+                    ? colorScheme.onSurface.withValues(alpha: 0.3)
+                    : colorScheme.primary,
               ),
             ),
           ),
@@ -593,6 +532,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
 
   Widget _buildBasicInfoSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -600,7 +540,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
           Text(
             AppStrings.getBasicInfo(currentLocale),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -630,6 +570,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
 
   Widget _buildIngredientsSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -640,7 +581,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                 child: Text(
                   AppStrings.getRecipeIngredients(currentLocale),
                   style: AppTextStyles.headline4.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -650,7 +591,58 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: TextButton.icon(
-                  onPressed: _addIngredient,
+                  onPressed: () async {
+                    final result =
+                        await RouterHelper.goToRecipeIngredientSelect(
+                      context,
+                      currentSelectedIngredients: _selectedIngredients,
+                      currentIngredientAmounts: _ingredientAmounts,
+                      currentIngredientUnitIds: _ingredientUnitIds,
+                    );
+                    if (result != null && mounted) {
+                      final selectedIngredients =
+                          result['ingredients'] as List<Ingredient>?;
+                      final amounts = result['amounts'] as Map<String, double>?;
+                      final unitIds = result['unitIds'] as Map<String, String>?;
+
+                      if (selectedIngredients != null) {
+                        setState(() {
+                          _selectedIngredients = selectedIngredients;
+                          if (amounts != null) {
+                            for (var key in amounts.keys) {
+                              _ingredientAmounts[key] = amounts[key]!;
+                            }
+                          }
+                          if (unitIds != null) {
+                            for (var key in unitIds.keys) {
+                              _ingredientUnitIds[key] = unitIds[key]!;
+                            }
+                          }
+
+                          for (final ing in _selectedIngredients) {
+                            final amount = _ingredientAmounts[ing.id] ?? 0.0;
+                            if (amount > 0) {
+                              final selectedUnitId =
+                                  _ingredientUnitIds[ing.id] ??
+                                      ing.purchaseUnitId;
+                              final basePurchase = uc.UnitConverter.toBaseUnit(
+                                ing.purchaseAmount,
+                                ing.purchaseUnitId,
+                              );
+                              final unitPrice =
+                                  ing.purchasePrice / basePurchase;
+                              final baseUsage = uc.UnitConverter.toBaseUnit(
+                                amount,
+                                selectedUnitId,
+                              );
+                              _ingredientCosts[ing.id] = unitPrice * baseUsage;
+                            }
+                          }
+                          _calculateTotalCost();
+                        });
+                      }
+                    }
+                  },
                   icon: const Icon(Icons.add, size: 16),
                   label: Text(AppStrings.getAddIngredient(currentLocale)),
                 ),
@@ -666,13 +658,13 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                   Icon(
                     Icons.inventory_2_outlined,
                     size: 48,
-                    color: AppColors.textLight,
+                    color: colorScheme.onSurface.withValues(alpha: 0.1),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     AppStrings.getNoIngredientsSelected(currentLocale),
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -691,7 +683,12 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                 final amountController = _getAmountController(ingredient.id);
 
                 return Card(
+                  color: colorScheme.surface,
                   margin: const EdgeInsets.only(bottom: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: colorScheme.outlineVariant),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -709,6 +706,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                     child: Text(
                                       ingredient.name,
                                       style: AppTextStyles.bodyMedium.copyWith(
+                                        color: colorScheme.onSurface,
                                         fontWeight: FontWeight.w600,
                                       ),
                                       maxLines: 1,
@@ -721,7 +719,8 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                     child: Text(
                                       '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)}',
                                       style: AppTextStyles.bodySmall.copyWith(
-                                        color: AppColors.textSecondary,
+                                        color: colorScheme.onSurface
+                                            .withValues(alpha: 0.6),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -732,9 +731,9 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                             ),
                             IconButton(
                               onPressed: () => _removeIngredient(ingredient),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.delete,
-                                color: AppColors.error,
+                                color: colorScheme.error,
                               ),
                             ),
                           ],
@@ -746,6 +745,8 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                             DropdownButton<String>(
                               value: _ingredientUnitIds[ingredient.id] ??
                                   ingredient.purchaseUnitId,
+                              dropdownColor: colorScheme.surface,
+                              style: TextStyle(color: colorScheme.onSurface),
                               items: [
                                 if (uc.UnitConverter.getUnitType(
                                       ingredient.purchaseUnitId,
@@ -793,7 +794,6 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                 final prevUnitId =
                                     _ingredientUnitIds[ingredient.id] ??
                                         ingredient.purchaseUnitId;
-                                // 현재 입력값을 기본단위로 환산 후 새 단위로 변환
                                 final currentAmount = _extractNumberFromText(
                                   amountController.text,
                                 ).toDouble();
@@ -805,11 +805,16 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                   baseUsage,
                                   v,
                                 );
-                                // 컨트롤러와 상태 업데이트
-                                amountController.text =
+                                final formattedText =
                                     NumberFormatter.formatNumber(
                                   converted.toInt(),
-                                  context.watch<NumberFormatCubit>().state,
+                                  context.read<NumberFormatCubit>().state,
+                                );
+                                amountController.value = TextEditingValue(
+                                  text: formattedText,
+                                  selection: TextSelection.collapsed(
+                                    offset: formattedText.length,
+                                  ),
                                 );
                                 setState(() {
                                   _ingredientUnitIds[ingredient.id] = v;
@@ -845,9 +850,11 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                               width: double.infinity,
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
+                                color: colorScheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppColors.divider),
+                                border: Border.all(
+                                    color: colorScheme.outlineVariant),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -855,7 +862,8 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                   Text(
                                     AppStrings.getCost(currentLocale),
                                     style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.textSecondary,
+                                      color: colorScheme.onSurface
+                                          .withValues(alpha: 0.5),
                                     ),
                                   ),
                                   FittedBox(
@@ -865,10 +873,12 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                                       NumberFormatter.formatCurrency(
                                         cost,
                                         currentLocale,
-                                          context.watch<NumberFormatCubit>().state,
+                                        context
+                                            .watch<NumberFormatCubit>()
+                                            .state,
                                       ),
                                       style: AppTextStyles.bodyMedium.copyWith(
-                                        color: AppColors.accent,
+                                        color: colorScheme.primary,
                                         fontWeight: FontWeight.w600,
                                       ),
                                       maxLines: 1,
@@ -891,18 +901,20 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
     );
   }
 
-  // 소스 추가 다이얼로그
   void _addSauce() async {
     final currentLocale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     final sauceRepo = context.read<SauceRepository>();
     final sauces = await sauceRepo.getAllSauces();
     Sauce? selected;
     String unitId = 'g';
     final amountController = TextEditingController(text: '0');
+    if (!mounted) return;
     await showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: colorScheme.surface,
           title: Text(AppStrings.getSelectSauce(currentLocale)),
           content: SizedBox(
             width: 500,
@@ -918,11 +930,12 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                       return ListTile(
                         selected: isSel,
                         leading: CircleAvatar(
-                          backgroundColor: AppColors.accent.withOpacity(0.1),
+                          backgroundColor:
+                              colorScheme.primary.withValues(alpha: 0.1),
                           child: Text(
                             sauce.name.isNotEmpty ? sauce.name[0] : 'S',
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.accent,
+                              color: colorScheme.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -932,6 +945,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             sauce.name,
+                            style: TextStyle(color: colorScheme.onSurface),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -957,7 +971,8 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                               child: Text(
                                 '1$baseU당 ${NumberFormatter.formatCurrency(uCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -979,6 +994,8 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                     children: [
                       DropdownButton<String>(
                         value: unitId,
+                        dropdownColor: colorScheme.surface,
+                        style: TextStyle(color: colorScheme.onSurface),
                         items: const [
                           DropdownMenuItem(value: 'g', child: Text('g')),
                           DropdownMenuItem(value: 'ml', child: Text('ml')),
@@ -1044,8 +1061,6 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
     );
   }
 
-  // 편집 다이얼로그는 카드 내 인라인 입력으로 대체됨
-
   void _removePendingSauce(String sauceId) {
     setState(() {
       _selectedSauces.removeWhere((e) => e.sauceId == sauceId);
@@ -1053,6 +1068,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
   }
 
   Widget _buildTagsSection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1060,12 +1076,12 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
           Text(
             AppStrings.getRecipeTags(AppLocale.korea),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 16),
-          Container(
+          SizedBox(
             width: double.infinity,
             child: Wrap(
               spacing: 8,
@@ -1080,11 +1096,12 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                       _selectedTagId = selected ? tag.id : '';
                     });
                   },
-                  selectedColor: AppColors.accent.withOpacity(0.2),
-                  checkmarkColor: AppColors.accent,
+                  selectedColor: colorScheme.primary.withValues(alpha: 0.2),
+                  checkmarkColor: colorScheme.primary,
                   labelStyle: AppTextStyles.bodySmall.copyWith(
-                    color:
-                        isSelected ? AppColors.accent : AppColors.textSecondary,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   ),
                 );
@@ -1098,6 +1115,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
 
   Widget _buildCostSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1105,7 +1123,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
           Text(
             AppStrings.getCostInfo(currentLocale),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1120,9 +1138,10 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withOpacity(0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.accent.withOpacity(0.3)),
+                  border: Border.all(
+                      color: colorScheme.primary.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   children: [
@@ -1132,6 +1151,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                         Flexible(
                           child: Text(
                             AppStrings.getIngredientCostLabel(currentLocale),
+                            style: TextStyle(color: colorScheme.onSurface),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -1145,6 +1165,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                               context.watch<NumberFormatCubit>().state,
                             ),
                             style: AppTextStyles.bodyMedium.copyWith(
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -1160,6 +1181,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                         Flexible(
                           child: Text(
                             AppStrings.getSauceCostLabel(currentLocale),
+                            style: TextStyle(color: colorScheme.onSurface),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -1173,6 +1195,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                               context.watch<NumberFormatCubit>().state,
                             ),
                             style: AppTextStyles.bodyMedium.copyWith(
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -1181,7 +1204,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                         ),
                       ],
                     ),
-                    const Divider(height: 20),
+                    Divider(height: 20, color: colorScheme.outlineVariant),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -1189,6 +1212,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                           child: Text(
                             AppStrings.getTotalCost(currentLocale),
                             style: AppTextStyles.bodyLarge.copyWith(
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.w700,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -1198,10 +1222,10 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerRight,
                           child: Text(
-                            NumberFormatter.formatCurrency(
-                                total, currentLocale, context.watch<NumberFormatCubit>().state),
+                            NumberFormatter.formatCurrency(total, currentLocale,
+                                context.watch<NumberFormatCubit>().state),
                             style: AppTextStyles.headline4.copyWith(
-                              color: AppColors.accent,
+                              color: colorScheme.primary,
                               fontWeight: FontWeight.w700,
                             ),
                             maxLines: 1,
@@ -1244,169 +1268,6 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
     return unit.name;
   }
 
-  void _addIngredient() {
-    final currentLocale = context.read<LocaleCubit>().state;
-    Ingredient? selected;
-    String unitId = 'g';
-    final amountController = TextEditingController(text: '0');
-    final searchController = TextEditingController();
-    List<Ingredient> filtered = List.of(_availableIngredients);
-
-    List<String> _unitsFor(Ingredient? ing) {
-      if (ing == null) return ['g', 'kg', 'ml', 'L', '개'];
-      final type = uc.UnitConverter.getUnitType(ing.purchaseUnitId);
-      switch (type) {
-        case uc.UnitType.weight:
-          return ['g', 'kg'];
-        case uc.UnitType.volume:
-          return ['ml', 'L'];
-        case uc.UnitType.count:
-          return ['개'];
-        default:
-          return ['g'];
-      }
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
-          final unitOptions = _unitsFor(selected);
-          if (!unitOptions.contains(unitId)) unitId = unitOptions.first;
-          return AlertDialog(
-            title: Text(AppStrings.getSelectIngredient(currentLocale)),
-            content: Container(
-              width: 480,
-              constraints: const BoxConstraints(maxHeight: 500),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppInputField(
-                    label: AppStrings.getSelectIngredient(currentLocale),
-                    hint: AppStrings.getSelectIngredient(currentLocale),
-                    controller: searchController,
-                    onChanged: (value) => setModalState(() {
-                      final q = value.trim();
-                      filtered = q.isEmpty
-                          ? List.of(_availableIngredients)
-                          : _availableIngredients
-                              .where((e) => e.name.contains(q))
-                              .toList();
-                    }),
-                  ),
-                  const SizedBox(height: 8),
-                  Flexible(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final ing = filtered[index];
-                        final isSelected = selected?.id == ing.id;
-                        final unitPrice = _calculateUnitPrice(ing);
-                        return ListTile(
-                          selected: isSelected,
-                          title: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              ing.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          subtitle: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              '${NumberFormatter.formatCurrency(ing.purchasePrice, currentLocale, context.watch<NumberFormatCubit>().state)} / ${_formatNumber(ing.purchaseAmount)} ${_getUnitName(ing.purchaseUnitId)} (1${_getUnitName(ing.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)})',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          onTap: () => setModalState(() {
-                            selected = ing;
-                            unitId = ing.purchaseUnitId;
-                          }),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (selected != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        DropdownButton<String>(
-                          value: unitId,
-                          items: unitOptions
-                              .map(
-                                (u) =>
-                                    DropdownMenuItem(value: u, child: Text(u)),
-                              )
-                              .toList(),
-                          onChanged: (v) => setModalState(() {
-                            if (v != null) unitId = v;
-                          }),
-                        ),
-                        const SizedBox(height: 12),
-                        AppInputField(
-                          label: AppStrings.getAmount(currentLocale),
-                          hint: '0',
-                          controller: amountController,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [ThousandsSeparatorInputFormatter()],
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(AppStrings.getCancel(currentLocale)),
-              ),
-              TextButton(
-                onPressed: () {
-                  final ing = selected;
-                  if (ing == null) return;
-                  var txt = amountController.text.replaceAll(',', '');
-                  final cleaned = txt.replaceAll(RegExp('[^0-9\.]'), '');
-                  final parts = cleaned.split('.');
-                  final normalized = parts.length <= 1
-                      ? cleaned
-                      : parts.first + '.' + parts.sublist(1).join();
-                  final amount = double.tryParse(normalized) ?? 0;
-                  if (amount <= 0) return;
-                  setState(() {
-                    if (!_selectedIngredients.any((i) => i.id == ing.id)) {
-                      _selectedIngredients.add(ing);
-                    }
-                    _ingredientUnitIds[ing.id] = unitId;
-                    _ingredientAmounts[ing.id] = amount;
-                    final basePurchase = uc.UnitConverter.toBaseUnit(
-                      ing.purchaseAmount,
-                      ing.purchaseUnitId,
-                    );
-                    final unitPrice = ing.purchasePrice / basePurchase;
-                    final baseUsage = uc.UnitConverter.toBaseUnit(
-                      amount,
-                      unitId,
-                    );
-                    _ingredientCosts[ing.id] = unitPrice * baseUsage;
-                    _calculateTotalCost();
-                  });
-                  Navigator.of(context).pop();
-                },
-                child: Text(AppStrings.getAdd(currentLocale)),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
   void _removeIngredient(Ingredient ingredient) {
     setState(() {
       _selectedIngredients.removeWhere((i) => i.id == ingredient.id);
@@ -1414,7 +1275,6 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
       _ingredientCosts.remove(ingredient.id);
       _calculateTotalCost();
 
-      // 컨트롤러도 제거
       if (_amountControllers.containsKey(ingredient.id)) {
         _amountControllers[ingredient.id]!.dispose();
         _amountControllers.remove(ingredient.id);
@@ -1424,15 +1284,16 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
 
   void _saveRecipe() async {
     final currentLocale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    if (_selectedIngredients.isEmpty) {
+    if (_selectedIngredients.isEmpty && _selectedSauces.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppStrings.getRecipeIngredientsRequired(currentLocale)),
-          backgroundColor: AppColors.error,
+          backgroundColor: colorScheme.error,
         ),
       );
       return;
@@ -1443,7 +1304,6 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
     });
 
     try {
-      // 선택된 재료들을 RecipeIngredient로 변환
       final recipeIngredients = <RecipeIngredient>[];
       for (final ingredient in _selectedIngredients) {
         final amount = _ingredientAmounts[ingredient.id] ?? 0.0;
@@ -1451,7 +1311,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
           recipeIngredients.add(
             RecipeIngredient(
               id: const Uuid().v4(),
-              recipeId: '', // 레시피 생성 후 설정됨
+              recipeId: '',
               ingredientId: ingredient.id,
               amount: amount,
               unitId: _ingredientUnitIds[ingredient.id] ??
@@ -1465,8 +1325,8 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
       await context.read<RecipeCubit>().addRecipe(
             name: _nameController.text.trim(),
             description: _descriptionController.text.trim(),
-            outputAmount: 1.0, // 기본값으로 1 설정
-            outputUnit: '인분', // 기본값으로 인분 설정
+            outputAmount: 1.0,
+            outputUnit: '인분',
             tagIds: _selectedTagId.isNotEmpty ? [_selectedTagId] : [],
             ingredients: recipeIngredients,
             sauces: _selectedSauces
@@ -1482,7 +1342,6 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
                 .toList(),
           );
 
-      // 레시피 저장 성공 시 뒤로가기
       if (mounted) {
         context.pop();
       }
@@ -1491,7 +1350,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppStrings.getRecipeAddError(currentLocale)),
-            backgroundColor: AppColors.error,
+            backgroundColor: colorScheme.error,
           ),
         );
       }

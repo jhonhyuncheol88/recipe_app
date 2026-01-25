@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
@@ -24,15 +23,16 @@ class AiSalesAnalysisWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -69,8 +69,8 @@ class AiSalesAnalysisWidget extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: onClose,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.buttonText,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 12,
@@ -85,15 +85,16 @@ class AiSalesAnalysisWidget extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Icon(Icons.analytics, color: AppColors.accent, size: 28),
+        Icon(Icons.analytics, color: colorScheme.secondary, size: 28),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             AppStrings.getAiSalesAnalysisTitle(locale),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -102,7 +103,7 @@ class AiSalesAnalysisWidget extends StatelessWidget {
           IconButton(
             onPressed: onClose,
             icon: const Icon(Icons.close),
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
       ],
     );
@@ -113,19 +114,25 @@ class AiSalesAnalysisWidget extends StatelessWidget {
         analysisResult['optimal_price'] as Map<String, dynamic>?;
     if (optimalPrice == null) return const SizedBox.shrink();
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return _buildSection(
+      context,
       title: AppStrings.getOptimalPriceAnalysis(locale),
       icon: Icons.attach_money,
       children: [
         _buildInfoRow(
+          context,
           AppStrings.getRecommendedPrice(locale),
           _formatPrice(optimalPrice['recommended_price'], context),
         ),
         _buildInfoRow(
+          context,
           AppStrings.getTargetMarginRate(locale),
           '${optimalPrice['cost_ratio']}%',
         ),
         _buildInfoRow(
+          context,
           AppStrings.getProfitPerServing(locale),
           _formatPrice(optimalPrice['profit_per_serving'], context),
         ),
@@ -133,13 +140,13 @@ class AiSalesAnalysisWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.primaryLight,
+            color: colorScheme.primary.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             _formatAnalysisText(optimalPrice['price_analysis'] ?? '-', context),
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
             ),
           ),
         ),
@@ -152,15 +159,20 @@ class AiSalesAnalysisWidget extends StatelessWidget {
         analysisResult['marketing_points'] as Map<String, dynamic>?;
     if (marketingPoints == null) return const SizedBox.shrink();
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return _buildSection(
+      context,
       title: AppStrings.getMarketingPoints(locale),
       icon: Icons.campaign,
       children: [
         _buildInfoRow(
+          context,
           AppStrings.getTargetCustomers(locale),
           marketingPoints['target_customers'] ?? '',
         ),
         _buildInfoRow(
+          context,
           AppStrings.getOptimalSellingSeason(locale),
           marketingPoints['seasonal_timing'] ?? '',
         ),
@@ -172,7 +184,7 @@ class AiSalesAnalysisWidget extends StatelessWidget {
             AppStrings.getUniqueSellingPoints(locale),
             style: AppTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
@@ -181,13 +193,14 @@ class AiSalesAnalysisWidget extends StatelessWidget {
               padding: const EdgeInsets.only(left: 16, bottom: 4),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle, color: AppColors.accent, size: 16),
+                  Icon(Icons.check_circle,
+                      color: colorScheme.secondary, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       point.toString(),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
@@ -205,7 +218,7 @@ class AiSalesAnalysisWidget extends StatelessWidget {
             AppStrings.getCompetitiveAdvantages(locale),
             style: AppTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
@@ -214,13 +227,13 @@ class AiSalesAnalysisWidget extends StatelessWidget {
               padding: const EdgeInsets.only(left: 16, bottom: 4),
               child: Row(
                 children: [
-                  Icon(Icons.star, color: AppColors.accent, size: 16),
+                  Icon(Icons.star, color: colorScheme.secondary, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       advantage.toString(),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
@@ -238,19 +251,25 @@ class AiSalesAnalysisWidget extends StatelessWidget {
         analysisResult['serving_guidance'] as Map<String, dynamic>?;
     if (servingGuidance == null) return const SizedBox.shrink();
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return _buildSection(
+      context,
       title: AppStrings.getServingGuidance(locale),
       icon: Icons.restaurant,
       children: [
         _buildInfoRow(
+          context,
           AppStrings.getOpeningScript(locale),
           servingGuidance['opening_script'] ?? '',
         ),
         _buildInfoRow(
+          context,
           AppStrings.getRecipeDescriptionScript(locale),
           servingGuidance['description_script'] ?? '',
         ),
         _buildInfoRow(
+          context,
           AppStrings.getPriceJustification(locale),
           servingGuidance['price_justification'] ?? '',
         ),
@@ -263,7 +282,7 @@ class AiSalesAnalysisWidget extends StatelessWidget {
             AppStrings.getUpsellingTips(locale),
             style: AppTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
@@ -272,13 +291,13 @@ class AiSalesAnalysisWidget extends StatelessWidget {
               padding: const EdgeInsets.only(left: 16, bottom: 4),
               child: Row(
                 children: [
-                  Icon(Icons.lightbulb, color: AppColors.accent, size: 16),
+                  Icon(Icons.lightbulb, color: colorScheme.secondary, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       tip.toString(),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
@@ -297,18 +316,22 @@ class AiSalesAnalysisWidget extends StatelessWidget {
     if (businessInsights == null) return const SizedBox.shrink();
 
     return _buildSection(
+      context,
       title: AppStrings.getBusinessInsights(locale),
       icon: Icons.business,
       children: [
         _buildInfoRow(
+          context,
           AppStrings.getCostEfficiency(locale),
           businessInsights['cost_efficiency'] ?? '',
         ),
         _buildInfoRow(
+          context,
           AppStrings.getProfitabilityTips(locale),
           businessInsights['profitability_tips'] ?? '',
         ),
         _buildInfoRow(
+          context,
           AppStrings.getRiskFactors(locale),
           businessInsights['risk_factors'] ?? '',
         ),
@@ -316,22 +339,24 @@ class AiSalesAnalysisWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSection({
+  Widget _buildSection(
+    BuildContext context, {
     required String title,
     required IconData icon,
     required List<Widget> children,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icon, color: AppColors.accent, size: 20),
+            Icon(icon, color: colorScheme.secondary, size: 20),
             const SizedBox(width: 8),
             Text(
               title,
               style: AppTextStyles.headline4.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -343,7 +368,8 @@ class AiSalesAnalysisWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, dynamic value) {
+  Widget _buildInfoRow(BuildContext context, String label, dynamic value) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -354,25 +380,26 @@ class AiSalesAnalysisWidget extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
           const SizedBox(width: 16),
-          Expanded(child: _buildValueWidget(value)),
+          Expanded(child: _buildValueWidget(context, value)),
         ],
       ),
     );
   }
 
   /// 값의 타입에 따라 적절한 위젯을 반환하는 헬퍼 메서드
-  Widget _buildValueWidget(dynamic value) {
+  Widget _buildValueWidget(BuildContext context, dynamic value) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (value == null) {
       return Text(
         '-',
         style: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textSecondary,
+          color: colorScheme.onSurface.withValues(alpha: 0.4),
           fontStyle: FontStyle.italic,
         ),
       );
@@ -383,14 +410,14 @@ class AiSalesAnalysisWidget extends StatelessWidget {
         return Text(
           '-',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.4),
             fontStyle: FontStyle.italic,
           ),
         );
       }
       return Text(
         value,
-        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+        style: AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
       );
     }
 
@@ -399,7 +426,7 @@ class AiSalesAnalysisWidget extends StatelessWidget {
         return Text(
           '-',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.4),
             fontStyle: FontStyle.italic,
           ),
         );
@@ -412,14 +439,14 @@ class AiSalesAnalysisWidget extends StatelessWidget {
           return Text(
             '$firstItem 외 $remainingCount개',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
             ),
           );
         }
         return Text(
           firstItem,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
           ),
         );
       } catch (e) {
@@ -427,7 +454,7 @@ class AiSalesAnalysisWidget extends StatelessWidget {
         return Text(
           '${value.length}개 항목',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
             fontStyle: FontStyle.italic,
           ),
         );
@@ -437,18 +464,14 @@ class AiSalesAnalysisWidget extends StatelessWidget {
     // 기타 타입은 문자열로 변환
     return Text(
       value.toString(),
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      style: AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
     );
   }
 
   /// 가격 포맷팅 (AI 전용 포맷터 사용)
   String _formatPrice(dynamic value, BuildContext context) {
-    return NumberFormatter.formatAiPrice(value, locale, context.watch<NumberFormatCubit>().state);
-  }
-
-  /// 퍼센트 포맷팅 (AI 전용 포맷터 사용)
-  String _formatPercentage(dynamic value, BuildContext context) {
-    return NumberFormatter.formatAiPercentage(value, context.watch<NumberFormatCubit>().state);
+    return NumberFormatter.formatAiPrice(
+        value, locale, context.watch<NumberFormatCubit>().state);
   }
 
   /// AI 분석 결과 텍스트에서 숫자 포맷팅 개선
@@ -465,7 +488,8 @@ class AiSalesAnalysisWidget extends StatelessWidget {
       final numberStr = match.group(0)?.replaceAll(',', '') ?? '';
       final number = int.tryParse(numberStr);
       if (number != null) {
-        return NumberFormatter.formatNumber(number, context.watch<NumberFormatCubit>().state);
+        return NumberFormatter.formatNumber(
+            number, context.watch<NumberFormatCubit>().state);
       }
       return match.group(0) ?? '';
     });

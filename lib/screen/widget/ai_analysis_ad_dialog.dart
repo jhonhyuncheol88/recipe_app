@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
@@ -29,18 +28,20 @@ class AiAnalysisAdDialog extends StatelessWidget {
     return BlocBuilder<LocaleCubit, AppLocale>(
       builder: (context, currentLocale) {
         return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           title: Row(
             children: [
-              Icon(Icons.auto_awesome, color: AppColors.accent, size: 28),
+              Icon(Icons.auto_awesome,
+                  color: Theme.of(context).colorScheme.secondary, size: 28),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   customTitle,
                   style: AppTextStyles.headline4.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -54,7 +55,7 @@ class AiAnalysisAdDialog extends StatelessWidget {
               Text(
                 customMessage,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(179),
                   height: 1.4,
                 ),
               ),
@@ -62,19 +63,25 @@ class AiAnalysisAdDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+                  color: Theme.of(context).colorScheme.secondary.withAlpha(26),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.accent.withAlpha(77)), // withAlpha 사용 (약 30% 투명도)
+                  border: Border.all(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondary
+                          .withAlpha(77)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: AppColors.accent, size: 20),
+                    Icon(Icons.info_outline,
+                        color: Theme.of(context).colorScheme.secondary,
+                        size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         customDescription,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.accent,
+                          color: Theme.of(context).colorScheme.secondary,
                           height: 1.3,
                         ),
                       ),
@@ -93,7 +100,7 @@ class AiAnalysisAdDialog extends StatelessWidget {
               child: Text(
                 AppStrings.getCancel(currentLocale),
                 style: AppTextStyles.buttonMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
                 ),
               ),
             ),
@@ -103,8 +110,8 @@ class AiAnalysisAdDialog extends StatelessWidget {
                 await _showAdAndAnalyze(context, currentLocale);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: AppColors.buttonText,
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                foregroundColor: Theme.of(context).colorScheme.onSecondary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -147,24 +154,22 @@ class AiAnalysisAdDialog extends StatelessWidget {
         // 광고 시청 완료 후 분석 진행
         print('✅ 광고 시청 완료, 콜백 호출 시작');
 
-        if (context.mounted) {
-          // 콜백 호출
-          print(
-            '🔗 onAdWatched 콜백: ${onAdWatched != null ? "콜백 존재" : "콜백 없음"}',
-          );
+        // 콜백 호출
+        print(
+          '🔗 onAdWatched 콜백: ${onAdWatched != null ? "콜백 존재" : "콜백 없음"}',
+        );
 
-          if (onAdWatched != null) {
-            print('🚀 onAdWatched 콜백 실행 시작');
-            try {
-              onAdWatched!();
-              print('✅ onAdWatched 콜백 실행 성공');
-            } catch (e) {
-              print('❌ onAdWatched 콜백 실행 중 오류: $e');
-            }
-            print('🏁 onAdWatched 콜백 호출 완료');
-          } else {
-            print('⚠️ onAdWatched 콜백이 null이므로 실행하지 않음');
+        if (onAdWatched != null) {
+          print('🚀 onAdWatched 콜백 실행 시작');
+          try {
+            onAdWatched!();
+            print('✅ onAdWatched 콜백 실행 성공');
+          } catch (e) {
+            print('❌ onAdWatched 콜백 실행 중 오류: $e');
           }
+          print('🏁 onAdWatched 콜백 호출 완료');
+        } else {
+          print('⚠️ onAdWatched 콜백이 null이므로 실행하지 않음');
         }
       } else {
         // 광고 시청 실패 시 처리
@@ -173,7 +178,7 @@ class AiAnalysisAdDialog extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppStrings.getAdLoadFailed(locale)),
-              backgroundColor: AppColors.warning,
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
               duration: const Duration(seconds: 3),
             ),
           );
@@ -186,7 +191,7 @@ class AiAnalysisAdDialog extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${AppStrings.getErrorOccurred(locale)}: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -231,8 +236,8 @@ class AiAnalysisButton extends StatelessWidget {
               ),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.accent,
-              side: BorderSide(color: AppColors.accent),
+              foregroundColor: Theme.of(context).colorScheme.secondary,
+              side: BorderSide(color: Theme.of(context).colorScheme.secondary),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -251,8 +256,8 @@ class AiAnalysisButton extends StatelessWidget {
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.accent,
-            foregroundColor: AppColors.buttonText,
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            foregroundColor: Theme.of(context).colorScheme.onSecondary,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),

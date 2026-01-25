@@ -1,15 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'dart:developer' as developer;
 import '../../data/index.dart';
 import '../../model/index.dart';
-import '../../model/recipe_ingredient.dart';
+
 import '../../service/recipe_cost_service.dart';
 import '../../service/sauce_cost_service.dart';
 import '../../service/ai_sales_analysis_service.dart';
 import 'recipe_state.dart';
 import '../../util/unit_converter.dart' as uc;
-import 'package:uuid/uuid.dart';
 
 class RecipeCubit extends Cubit<RecipeState> {
   final RecipeRepository _recipeRepository;
@@ -44,6 +44,8 @@ class RecipeCubit extends Cubit<RecipeState> {
     );
     _aiSalesAnalysisService = AiSalesAnalysisService();
   }
+
+  RecipeRepository get recipeRepo => _recipeRepository;
 
   // 레시피 목록 로드
   Future<void> loadRecipes() async {
@@ -158,7 +160,7 @@ class RecipeCubit extends Cubit<RecipeState> {
           await _recipeRepository.addIngredientToRecipe(recipe.id, ingredient);
         } catch (e) {
           // 재료 추가 실패 시 로그만 남기고 계속 진행
-          print('재료 추가 실패: ${ingredient.ingredientId}, 오류: $e');
+          developer.log('재료 추가 실패: ${ingredient.ingredientId}, 오류: $e');
         }
       }
 
@@ -778,32 +780,71 @@ class RecipeCubit extends Cubit<RecipeState> {
   }
 
   // AI 레시피를 일반 레시피로 변환
-  Future<void> convertAiRecipeToRecipe(String aiRecipeId) async {
+  Future<bool> convertAiRecipeToRecipe(
+    dynamic aiRecipeOrId, [
+    List<Map<String, dynamic>>? selectedIngredients,
+  ]) async {
     try {
       emit(const RecipeLoading());
 
-      final aiRecipe = await _aiRecipeRepository.getAiRecipeById(aiRecipeId);
+      AiRecipe? aiRecipe;
+      String aiRecipeId;
+
+      if (aiRecipeOrId is String) {
+        aiRecipeId = aiRecipeOrId;
+        aiRecipe = await _aiRecipeRepository.getAiRecipeById(aiRecipeId);
+      } else if (aiRecipeOrId is AiRecipe) {
+        aiRecipe = aiRecipeOrId;
+        aiRecipeId = aiRecipe.id;
+      } else {
+        emit(const RecipeError('잘못된 매개변수 타입입니다.'));
+        return false;
+      }
+
       if (aiRecipe == null) {
         emit(const RecipeError('AI 레시피를 찾을 수 없습니다.'));
-        return;
+        return false;
       }
 
       // AI 레시피를 일반 레시피 데이터로 변환
       final recipeData = aiRecipe.toRecipeData();
 
       // 일반 레시피로 추가
-      await addRecipe(
+      final String recipeId = _uuid.v4();
+      final recipe = Recipe(
+        id: recipeId,
         name: recipeData['name'],
         description: recipeData['description'],
         outputAmount: recipeData['outputAmount'],
         outputUnit: recipeData['outputUnit'],
-        tagIds: recipeData['tagIds'],
-        ingredients: [], // 재료는 별도로 추가해야 함
+        totalCost: 0.0,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        ingredients: [], // 아래에서 추가
+        tagIds: List<String>.from(recipeData['tagIds'] ?? []),
       );
+
+      await _recipeRepository.insertRecipe(recipe);
+
+      // 재료 추가
+      final List<Map<String, dynamic>> ingredientsToUse =
+          selectedIngredients ?? recipeData['ingredients'];
+
+      for (final ingredient in ingredientsToUse) {
+        if (ingredient['ingredientId'] != null) {
+          // 이미 매칭된 재료가 있는 경우
+          await addIngredientToRecipe(
+            recipeId: recipeId,
+            ingredientId: ingredient['ingredientId'],
+            amount: (ingredient['amount'] ?? 0.0).toDouble(),
+            unitId: ingredient['unitId'] ?? 'g', // 기본 단위
+          );
+        }
+      }
 
       // AI 레시피를 변환됨으로 표시
       final recipes = await _recipeRepository.getAllRecipes();
-      final latestRecipe = recipes.first;
+      final latestRecipe = recipes.firstWhere((r) => r.id == recipeId);
       await _aiRecipeRepository.markAsConverted(aiRecipeId, latestRecipe.id);
 
       emit(AiRecipeConverted(
@@ -811,8 +852,11 @@ class RecipeCubit extends Cubit<RecipeState> {
         recipe: latestRecipe,
         recipes: recipes,
       ));
+
+      return true;
     } catch (e) {
       emit(RecipeError('AI 레시피 변환에 실패했습니다: $e'));
+      return false;
     }
   }
 

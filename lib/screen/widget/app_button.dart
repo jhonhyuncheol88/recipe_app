@@ -25,24 +25,25 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: isFullWidth ? double.infinity : null,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
-        style: _getButtonStyle(),
-        child: _buildButtonContent(),
+        style: _getButtonStyle(context, colorScheme),
+        child: _buildButtonContent(colorScheme),
       ),
     );
   }
 
-  Widget _buildButtonContent() {
+  Widget _buildButtonContent(ColorScheme colorScheme) {
     if (isLoading) {
       return SizedBox(
         width: _getIconSize(),
         height: _getIconSize(),
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(_getTextColor()),
+          valueColor: AlwaysStoppedAnimation<Color>(_getTextColor(colorScheme)),
         ),
       );
     }
@@ -51,7 +52,7 @@ class AppButton extends StatelessWidget {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: _getIconSize(), color: _getTextColor()),
+          Icon(icon, size: _getIconSize(), color: _getTextColor(colorScheme)),
           SizedBox(width: _getSpacing()),
           Text(text, style: _getTextStyle()),
         ],
@@ -61,12 +62,12 @@ class AppButton extends StatelessWidget {
     return Text(text, style: _getTextStyle());
   }
 
-  ButtonStyle _getButtonStyle() {
+  ButtonStyle _getButtonStyle(BuildContext context, ColorScheme colorScheme) {
     return ElevatedButton.styleFrom(
-      backgroundColor: _getBackgroundColor(),
-      foregroundColor: _getTextColor(),
+      backgroundColor: _getBackgroundColor(colorScheme),
+      foregroundColor: _getTextColor(colorScheme),
       elevation: _getElevation(),
-      shadowColor: AppColors.shadow,
+      shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(_getBorderRadius()),
       ),
@@ -75,31 +76,34 @@ class AppButton extends StatelessWidget {
     );
   }
 
-  Color _getBackgroundColor() {
+  Color _getBackgroundColor(ColorScheme colorScheme) {
     switch (type) {
       case AppButtonType.primary:
-        return AppColors.buttonPrimary;
+        return colorScheme.primary;
       case AppButtonType.secondary:
-        return AppColors.buttonSecondary;
+        return colorScheme.surface;
       case AppButtonType.success:
-        return AppColors.success;
+        return const Color(
+            0xFF7FB069); // Keep high semantic colors for now or use colorScheme.tertiary
       case AppButtonType.warning:
-        return AppColors.warning;
+        return colorScheme.secondaryContainer;
       case AppButtonType.error:
-        return AppColors.error;
+        return colorScheme.error;
     }
   }
 
-  Color _getTextColor() {
+  Color _getTextColor(ColorScheme colorScheme) {
     switch (type) {
       case AppButtonType.primary:
-        return AppColors.buttonText; // 흰색
+        return colorScheme.onPrimary;
       case AppButtonType.secondary:
-        return AppColors.buttonTextDark; // 검은색
+        return colorScheme.onSurface;
       case AppButtonType.success:
+        return Colors.white;
       case AppButtonType.warning:
+        return colorScheme.onSecondaryContainer;
       case AppButtonType.error:
-        return AppColors.buttonText; // 흰색
+        return colorScheme.onError;
     }
   }
 

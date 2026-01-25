@@ -124,12 +124,46 @@ class RouterHelper {
     );
   }
 
+  /// 레시피 재료 선택 페이지로 이동
+  static Future<Map<String, dynamic>?> goToRecipeIngredientSelect(
+    BuildContext context, {
+    List<Ingredient>? currentSelectedIngredients,
+    Map<String, double>? currentIngredientAmounts,
+    Map<String, String>? currentIngredientUnitIds,
+  }) async {
+    final result = await context.push<Map<String, dynamic>>(
+      AppRouter.recipeIngredientSelect,
+      extra: {
+        if (currentSelectedIngredients != null)
+          'currentSelectedIngredients': currentSelectedIngredients,
+        if (currentIngredientAmounts != null)
+          'currentIngredientAmounts': currentIngredientAmounts,
+        if (currentIngredientUnitIds != null)
+          'currentIngredientUnitIds': currentIngredientUnitIds,
+      },
+    );
+    return result;
+  }
+
   /// 레시피 수정 페이지로 이동
   static void goToRecipeEdit(
     BuildContext context,
     Map<String, dynamic> recipe,
   ) {
     context.push(AppRouter.recipeEdit, extra: {'recipe': recipe});
+  }
+
+  /// 소스 재료 선택 페이지로 이동
+  static Future<void> goToSauceIngredientSelect(
+    BuildContext context,
+    String sauceId,
+  ) async {
+    await context.push(
+      AppRouter.sauceIngredientSelect,
+      extra: {
+        'sauceId': sauceId,
+      },
+    );
   }
 
   /// 레시피 상세 페이지로 이동

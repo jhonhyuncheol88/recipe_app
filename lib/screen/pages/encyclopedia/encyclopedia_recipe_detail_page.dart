@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../model/encyclopedia_recipe.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../router/app_router.dart';
 import '../../../router/router_helper.dart';
-import '../../../service/gemini_service.dart';
+import '../../../service/ai_analysis_service.dart';
 
 /// 백과사전 레시피 상세 페이지
 class EncyclopediaRecipeDetailPage extends StatefulWidget {
@@ -31,29 +30,28 @@ class _EncyclopediaRecipeDetailPageState
     extends State<EncyclopediaRecipeDetailPage> {
   bool _isTranslated = false;
   String? _translatedRecipeName;
-  Map<String, String> _translatedIngredientNames = {};
-  Map<String, String> _translatedSauceNames = {};
-  Map<String, String> _translatedUnits = {}; // 단위 번역 맵
+  final Map<String, String> _translatedIngredientNames = {};
+  final Map<String, String> _translatedSauceNames = {};
+  final Map<String, String> _translatedUnits = {};
   String? _translatedCookingMethod;
   bool _isTranslating = false;
-  final GeminiService _geminiService = GeminiService();
+  final AiAnalysisService _aiAnalysisService = AiAnalysisService();
 
   @override
   void initState() {
     super.initState();
-    // 메인 페이지에서 전달받은 번역 정보가 있으면 초기화
     if (widget.translationData != null) {
-      final isTranslated = widget.translationData!['isTranslated'] as bool? ?? false;
-      final translatedRecipeName = widget.translationData!['translatedRecipeName'] as String?;
-      
-      // 메인 페이지에서 번역 상태가 true이면 자동으로 번역 수행
+      final isTranslated =
+          widget.translationData!['isTranslated'] as bool? ?? false;
+      final translatedRecipeName =
+          widget.translationData!['translatedRecipeName'] as String?;
+
       if (isTranslated) {
         _isTranslated = true;
         if (translatedRecipeName != null) {
           _translatedRecipeName = translatedRecipeName;
         }
-        
-        // 재료, 양념, 조리 방법 자동 번역
+
         WidgetsBinding.instance.addPostFrameCallback((_) {
           final currentLocale = context.read<LocaleCubit>().state;
           if (currentLocale != AppLocale.korea) {
@@ -66,22 +64,23 @@ class _EncyclopediaRecipeDetailPageState
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return BlocBuilder<LocaleCubit, AppLocale>(
       builder: (context, currentLocale) {
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: colorScheme.surface,
           appBar: AppBar(
             title: Text(
               _isTranslated && _translatedRecipeName != null
                   ? _translatedRecipeName!
                   : widget.recipe.menuName,
               style: AppTextStyles.headline4
-                  .copyWith(color: AppColors.textPrimary),
+                  .copyWith(color: colorScheme.onSurface),
             ),
-            backgroundColor: AppColors.surface,
+            backgroundColor: colorScheme.surface,
             elevation: 0,
+            iconTheme: IconThemeData(color: colorScheme.onSurface),
             actions: [
-              // 한국어가 아닐 때만 번역 버튼 표시
               if (currentLocale != AppLocale.korea)
                 Padding(
                   padding: const EdgeInsets.only(right: 8.0),
@@ -95,14 +94,14 @@ class _EncyclopediaRecipeDetailPageState
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: AppColors.accent,
+                              color: colorScheme.primary,
                             ),
                           )
                         : Icon(
                             _isTranslated ? Icons.visibility : Icons.translate,
                             color: _isTranslating
-                                ? AppColors.textSecondary
-                                : AppColors.accent,
+                                ? colorScheme.onSurface.withAlpha(102)
+                                : colorScheme.primary,
                           ),
                     label: Text(
                       _isTranslating
@@ -112,8 +111,8 @@ class _EncyclopediaRecipeDetailPageState
                               : AppStrings.getTranslate(currentLocale)),
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: _isTranslating
-                            ? AppColors.textSecondary
-                            : AppColors.accent,
+                            ? colorScheme.onSurface.withAlpha(102)
+                            : colorScheme.primary,
                       ),
                     ),
                   ),
@@ -125,8 +124,6 @@ class _EncyclopediaRecipeDetailPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildRecipeInfo(currentLocale),
-                const SizedBox(height: 24),
                 _buildAddAllButton(context, currentLocale),
                 const SizedBox(height: 24),
                 _buildIngredientsSection(context, currentLocale),
@@ -142,20 +139,16 @@ class _EncyclopediaRecipeDetailPageState
     );
   }
 
-  /// 번역하기/원본 보기 토글 핸들러
   Future<void> _handleTranslateToggle(AppLocale currentLocale) async {
     if (_isTranslated) {
-      // 원본 보기
       setState(() {
         _isTranslated = false;
       });
     } else {
-      // 번역하기
       await _translateRecipe(currentLocale);
     }
   }
 
-  /// 레시피 이름, 재료, 양념, 조리 방법 번역
   Future<void> _translateRecipe(AppLocale currentLocale) async {
     if (_isTranslating) return;
 
@@ -164,63 +157,53 @@ class _EncyclopediaRecipeDetailPageState
     });
 
     try {
-      // 번역할 이름들 수집
       final namesToTranslate = <String>[];
-      
-      // 레시피 이름
+
       if (_translatedRecipeName == null) {
         namesToTranslate.add(widget.recipe.menuName);
       }
-      
-      // 재료 이름
+
       for (final ingredient in widget.recipe.ingredients) {
         if (!_translatedIngredientNames.containsKey(ingredient.name)) {
           namesToTranslate.add(ingredient.name);
         }
       }
-      
-      // 양념 이름
+
       for (final sauce in widget.recipe.sauces) {
         if (!_translatedSauceNames.containsKey(sauce.name)) {
           namesToTranslate.add(sauce.name);
         }
       }
 
-      // 이름 번역 수행
       if (namesToTranslate.isNotEmpty) {
-        final translations = await _geminiService.translateRecipeNames(
+        final translations = await _aiAnalysisService.translateRecipeNames(
           namesToTranslate,
           targetLocale: currentLocale,
         );
 
         if (mounted) {
           setState(() {
-            // 레시피 이름 번역
             if (translations.containsKey(widget.recipe.menuName) &&
                 _translatedRecipeName == null) {
               _translatedRecipeName = translations[widget.recipe.menuName]!;
             }
-            
-            // 재료 이름 번역
+
             for (final ingredient in widget.recipe.ingredients) {
               if (translations.containsKey(ingredient.name)) {
                 _translatedIngredientNames[ingredient.name] =
                     translations[ingredient.name]!;
               }
             }
-            
-            // 양념 이름 번역
+
             for (final sauce in widget.recipe.sauces) {
               if (translations.containsKey(sauce.name)) {
-                _translatedSauceNames[sauce.name] =
-                    translations[sauce.name]!;
+                _translatedSauceNames[sauce.name] = translations[sauce.name]!;
               }
             }
           });
         }
       }
 
-      // 단위 번역 수행
       final unitsToTranslate = <String>[];
       for (final ingredient in widget.recipe.ingredients) {
         final unit = ingredient.normalizedUnit;
@@ -237,7 +220,7 @@ class _EncyclopediaRecipeDetailPageState
 
       if (unitsToTranslate.isNotEmpty) {
         try {
-          final unitTranslations = await _geminiService.translateUnits(
+          final unitTranslations = await _aiAnalysisService.translateUnits(
             unitsToTranslate,
             targetLocale: currentLocale,
           );
@@ -248,16 +231,14 @@ class _EncyclopediaRecipeDetailPageState
             });
           }
         } catch (e) {
-          // 단위 번역 실패는 무시 (이름 번역은 성공했을 수 있음)
-          print('단위 번역 실패: $e');
+          debugPrint('단위 번역 실패: $e');
         }
       }
 
-      // 조리 방법 번역
       if (widget.recipe.cookingMethod.isNotEmpty &&
           _translatedCookingMethod == null) {
         try {
-          final translatedMethod = await _geminiService.translateText(
+          final translatedMethod = await _aiAnalysisService.translateText(
             widget.recipe.cookingMethod,
             targetLocale: currentLocale,
           );
@@ -268,8 +249,7 @@ class _EncyclopediaRecipeDetailPageState
             });
           }
         } catch (e) {
-          // 조리 방법 번역 실패는 무시 (다른 번역은 성공했을 수 있음)
-          print('조리 방법 번역 실패: $e');
+          debugPrint('조리 방법 번역 실패: $e');
         }
       }
 
@@ -285,36 +265,35 @@ class _EncyclopediaRecipeDetailPageState
           _isTranslating = false;
         });
 
-        // 에러 메시지 표시
+        final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               '번역 중 오류가 발생했습니다: ${e.toString()}',
               style: const TextStyle(color: Colors.white),
             ),
-            backgroundColor: AppColors.error,
+            backgroundColor: colorScheme.error,
           ),
         );
       }
     }
   }
 
-  Widget _buildRecipeInfo(AppLocale currentLocale) {
-    // 페이지 번호는 표시하지 않음
-    return const SizedBox.shrink();
-  }
-
-
   Widget _buildAddAllButton(BuildContext context, AppLocale currentLocale) {
     final hasIngredients = widget.recipe.ingredients.isNotEmpty;
     final hasSauces = widget.recipe.sauces.isNotEmpty;
-    
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (!hasIngredients && !hasSauces) {
       return const SizedBox.shrink();
     }
 
     return Card(
-      color: AppColors.primaryLight.withOpacity(0.1),
+      color: colorScheme.primary.withAlpha(13),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.primary.withAlpha(26)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: SizedBox(
@@ -329,8 +308,8 @@ class _EncyclopediaRecipeDetailPageState
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
-              foregroundColor: AppColors.buttonText,
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -342,8 +321,15 @@ class _EncyclopediaRecipeDetailPageState
     );
   }
 
-  Widget _buildIngredientsSection(BuildContext context, AppLocale currentLocale) {
+  Widget _buildIngredientsSection(
+      BuildContext context, AppLocale currentLocale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -359,7 +345,7 @@ class _EncyclopediaRecipeDetailPageState
                     child: Text(
                       AppStrings.getIngredientsList(currentLocale),
                       style: AppTextStyles.headline4.copyWith(
-                        color: AppColors.textPrimary,
+                        color: colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -369,15 +355,16 @@ class _EncyclopediaRecipeDetailPageState
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: ElevatedButton.icon(
-                      onPressed: () => _addIngredientsToApp(context, currentLocale),
+                      onPressed: () =>
+                          _addIngredientsToApp(context, currentLocale),
                       icon: const Icon(Icons.add_circle_outline, size: 20),
                       label: Text(
                         AppStrings.getAddIngredients(currentLocale),
                         style: AppTextStyles.buttonSmall,
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
-                        foregroundColor: AppColors.buttonText,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -391,19 +378,18 @@ class _EncyclopediaRecipeDetailPageState
               Text(
                 AppStrings.getNoIngredients(currentLocale),
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface.withAlpha(153),
                 ),
               )
             else
               ...widget.recipe.ingredients.asMap().entries.map((entry) {
                 final index = entry.key;
                 final ingredient = entry.value;
-                // 번역된 이름이 있으면 사용, 없으면 원본 이름 사용
                 final displayName = _isTranslated &&
                         _translatedIngredientNames.containsKey(ingredient.name)
                     ? _translatedIngredientNames[ingredient.name]!
                     : ingredient.name;
-                    
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
@@ -412,14 +398,14 @@ class _EncyclopediaRecipeDetailPageState
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: AppColors.accent.withOpacity(0.1),
+                          color: colorScheme.primary.withAlpha(26),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
                           child: Text(
                             '${index + 1}',
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.accent,
+                              color: colorScheme.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -430,16 +416,18 @@ class _EncyclopediaRecipeDetailPageState
                         child: Text(
                           displayName,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ),
                       Text(
-                        _isTranslated && _translatedUnits.containsKey(ingredient.normalizedUnit)
+                        _isTranslated &&
+                                _translatedUnits
+                                    .containsKey(ingredient.normalizedUnit)
                             ? '${ingredient.amount}${_translatedUnits[ingredient.normalizedUnit]!}'
                             : '${ingredient.amount}${ingredient.unit}',
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: colorScheme.onSurface.withAlpha(153),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -447,21 +435,21 @@ class _EncyclopediaRecipeDetailPageState
                         icon: Icon(
                           Icons.add_circle_outline,
                           size: 20,
-                          color: AppColors.accent,
+                          color: colorScheme.primary,
                         ),
                         onPressed: () {
-                          // 번역된 이름이 있으면 번역된 이름 사용, 없으면 원본 이름 사용
                           final name = _isTranslated &&
                                   _translatedIngredientNames
                                       .containsKey(ingredient.name)
                               ? _translatedIngredientNames[ingredient.name]!
                               : ingredient.name;
-                          
-                          // 단위도 번역된 것이 있으면 사용
-                          final unit = _isTranslated && _translatedUnits.containsKey(ingredient.normalizedUnit)
+
+                          final unit = _isTranslated &&
+                                  _translatedUnits
+                                      .containsKey(ingredient.normalizedUnit)
                               ? _translatedUnits[ingredient.normalizedUnit]!
                               : ingredient.normalizedUnit;
-                          
+
                           _addIndividualIngredient(
                             context,
                             name,
@@ -482,7 +470,13 @@ class _EncyclopediaRecipeDetailPageState
   }
 
   Widget _buildSaucesSection(BuildContext context, AppLocale currentLocale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -498,7 +492,7 @@ class _EncyclopediaRecipeDetailPageState
                     child: Text(
                       AppStrings.getSaucesList(currentLocale),
                       style: AppTextStyles.headline4.copyWith(
-                        color: AppColors.textPrimary,
+                        color: colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -515,8 +509,8 @@ class _EncyclopediaRecipeDetailPageState
                         style: AppTextStyles.buttonSmall,
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
-                        foregroundColor: AppColors.buttonText,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -530,19 +524,18 @@ class _EncyclopediaRecipeDetailPageState
               Text(
                 AppStrings.getNoSauces(currentLocale),
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface.withAlpha(153),
                 ),
               )
             else
               ...widget.recipe.sauces.asMap().entries.map((entry) {
                 final index = entry.key;
                 final sauce = entry.value;
-                // 번역된 이름이 있으면 사용, 없으면 원본 이름 사용
                 final displayName = _isTranslated &&
                         _translatedSauceNames.containsKey(sauce.name)
                     ? _translatedSauceNames[sauce.name]!
                     : sauce.name;
-                    
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
@@ -551,14 +544,14 @@ class _EncyclopediaRecipeDetailPageState
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: AppColors.accent.withOpacity(0.1),
+                          color: colorScheme.primary.withAlpha(26),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
                           child: Text(
                             '${index + 1}',
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.accent,
+                              color: colorScheme.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -569,16 +562,18 @@ class _EncyclopediaRecipeDetailPageState
                         child: Text(
                           displayName,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ),
                       Text(
-                        _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
+                        _isTranslated &&
+                                _translatedUnits
+                                    .containsKey(sauce.normalizedUnit)
                             ? '${sauce.amount}${_translatedUnits[sauce.normalizedUnit]!}'
                             : '${sauce.amount}${sauce.unit}',
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: colorScheme.onSurface.withAlpha(153),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -586,20 +581,20 @@ class _EncyclopediaRecipeDetailPageState
                         icon: Icon(
                           Icons.add_circle_outline,
                           size: 20,
-                          color: AppColors.accent,
+                          color: colorScheme.primary,
                         ),
                         onPressed: () {
-                          // 번역된 이름이 있으면 번역된 이름 사용, 없으면 원본 이름 사용
                           final name = _isTranslated &&
                                   _translatedSauceNames.containsKey(sauce.name)
                               ? _translatedSauceNames[sauce.name]!
                               : sauce.name;
-                          
-                          // 단위도 번역된 것이 있으면 사용
-                          final unit = _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
+
+                          final unit = _isTranslated &&
+                                  _translatedUnits
+                                      .containsKey(sauce.normalizedUnit)
                               ? _translatedUnits[sauce.normalizedUnit]!
                               : sauce.normalizedUnit;
-                          
+
                           _addIndividualIngredient(
                             context,
                             name,
@@ -620,12 +615,11 @@ class _EncyclopediaRecipeDetailPageState
   }
 
   Widget _buildCookingMethodSection(AppLocale currentLocale) {
-    // 번역된 조리 방법이 있으면 사용, 없으면 원본 사용
+    final colorScheme = Theme.of(context).colorScheme;
     final cookingMethodText = _isTranslated && _translatedCookingMethod != null
         ? _translatedCookingMethod!
         : widget.recipe.cookingMethod;
-    
-    // 조리방법을 줄바꿈으로 구분하여 단계별로 나눔
+
     final steps = cookingMethodText
         .split('\n')
         .map((step) => step.trim())
@@ -633,6 +627,11 @@ class _EncyclopediaRecipeDetailPageState
         .toList();
 
     return Card(
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -641,7 +640,7 @@ class _EncyclopediaRecipeDetailPageState
             Text(
               AppStrings.getCookingMethod(currentLocale),
               style: AppTextStyles.headline4.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -650,7 +649,7 @@ class _EncyclopediaRecipeDetailPageState
               Text(
                 AppStrings.getNoCookingMethod(currentLocale),
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface.withAlpha(153),
                 ),
               )
             else
@@ -672,22 +671,20 @@ class _EncyclopediaRecipeDetailPageState
   }
 
   Widget _buildCookingStep(int stepNumber, String stepText) {
-    // 번호와 점(.) 제거 (이미 있으면)
+    final colorScheme = Theme.of(context).colorScheme;
     String cleanedText = stepText.trim();
     if (cleanedText.startsWith('$stepNumber.') ||
         cleanedText.startsWith('${stepNumber}.')) {
-      cleanedText = cleanedText
-          .substring(cleanedText.indexOf('.') + 1)
-          .trim();
+      cleanedText = cleanedText.substring(cleanedText.indexOf('.') + 1).trim();
     }
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.divider.withOpacity(0.5),
+          color: colorScheme.outlineVariant,
           width: 1,
         ),
       ),
@@ -698,14 +695,14 @@ class _EncyclopediaRecipeDetailPageState
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.1),
+              color: colorScheme.primary.withAlpha(26),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 '$stepNumber',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.accent,
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -716,7 +713,7 @@ class _EncyclopediaRecipeDetailPageState
             child: Text(
               cleanedText,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
                 height: 1.5,
               ),
             ),
@@ -727,18 +724,17 @@ class _EncyclopediaRecipeDetailPageState
   }
 
   void _addIngredientsToApp(BuildContext context, AppLocale currentLocale) {
-    // 번역된 이름이 있으면 번역된 이름 사용, 없으면 원본 이름 사용
     final ingredients = widget.recipe.ingredients.map((ingredient) {
       final name = _isTranslated &&
               _translatedIngredientNames.containsKey(ingredient.name)
           ? _translatedIngredientNames[ingredient.name]!
           : ingredient.name;
-      
-      // 단위도 번역된 것이 있으면 사용
-      final unit = _isTranslated && _translatedUnits.containsKey(ingredient.normalizedUnit)
+
+      final unit = _isTranslated &&
+              _translatedUnits.containsKey(ingredient.normalizedUnit)
           ? _translatedUnits[ingredient.normalizedUnit]!
           : ingredient.normalizedUnit;
-      
+
       return {
         'name': name.trim(),
         'amount': ingredient.amount,
@@ -755,18 +751,17 @@ class _EncyclopediaRecipeDetailPageState
   }
 
   void _addSaucesToApp(BuildContext context, AppLocale currentLocale) {
-    // 번역된 이름이 있으면 번역된 이름 사용, 없으면 원본 이름 사용
     final sauces = widget.recipe.sauces.map((sauce) {
-      final name = _isTranslated &&
-              _translatedSauceNames.containsKey(sauce.name)
-          ? _translatedSauceNames[sauce.name]!
-          : sauce.name;
-      
-      // 단위도 번역된 것이 있으면 사용
-      final unit = _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
-          ? _translatedUnits[sauce.normalizedUnit]!
-          : sauce.normalizedUnit;
-      
+      final name =
+          _isTranslated && _translatedSauceNames.containsKey(sauce.name)
+              ? _translatedSauceNames[sauce.name]!
+              : sauce.name;
+
+      final unit =
+          _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
+              ? _translatedUnits[sauce.normalizedUnit]!
+              : sauce.normalizedUnit;
+
       return {
         'name': name.trim(),
         'amount': sauce.amount,
@@ -783,19 +778,18 @@ class _EncyclopediaRecipeDetailPageState
   }
 
   void _addAllToApp(BuildContext context, AppLocale currentLocale) {
-    // 재료와 양념을 모두 합쳐서 추가 (번역된 이름 사용)
     final allItems = [
       ...widget.recipe.ingredients.map((ingredient) {
         final name = _isTranslated &&
                 _translatedIngredientNames.containsKey(ingredient.name)
             ? _translatedIngredientNames[ingredient.name]!
             : ingredient.name;
-        
-        // 단위도 번역된 것이 있으면 사용
-        final unit = _isTranslated && _translatedUnits.containsKey(ingredient.normalizedUnit)
+
+        final unit = _isTranslated &&
+                _translatedUnits.containsKey(ingredient.normalizedUnit)
             ? _translatedUnits[ingredient.normalizedUnit]!
             : ingredient.normalizedUnit;
-        
+
         return {
           'name': name.trim(),
           'amount': ingredient.amount,
@@ -803,16 +797,16 @@ class _EncyclopediaRecipeDetailPageState
         };
       }),
       ...widget.recipe.sauces.map((sauce) {
-        final name = _isTranslated &&
-                _translatedSauceNames.containsKey(sauce.name)
-            ? _translatedSauceNames[sauce.name]!
-            : sauce.name;
-        
-        // 단위도 번역된 것이 있으면 사용
-        final unit = _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
-            ? _translatedUnits[sauce.normalizedUnit]!
-            : sauce.normalizedUnit;
-        
+        final name =
+            _isTranslated && _translatedSauceNames.containsKey(sauce.name)
+                ? _translatedSauceNames[sauce.name]!
+                : sauce.name;
+
+        final unit =
+            _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
+                ? _translatedUnits[sauce.normalizedUnit]!
+                : sauce.normalizedUnit;
+
         return {
           'name': name.trim(),
           'amount': sauce.amount,
@@ -820,10 +814,6 @@ class _EncyclopediaRecipeDetailPageState
         };
       }),
     ];
-
-    if (allItems.isEmpty) {
-      return;
-    }
 
     context.push(
       AppRouter.ingredientBulkAdd,
@@ -833,18 +823,13 @@ class _EncyclopediaRecipeDetailPageState
     );
   }
 
-  void _addIndividualIngredient(
-    BuildContext context,
-    String ingredientName, {
-    String? amount,
-    String? unit,
-  }) {
+  void _addIndividualIngredient(BuildContext context, String name,
+      {required String amount, required String unit}) {
     RouterHelper.goToIngredientAddWithName(
       context,
-      ingredientName,
+      name,
       amount: amount,
       unit: unit,
     );
   }
 }
-

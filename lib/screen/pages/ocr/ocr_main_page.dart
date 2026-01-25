@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:recipe_app/model/ocr_result.dart';
 import '../../../controller/ocr/ocr_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 
 import '../../../util/app_strings.dart';
@@ -29,17 +28,18 @@ class _OcrMainPageState extends State<OcrMainPage> {
   @override
   Widget build(BuildContext context) {
     final locale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(
           AppStrings.getOcrMainTitle(locale),
-          style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: colorScheme.onSurface),
       ),
       body: BlocConsumer<OcrCubit, OcrState>(
         listener: (context, state) {
@@ -66,22 +66,12 @@ class _OcrMainPageState extends State<OcrMainPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 헤더 섹션
           _buildHeaderSection(context, locale),
-
           const SizedBox(height: 24),
-
-          // 메인 액션 섹션
           _buildMainActionSection(context, locale),
-
           const SizedBox(height: 24),
-
-          // 설명 섹션
           _buildDescriptionSection(context, locale),
-
           const SizedBox(height: 24),
-
-          // 팁 섹션
           _buildTipsSection(context, locale),
         ],
       ),
@@ -89,15 +79,16 @@ class _OcrMainPageState extends State<OcrMainPage> {
   }
 
   Widget _buildHeaderSection(BuildContext context, AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         children: [
-          Icon(Icons.receipt_long, size: 64, color: AppColors.primary),
+          Icon(Icons.receipt_long, size: 64, color: colorScheme.primary),
           const SizedBox(height: 16),
           Text(
             AppStrings.getOcrMainTitle(locale),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
             ),
             textAlign: TextAlign.center,
           ),
@@ -107,12 +98,12 @@ class _OcrMainPageState extends State<OcrMainPage> {
   }
 
   Widget _buildMainActionSection(BuildContext context, AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         children: [
           AppButton(
             onPressed: () {
-              print('🎯 OCR 분석 요청됨 - 이미지 선택 시작');
               _selectImageFromGallery(context);
             },
             text: AppStrings.getSelectReceiptFromGallery(locale),
@@ -122,7 +113,8 @@ class _OcrMainPageState extends State<OcrMainPage> {
           const SizedBox(height: 16),
           Text(
             AppStrings.getOcrCompleted(locale),
-            style: AppTextStyles.caption.copyWith(color: AppColors.textLight),
+            style: AppTextStyles.caption
+                .copyWith(color: colorScheme.onSurface.withValues(alpha: 0.4)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -131,18 +123,19 @@ class _OcrMainPageState extends State<OcrMainPage> {
   }
 
   Widget _buildDescriptionSection(BuildContext context, AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+              Icon(Icons.info_outline, color: colorScheme.primary, size: 20),
               const SizedBox(width: 8),
               Text(
                 AppStrings.getParsingSummary(locale),
                 style: AppTextStyles.cardTitle.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -182,6 +175,7 @@ class _OcrMainPageState extends State<OcrMainPage> {
     String description,
     AppLocale locale,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
@@ -189,10 +183,10 @@ class _OcrMainPageState extends State<OcrMainPage> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 20),
+            child: Icon(icon, color: colorScheme.primary, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -202,14 +196,14 @@ class _OcrMainPageState extends State<OcrMainPage> {
                 Text(
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   description,
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textLight,
+                    color: colorScheme.onSurface.withOpacity(0.4),
                   ),
                 ),
               ],
@@ -221,6 +215,7 @@ class _OcrMainPageState extends State<OcrMainPage> {
   }
 
   Widget _buildTipsSection(BuildContext context, AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,14 +224,14 @@ class _OcrMainPageState extends State<OcrMainPage> {
             children: [
               Icon(
                 Icons.lightbulb_outline,
-                color: AppColors.secondary,
+                color: colorScheme.secondary,
                 size: 20,
               ),
               const SizedBox(width: 8),
               Text(
                 AppStrings.getTips(locale),
                 style: AppTextStyles.cardTitle.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -272,6 +267,7 @@ class _OcrMainPageState extends State<OcrMainPage> {
     String text,
     AppLocale locale,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
@@ -282,7 +278,7 @@ class _OcrMainPageState extends State<OcrMainPage> {
             child: Text(
               text,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textLight,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -292,18 +288,19 @@ class _OcrMainPageState extends State<OcrMainPage> {
   }
 
   Widget _buildProcessingView(BuildContext context, AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
           ),
           const SizedBox(height: 24),
           Text(
             AppStrings.getOcrProcessing(locale),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
             ),
             textAlign: TextAlign.center,
           ),
@@ -311,7 +308,7 @@ class _OcrMainPageState extends State<OcrMainPage> {
           Text(
             AppStrings.getPleaseWait(locale),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textLight,
+              color: colorScheme.onSurface.withOpacity(0.4),
             ),
             textAlign: TextAlign.center,
           ),
@@ -321,10 +318,7 @@ class _OcrMainPageState extends State<OcrMainPage> {
   }
 
   Future<void> _selectImageFromGallery(BuildContext context) async {
-    print('📱 _selectImageFromGallery 시작');
     try {
-      // image_picker가 자동으로 iOS 네이티브 권한 팝업을 표시함
-      print('🖼️ 이미지 선택 다이얼로그 표시 중...');
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1920,
@@ -333,23 +327,14 @@ class _OcrMainPageState extends State<OcrMainPage> {
       );
 
       if (image != null) {
-        print('✅ 이미지 선택됨: ${image.path}');
         final imageFile = File(image.path);
-        // OCR 처리 시작
-        print('🚀 OCR 처리 시작');
         if (!mounted) return;
         context.read<OcrCubit>().processImage(imageFile);
-      } else {
-        print('❌ 이미지 선택 취소됨');
       }
     } catch (e) {
-      print('❌ 이미지 선택 중 오류: $e');
-
-      // 권한 거부 관련 에러 처리
       if (e.toString().contains('permission') ||
           e.toString().contains('권한') ||
           e.toString().contains('not authorized')) {
-        print('🔐 권한 관련 오류 - 권한 다이얼로그 표시');
         if (!mounted) return;
         await _showPermissionDialog(context);
       } else {
@@ -366,12 +351,16 @@ class _OcrMainPageState extends State<OcrMainPage> {
 
   Future<void> _showPermissionDialog(BuildContext context) async {
     final locale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final shouldOpenSettings = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.getGalleryPermissionRequired(locale)),
-        content: Text(AppStrings.getPermissionDenied(locale)),
+        backgroundColor: colorScheme.surface,
+        title: Text(AppStrings.getGalleryPermissionRequired(locale),
+            style: TextStyle(color: colorScheme.onSurface)),
+        content: Text(AppStrings.getPermissionDenied(locale),
+            style: TextStyle(color: colorScheme.onSurface)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -395,11 +384,14 @@ class _OcrMainPageState extends State<OcrMainPage> {
     String message,
     AppLocale locale,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.getOcrFailed(locale)),
-        content: Text(message),
+        backgroundColor: colorScheme.surface,
+        title: Text(AppStrings.getOcrFailed(locale),
+            style: TextStyle(color: colorScheme.onSurface)),
+        content: Text(message, style: TextStyle(color: colorScheme.onSurface)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -417,9 +409,9 @@ class _OcrMainPageState extends State<OcrMainPage> {
   ) {
     RouterHelper.goToOcrResult(
       context,
-      ingredients: [], // Empty list since we're not parsing
+      ingredients: [],
       imagePath: imageFile.path,
-      ocrResult: ocrResult, // OCR 결과 전달
+      ocrResult: ocrResult,
     );
   }
 }

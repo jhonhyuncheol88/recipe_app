@@ -15,6 +15,7 @@ import 'service/recipe_cost_service.dart';
 import 'service/sauce_expiry_service.dart';
 import 'service/admob_forward.dart';
 import 'service/initial_data_service.dart';
+import 'service/in_app_review_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'service/notification_service.dart';
 import 'controller/ocr/ocr_cubit.dart';
@@ -22,6 +23,7 @@ import 'controller/encyclopedia/encyclopedia_cubit.dart';
 import 'service/encyclopedia_service.dart';
 import 'package:logger/logger.dart';
 import 'dart:io' show Platform;
+import 'controller/setting/theme_cubit.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -62,6 +64,7 @@ void main() async {
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     await _postAppInitialization(logger);
     await _initializeInitialData(logger);
+    await _checkAndRequestReview(logger);
   });
 }
 
@@ -105,7 +108,7 @@ Future<void> _postAppInitialization(Logger logger) async {
     try {
       await AdMobForwardService.instance.initialize();
       logger.i('✅ AdMob 초기화 완료 (광고 미리 로드 시작됨)');
-      
+
       // 앱 실행 시 광고 표시 (10분 쿨다운)
       await _showAppOpenAdWithCooldown(logger);
     } catch (e) {
@@ -121,23 +124,25 @@ Future<void> _showAppOpenAdWithCooldown(Logger logger) async {
   try {
     final prefs = await SharedPreferences.getInstance();
     const String lastAdShownKey = 'last_ad_shown_time_millis';
-    
+
     // 마지막으로 광고를 본 시간 가져오기
     final lastAdShownTimeMillis = prefs.getInt(lastAdShownKey) ?? 0;
     final currentTimeMillis = DateTime.now().millisecondsSinceEpoch;
     const tenMinutesInMillis = 10 * 60 * 1000; // 10분
-    
+
     if (currentTimeMillis - lastAdShownTimeMillis < tenMinutesInMillis) {
-      final remainingMinutes = (tenMinutesInMillis - (currentTimeMillis - lastAdShownTimeMillis)) ~/ (60 * 1000);
+      final remainingMinutes =
+          (tenMinutesInMillis - (currentTimeMillis - lastAdShownTimeMillis)) ~/
+              (60 * 1000);
       logger.d('ℹ️ 광고 쿨다운 중. ${remainingMinutes + 1}분 후 다시 표시 가능.');
       return;
     }
 
     logger.i('📺 앱 오픈 광고 표시 시도');
-    
+
     // 광고가 로드될 때까지 잠시 대기
     await Future.delayed(const Duration(seconds: 2));
-    
+
     try {
       final shown = await AdMobForwardService.instance.showInterstitialAd();
       if (shown) {
@@ -198,6 +203,58 @@ Future<void> _initializeInitialData(Logger logger) async {
     }
   } catch (e) {
     logger.e('⚠️ 초기 데이터 초기화 실패(무시): $e');
+    // 실패해도 앱 실행은 계속
+  }
+}
+
+/// 인앱 리뷰 요청 체크 및 실행
+Future<void> _checkAndRequestReview(Logger logger) async {
+  try {
+    logger.i('⭐ 인앱 리뷰 체크 시작');
+
+    // 온보딩이 완료되지 않았으면 리뷰 요청하지 않음
+    final prefs = await SharedPreferences.getInstance();
+    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+    
+    if (!onboardingCompleted) {
+      logger.i('⏳ 온보딩 완료 대기 중 - 리뷰 요청 스킵');
+      return;
+    }
+
+    // 앱 실행 횟수 추적
+    const String appLaunchCountKey = 'app_launch_count';
+    final launchCount = prefs.getInt(appLaunchCountKey) ?? 0;
+    await prefs.setInt(appLaunchCountKey, launchCount + 1);
+
+    // 최소 3회 이상 실행된 경우에만 리뷰 요청
+    if (launchCount < 2) {
+      logger.i('ℹ️ 앱 실행 횟수 부족 (${launchCount + 1}회) - 리뷰 요청 스킵');
+      return;
+    }
+
+    // 리뷰 서비스 인스턴스 가져오기
+    final reviewService = InAppReviewService();
+
+    // 리뷰 요청 가능 여부 확인
+    final canRequest = await reviewService.canRequestReview();
+    
+    if (canRequest) {
+      // 앱이 완전히 로드된 후 3초 대기 (사용자 경험 개선)
+      await Future.delayed(const Duration(seconds: 3));
+      
+      logger.i('⭐ 인앱 리뷰 요청 시작');
+      final requested = await reviewService.requestReview();
+      
+      if (requested) {
+        logger.i('✅ 인앱 리뷰 요청 완료');
+      } else {
+        logger.d('ℹ️ 인앱 리뷰 요청 실패 또는 스킵');
+      }
+    } else {
+      logger.d('ℹ️ 인앱 리뷰 요청 조건 미충족');
+    }
+  } catch (e) {
+    logger.e('⚠️ 인앱 리뷰 체크 중 오류 (무시): $e');
     // 실패해도 앱 실행은 계속
   }
 }
@@ -316,6 +373,9 @@ class MyApp extends StatelessWidget {
         // OCR 관련 Cubit
         BlocProvider<OcrCubit>(create: (context) => OcrCubit()),
 
+        // 테마 관련 BLoC
+        BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
+
         // 백과사전 관련 Cubit
         BlocProvider<EncyclopediaCubit>(
           create: (context) => EncyclopediaCubit(
@@ -329,22 +389,29 @@ class MyApp extends StatelessWidget {
               AuthBloc(authRepository: AuthRepository())..add(AppStarted()),
         ),
       ],
-      child: BlocBuilder<LocaleCubit, AppLocale>(
-        builder: (context, currentLocale) {
-          return PermissionRequester(
-            child: MaterialApp.router(
-              title: AppStrings.getAppTitle(currentLocale),
-              theme: AppTheme.lightTheme,
-              routerConfig: AppRouter.router,
-              debugShowCheckedModeBanner: false,
-              locale: currentLocale.locale,
-              supportedLocales: AppLocale.supportedLocales,
-              localizationsDelegates: const [
-                GlobalMaterialLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-              ],
-            ),
+      child: BlocBuilder<ThemeCubit, ThemeState>(
+        builder: (context, themeState) {
+          return BlocBuilder<LocaleCubit, AppLocale>(
+            builder: (context, currentLocale) {
+              return PermissionRequester(
+                child: MaterialApp.router(
+                  title: AppStrings.getAppTitle(currentLocale),
+                  theme: AppTheme.getTheme(
+                    themeState.themeType,
+                    themeState.brightness,
+                  ),
+                  routerConfig: AppRouter.router,
+                  debugShowCheckedModeBanner: false,
+                  locale: currentLocale.locale,
+                  supportedLocales: AppLocale.supportedLocales,
+                  localizationsDelegates: const [
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                  ],
+                ),
+              );
+            },
           );
         },
       ),

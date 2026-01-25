@@ -2,21 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../theme/app_colors.dart';
+import 'package:recipe_app/router/router_helper.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/number_formatter.dart';
 
-import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/ingredient/ingredient_state.dart';
 import '../../../controller/recipe/recipe_cubit.dart' as rc;
 
-import '../../../model/recipe.dart';
-import '../../../model/ingredient.dart';
 import '../../../model/index.dart';
-import '../../../model/tag.dart';
-import '../../../model/unit.dart';
+
 import 'package:uuid/uuid.dart';
 import '../../widget/index.dart';
 import '../../../data/index.dart';
@@ -88,7 +84,6 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
   }
 
   void _loadTags() {
-    // TODO: TagCubit에서 태그 목록 가져오기
     final locale = context.read<LocaleCubit>().state;
     setState(() {
       _availableTags = DefaultTags.recipeTagsFor(locale);
@@ -96,7 +91,6 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
   }
 
   void _loadUnits() {
-    // TODO: UnitRepository에서 단위 목록 가져오기
     setState(() {
       _availableUnits = [
         Unit(id: '개', name: '개', type: 'count', conversionFactor: 1.0),
@@ -111,7 +105,6 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
   }
 
   void _loadIngredients() async {
-    // IngredientCubit에서 실제 재료 목록 가져오기
     final currentState = context.read<IngredientCubit>().state;
     if (currentState is IngredientLoaded) {
       final available = currentState.ingredients;
@@ -127,7 +120,6 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
           try {
             ing = available.firstWhere((i) => i.id == ri.ingredientId);
           } catch (_) {
-            // 폴백: 저장소에서 직접 조회하여 실제 이름을 사용
             final repo = context.read<IngredientRepository>();
             final fetched = await repo.getIngredientById(ri.ingredientId);
             ing = fetched ??
@@ -155,111 +147,23 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
         _ingredientCosts = costs;
         _calculateTotalCost();
       });
-    } else {
-      // 임시 데이터 (Cubit이 로드되지 않은 경우)
-      setState(() {
-        _availableIngredients = [
-          Ingredient(
-            id: '1',
-            name: '밀가루',
-            purchasePrice: 5000.0,
-            purchaseAmount: 1000.0,
-            purchaseUnitId: 'g',
-            expiryDate: DateTime.now().add(const Duration(days: 30)),
-            createdAt: DateTime.now(),
-            tagIds: ['baking'],
-          ),
-          Ingredient(
-            id: '2',
-            name: '버터',
-            purchasePrice: 8000.0,
-            purchaseAmount: 500.0,
-            purchaseUnitId: 'g',
-            expiryDate: DateTime.now().add(const Duration(days: 14)),
-            createdAt: DateTime.now(),
-            tagIds: ['dairy'],
-          ),
-          Ingredient(
-            id: '3',
-            name: '계란',
-            purchasePrice: 3000.0,
-            purchaseAmount: 30.0,
-            purchaseUnitId: '개',
-            expiryDate: DateTime.now().add(const Duration(days: 7)),
-            createdAt: DateTime.now(),
-            tagIds: ['dairy'],
-          ),
-          Ingredient(
-            id: '4',
-            name: '우유',
-            purchasePrice: 2500.0,
-            purchaseAmount: 1000.0,
-            purchaseUnitId: 'ml',
-            expiryDate: DateTime.now().add(const Duration(days: 5)),
-            createdAt: DateTime.now(),
-            tagIds: ['dairy'],
-          ),
-          Ingredient(
-            id: '5',
-            name: '설탕',
-            purchasePrice: 2000.0,
-            purchaseAmount: 1000.0,
-            purchaseUnitId: 'g',
-            expiryDate: DateTime.now().add(const Duration(days: 365)),
-            createdAt: DateTime.now(),
-            tagIds: ['baking'],
-          ),
-        ];
-      });
-      // 임시 데이터에서도 레시피 재료 복원 시도
-      if (_selectedIngredients.isEmpty &&
-          widget.recipe.ingredients.isNotEmpty) {
-        final List<Ingredient> selected = [];
-        for (final ri in widget.recipe.ingredients) {
-          Ingredient ing;
-          try {
-            ing = _availableIngredients.firstWhere(
-              (i) => i.id == ri.ingredientId,
-            );
-          } catch (_) {
-            ing = Ingredient(
-              id: ri.ingredientId,
-              name: '재료(${ri.ingredientId})',
-              purchasePrice: 0,
-              purchaseAmount: 1,
-              purchaseUnitId: ri.unitId,
-              createdAt: DateTime.now(),
-            );
-          }
-          selected.add(ing);
-          _ingredientAmounts[ri.ingredientId] = ri.amount;
-          _ingredientUnitIds[ri.ingredientId] = ri.unitId;
-          _ingredientCosts[ri.ingredientId] = ri.calculatedCost;
-        }
-        _selectedIngredients = selected;
-        _calculateTotalCost();
-      }
     }
   }
 
-  // 1g당(또는 개당) 재료 가격 계산
   double _calculateUnitPrice(Ingredient ingredient) {
     return ingredient.purchasePrice / ingredient.purchaseAmount;
   }
 
-  // 재료별 원가 계산 (기본 단위로 환산하여 계산)
   void _calculateIngredientCost(String ingredientId, double amount) {
     final ingredient = _selectedIngredients.firstWhere(
       (i) => i.id == ingredientId,
     );
-    // 구매 기준 → 기본단위(g/ml/개) 단가
     final purchaseBase = uc.UnitConverter.toBaseUnit(
       ingredient.purchaseAmount,
       ingredient.purchaseUnitId,
     );
     final baseUnitPrice =
         purchaseBase > 0 ? ingredient.purchasePrice / purchaseBase : 0.0;
-    // 입력 단위 사용량을 기본단위로 환산
     final selectedUnitId =
         _ingredientUnitIds[ingredientId] ?? ingredient.purchaseUnitId;
     final baseUsage = uc.UnitConverter.toBaseUnit(amount, selectedUnitId);
@@ -273,47 +177,31 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
     });
   }
 
-  // 총 원가 계산
   void _calculateTotalCost() {
     _totalCost = _ingredientCosts.values.fold(0.0, (sum, cost) => sum + cost);
   }
 
-  // 숫자 포맷팅 (천 단위 콤마)
-  String _formatNumber(double number) {
-    return number.toInt().toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match match) => '${match[1]},',
-        );
-  }
-
-  // 텍스트에서 숫자 추출 (천 단위 구분자 제거)
   int _extractNumberFromText(String text) {
     final cleanText = text.replaceAll(',', '');
     return int.tryParse(cleanText) ?? 0;
   }
 
   @override
-  void dispose() {
-    _nameController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(
           AppStrings.getEditRecipe(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textSecondary),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
         ),
         actions: [
           TextButton(
@@ -321,12 +209,13 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                 ? null
                 : () {
                     _saveRecipe();
-                    // _saveRecipe 내부에서 성공 시 뒤로가기 처리됨
                   },
             child: Text(
               AppStrings.getSave(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
-                color: _isLoading ? AppColors.textLight : AppColors.accent,
+                color: _isLoading
+                    ? colorScheme.onSurface.withValues(alpha: 0.3)
+                    : colorScheme.primary,
               ),
             ),
           ),
@@ -361,6 +250,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
 
   Widget _buildBasicInfoSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,7 +258,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
           Text(
             AppStrings.getBasicInfo(currentLocale),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -398,6 +288,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
 
   Widget _buildIngredientsSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,7 +298,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
               Text(
                 AppStrings.getRecipeIngredients(currentLocale),
                 style: AppTextStyles.headline4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -428,13 +319,13 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                   Icon(
                     Icons.inventory_2_outlined,
                     size: 48,
-                    color: AppColors.textLight,
+                    color: colorScheme.onSurface.withValues(alpha: 0.1),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     AppStrings.getNoIngredientsSelected(currentLocale),
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -450,7 +341,6 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                 final ingredient = _selectedIngredients[index];
                 final unitPrice = _calculateUnitPrice(ingredient);
                 final amount = _ingredientAmounts[ingredient.id] ?? 0.0;
-                // 저장된 레시피의 단위를 우선 사용하고, 없으면 구매단위 사용
                 final recipeEntry = widget.recipe.ingredients.firstWhere(
                   (ri) => ri.ingredientId == ingredient.id,
                   orElse: () => RecipeIngredient(
@@ -469,224 +359,231 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                 }
                 final cost = _ingredientCosts[ingredient.id] ?? 0.0;
 
-                return Hero(
-                  tag: 'ingredient_${ingredient.id}',
-                  child: Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: AppColors.accent.withOpacity(
-                                  0.1,
+                return Card(
+                  color: colorScheme.surface,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: colorScheme.outlineVariant),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor:
+                                  colorScheme.primary.withValues(alpha: 0.1),
+                              child: Text(
+                                ingredient.name.isNotEmpty
+                                    ? ingredient.name[0]
+                                    : 'I',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                child: Text(
-                                  ingredient.name[0],
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: AppColors.accent,
-                                    fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    ingredient.name,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: colorScheme.onSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      ingredient.name,
-                                      style: AppTextStyles.bodyMedium.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  Text(
+                                    '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)}',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: colorScheme.onSurface
+                                          .withValues(alpha: 0.6),
                                     ),
-                                    Text(
-                                      '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)}',
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () => _editIngredient(ingredient),
-                                icon: const Icon(
-                                  Icons.edit,
-                                  color: AppColors.accent,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () => _removeIngredient(ingredient),
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: AppColors.error,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              DropdownButton<String>(
-                                value: unitId,
-                                items: [
-                                  if (uc.UnitConverter.getUnitType(
-                                        ingredient.purchaseUnitId,
-                                      ) ==
-                                      uc.UnitType.weight)
-                                    const DropdownMenuItem(
-                                      value: 'g',
-                                      child: Text('g'),
-                                    ),
-                                  if (uc.UnitConverter.getUnitType(
-                                        ingredient.purchaseUnitId,
-                                      ) ==
-                                      uc.UnitType.weight)
-                                    const DropdownMenuItem(
-                                      value: 'kg',
-                                      child: Text('kg'),
-                                    ),
-                                  if (uc.UnitConverter.getUnitType(
-                                        ingredient.purchaseUnitId,
-                                      ) ==
-                                      uc.UnitType.volume)
-                                    const DropdownMenuItem(
-                                      value: 'ml',
-                                      child: Text('ml'),
-                                    ),
-                                  if (uc.UnitConverter.getUnitType(
-                                        ingredient.purchaseUnitId,
-                                      ) ==
-                                      uc.UnitType.volume)
-                                    const DropdownMenuItem(
-                                      value: 'L',
-                                      child: Text('L'),
-                                    ),
-                                  if (uc.UnitConverter.getUnitType(
-                                        ingredient.purchaseUnitId,
-                                      ) ==
-                                      uc.UnitType.count)
-                                    const DropdownMenuItem(
-                                      value: '개',
-                                      child: Text('개'),
-                                    ),
+                                  ),
                                 ],
-                                onChanged: (v) async {
-                                  if (v == null) return;
-                                  final prevUnitId =
-                                      _ingredientUnitIds[ingredient.id] ??
-                                          ingredient.purchaseUnitId;
-                                  final currentAmount =
-                                      _ingredientAmounts[ingredient.id] ?? 0.0;
-                                  final baseUsage = uc.UnitConverter.toBaseUnit(
-                                    currentAmount,
-                                    prevUnitId,
-                                  );
-                                  final converted =
-                                      uc.UnitConverter.fromBaseUnit(
-                                          baseUsage, v);
-                                  setState(() {
-                                    _ingredientUnitIds[ingredient.id] = v;
-                                    _ingredientAmounts[ingredient.id] =
-                                        converted;
-                                  });
-                                  _calculateIngredientCost(
-                                    ingredient.id,
-                                    converted,
-                                  );
-                                  await context
-                                      .read<rc.RecipeCubit>()
-                                      .updateRecipeIngredientUnitAndAmount(
-                                        recipeId: widget.recipe.id,
-                                        ingredientId: ingredient.id,
-                                        newUnitId: v,
-                                        newAmount: converted,
-                                      );
-                                },
                               ),
-                              const SizedBox(height: 8),
-                              AppInputField(
-                                label: AppStrings.getInputAmount(currentLocale),
-                                hint: '0',
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  ThousandsSeparatorInputFormatter(),
-                                ],
-                                initialValue: amount > 0
-                                    ? NumberFormatter.formatNumber(
-                                        amount.toInt(),
+                            ),
+                            IconButton(
+                              onPressed: () => _editIngredient(ingredient),
+                              icon: Icon(
+                                Icons.edit,
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => _removeIngredient(ingredient),
+                              icon: Icon(
+                                Icons.delete,
+                                color: colorScheme.error,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DropdownButton<String>(
+                              value: unitId,
+                              dropdownColor: colorScheme.surface,
+                              style: TextStyle(color: colorScheme.onSurface),
+                              items: [
+                                if (uc.UnitConverter.getUnitType(
+                                      ingredient.purchaseUnitId,
+                                    ) ==
+                                    uc.UnitType.weight)
+                                  const DropdownMenuItem(
+                                    value: 'g',
+                                    child: Text('g'),
+                                  ),
+                                if (uc.UnitConverter.getUnitType(
+                                      ingredient.purchaseUnitId,
+                                    ) ==
+                                    uc.UnitType.weight)
+                                  const DropdownMenuItem(
+                                    value: 'kg',
+                                    child: Text('kg'),
+                                  ),
+                                if (uc.UnitConverter.getUnitType(
+                                      ingredient.purchaseUnitId,
+                                    ) ==
+                                    uc.UnitType.volume)
+                                  const DropdownMenuItem(
+                                    value: 'ml',
+                                    child: Text('ml'),
+                                  ),
+                                if (uc.UnitConverter.getUnitType(
+                                      ingredient.purchaseUnitId,
+                                    ) ==
+                                    uc.UnitType.volume)
+                                  const DropdownMenuItem(
+                                    value: 'L',
+                                    child: Text('L'),
+                                  ),
+                                if (uc.UnitConverter.getUnitType(
+                                      ingredient.purchaseUnitId,
+                                    ) ==
+                                    uc.UnitType.count)
+                                  const DropdownMenuItem(
+                                    value: '개',
+                                    child: Text('개'),
+                                  ),
+                              ],
+                              onChanged: (v) async {
+                                if (v == null) return;
+                                final prevUnitId =
+                                    _ingredientUnitIds[ingredient.id] ??
+                                        ingredient.purchaseUnitId;
+                                final currentAmount =
+                                    _ingredientAmounts[ingredient.id] ?? 0.0;
+                                final baseUsage = uc.UnitConverter.toBaseUnit(
+                                  currentAmount,
+                                  prevUnitId,
+                                );
+                                final converted =
+                                    uc.UnitConverter.fromBaseUnit(baseUsage, v);
+                                setState(() {
+                                  _ingredientUnitIds[ingredient.id] = v;
+                                  _ingredientAmounts[ingredient.id] = converted;
+                                });
+                                _calculateIngredientCost(
+                                  ingredient.id,
+                                  converted,
+                                );
+                                await context
+                                    .read<rc.RecipeCubit>()
+                                    .updateRecipeIngredientUnitAndAmount(
+                                      recipeId: widget.recipe.id,
+                                      ingredientId: ingredient.id,
+                                      newUnitId: v,
+                                      newAmount: converted,
+                                    );
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            AppInputField(
+                              label: AppStrings.getInputAmount(currentLocale),
+                              hint: '0',
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                ThousandsSeparatorInputFormatter(),
+                              ],
+                              initialValue: amount > 0
+                                  ? NumberFormatter.formatNumber(
+                                      amount.toInt(),
+                                      context.watch<NumberFormatCubit>().state,
+                                    )
+                                  : null,
+                              onChanged: (value) async {
+                                final newAmount = _extractNumberFromText(
+                                  value,
+                                ).toDouble();
+                                _calculateIngredientCost(
+                                  ingredient.id,
+                                  newAmount,
+                                );
+                                final unitForIngredient =
+                                    _ingredientUnitIds[ingredient.id] ??
+                                        ingredient.purchaseUnitId;
+                                await context
+                                    .read<rc.RecipeCubit>()
+                                    .updateRecipeIngredientUnitAndAmount(
+                                      recipeId: widget.recipe.id,
+                                      ingredientId: ingredient.id,
+                                      newUnitId: unitForIngredient,
+                                      newAmount: newAmount,
+                                    );
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: colorScheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: colorScheme.outlineVariant),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    AppStrings.getCost(currentLocale),
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: colorScheme.onSurface
+                                          .withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      NumberFormatter.formatCurrency(
+                                        cost,
+                                        currentLocale,
                                         context
                                             .watch<NumberFormatCubit>()
                                             .state,
-                                      )
-                                    : null,
-                                onChanged: (value) async {
-                                  final newAmount = _extractNumberFromText(
-                                    value,
-                                  ).toDouble();
-                                  _calculateIngredientCost(
-                                    ingredient.id,
-                                    newAmount,
-                                  );
-                                  final unitForIngredient =
-                                      _ingredientUnitIds[ingredient.id] ??
-                                          ingredient.purchaseUnitId;
-                                  await context
-                                      .read<rc.RecipeCubit>()
-                                      .updateRecipeIngredientUnitAndAmount(
-                                        recipeId: widget.recipe.id,
-                                        ingredientId: ingredient.id,
-                                        newUnitId: unitForIngredient,
-                                        newAmount: newAmount,
-                                      );
-                                },
-                              ),
-                              const SizedBox(height: 12),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryLight,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: AppColors.divider),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      AppStrings.getCost(currentLocale),
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: AppColors.textSecondary,
+                                      ),
+                                      style: AppTextStyles.headline4.copyWith(
+                                        color: colorScheme.primary,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
-                                    FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        NumberFormatter.formatCurrency(
-                                          cost,
-                                          currentLocale,
-                                          context
-                                              .watch<NumberFormatCubit>()
-                                              .state,
-                                        ),
-                                        style: AppTextStyles
-                                            .costEmphasized, // 크고 굵은 오렌지색
-                                        textAlign: TextAlign.left,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -699,6 +596,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
 
   Widget _buildSaucesSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -708,7 +606,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
               Text(
                 AppStrings.getSauces(currentLocale),
                 style: AppTextStyles.headline4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -731,7 +629,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                   child: Text(
                     AppStrings.getNoRecipeSauces(currentLocale),
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -756,7 +654,12 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                     ),
                   );
                   return Card(
+                    color: colorScheme.surface,
                     margin: const EdgeInsets.only(bottom: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: colorScheme.outlineVariant),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -771,6 +674,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                     Text(
                                       display.sauceName,
                                       style: AppTextStyles.bodyMedium.copyWith(
+                                        color: colorScheme.onSurface,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -796,7 +700,8 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                           '1$unitId당 ${NumberFormatter.formatCurrency(unitCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
                                           style:
                                               AppTextStyles.bodySmall.copyWith(
-                                            color: AppColors.textSecondary,
+                                            color: colorScheme.onSurface
+                                                .withValues(alpha: 0.6),
                                           ),
                                         );
                                       },
@@ -805,101 +710,39 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(
+                                onPressed: () =>
+                                    _removeSauceEntry(entry.sauceId),
+                                icon: Icon(
                                   Icons.delete,
-                                  color: AppColors.error,
+                                  color: colorScheme.error,
                                 ),
-                                onPressed: () => _removeSauce(entry),
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
                           Row(
                             children: [
-                              // 단위 선택 + 수량 입력
-                              DropdownButton<String>(
-                                value: entry.unitId,
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'g',
-                                    child: Text('g'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'ml',
-                                    child: Text('ml'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '개',
-                                    child: Text('개'),
-                                  ),
-                                ],
-                                onChanged: (v) async {
-                                  if (v == null) return;
-                                  // 현 입력값을 기존 단위에서 기본단위로 환산 후 새 단위로 변환
-                                  final typed = controller.text;
-                                  final clean = typed.replaceAll(
-                                    RegExp(r'[^\\d]'),
-                                    '',
-                                  );
-                                  final currentAmount =
-                                      (double.tryParse(clean) ?? entry.amount)
-                                          .toDouble();
-                                  final baseUsage = uc.UnitConverter.toBaseUnit(
-                                    currentAmount,
-                                    entry.unitId,
-                                  );
-                                  final converted =
-                                      uc.UnitConverter.fromBaseUnit(
-                                          baseUsage, v);
-                                  controller.text =
-                                      NumberFormatter.formatNumber(
-                                    converted.toInt(),
-                                    context.watch<NumberFormatCubit>().state,
-                                  );
-                                  await context
-                                      .read<rc.RecipeCubit>()
-                                      .updateRecipeSauceUnit(
-                                        recipeId: widget.recipe.id,
-                                        sauceId: entry.sauceId,
-                                        newUnitId: v,
-                                      );
-                                  await context
-                                      .read<rc.RecipeCubit>()
-                                      .updateRecipeSauceAmount(
-                                        recipeId: widget.recipe.id,
-                                        sauceId: entry.sauceId,
-                                        newAmount: converted,
-                                      );
-                                  if (mounted) setState(() {});
-                                },
-                              ),
-                              const SizedBox(width: 8),
                               Expanded(
                                 child: AppInputField(
-                                  label: AppStrings.getInputAmount(
-                                    currentLocale,
-                                  ),
+                                  label:
+                                      '${AppStrings.getInputAmount(currentLocale)} (${entry.unitId})',
                                   hint: '0',
+                                  controller: controller,
                                   keyboardType: TextInputType.number,
                                   inputFormatters: [
                                     ThousandsSeparatorInputFormatter(),
                                   ],
-                                  controller: controller,
-                                  onChanged: (value) async {
-                                    final clean = value.replaceAll(
-                                      RegExp(r'[^\d]'),
-                                      '',
-                                    );
-                                    final newAmount =
-                                        double.tryParse(clean) ?? 0;
+                                  onChanged: (val) async {
+                                    final amt =
+                                        _extractNumberFromText(val).toDouble();
                                     await context
                                         .read<rc.RecipeCubit>()
                                         .updateRecipeSauceAmount(
                                           recipeId: widget.recipe.id,
                                           sauceId: entry.sauceId,
-                                          newAmount: newAmount,
+                                          newAmount: amt,
                                         );
-                                    if (mounted) setState(() {});
+                                    setState(() {});
                                   },
                                 ),
                               ),
@@ -908,62 +751,42 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                                 child: Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primaryLight,
+                                    color: colorScheme.surfaceContainerHighest
+                                        .withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: AppColors.divider,
-                                    ),
+                                        color: colorScheme.outlineVariant),
                                   ),
-                                  child: FutureBuilder<double>(
-                                    future: context
-                                        .read<SauceCostService>()
-                                        .getSauceUnitCost(entry.sauceId),
-                                    builder: (context, snapUnit) {
-                                      final unitCost = snapUnit.data ?? 0.0;
-                                      final typed = controller.text;
-                                      final clean = typed.replaceAll(
-                                        RegExp(r'[^\d]'),
-                                        '',
-                                      );
-                                      final amount = (double.tryParse(clean) ??
-                                              entry.amount)
-                                          .toDouble();
-                                      final baseUsage =
-                                          uc.UnitConverter.toBaseUnit(
-                                        amount,
-                                        entry.unitId,
-                                      );
-                                      final cost = unitCost * baseUsage;
-                                      return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            AppStrings.getCost(currentLocale),
-                                            style: AppTextStyles.bodySmall
-                                                .copyWith(
-                                              color: AppColors.textSecondary,
-                                            ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AppStrings.getCost(currentLocale),
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: colorScheme.onSurface
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                      ),
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          NumberFormatter.formatCurrency(
+                                            display.cost,
+                                            currentLocale,
+                                            context
+                                                .watch<NumberFormatCubit>()
+                                                .state,
                                           ),
-                                          FittedBox(
-                                            fit: BoxFit.scaleDown,
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              NumberFormatter.formatCurrency(
-                                                cost,
-                                                currentLocale,
-                                                context
-                                                    .watch<NumberFormatCubit>()
-                                                    .state,
-                                              ),
-                                              style: AppTextStyles
-                                                  .costEmphasized, // 크고 굵은 오렌지색
-                                              textAlign: TextAlign.left,
-                                            ),
+                                          style:
+                                              AppTextStyles.bodyMedium.copyWith(
+                                            color: colorScheme.primary,
+                                            fontWeight: FontWeight.w600,
                                           ),
-                                        ],
-                                      );
-                                    },
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -983,41 +806,45 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
   }
 
   Widget _buildTagsSection() {
-    final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppStrings.getRecipeTags(currentLocale),
+            AppStrings.getRecipeTags(context.watch<LocaleCubit>().state),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _availableTags.map((tag) {
-              final isSelected = _selectedTagId == tag.id;
-              return FilterChip(
-                label: Text(tag.name),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    _selectedTagId = selected ? tag.id : '';
-                  });
-                },
-                selectedColor: AppColors.accent.withOpacity(0.2),
-                checkmarkColor: AppColors.accent,
-                labelStyle: AppTextStyles.bodySmall.copyWith(
-                  color:
-                      isSelected ? AppColors.accent : AppColors.textSecondary,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
-              );
-            }).toList(),
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _availableTags.map((tag) {
+                final isSelected = _selectedTagId == tag.id;
+                return FilterChip(
+                  label: Text(tag.name),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      _selectedTagId = selected ? tag.id : '';
+                    });
+                  },
+                  selectedColor: colorScheme.primary.withValues(alpha: 0.2),
+                  checkmarkColor: colorScheme.primary,
+                  labelStyle: AppTextStyles.bodySmall.copyWith(
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withValues(alpha: 0.6),
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ],
       ),
@@ -1025,9 +852,8 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
   }
 
   Widget _buildCostSection() {
-    final currentLocale = context
-        .watch<LocaleCubit>()
-        .state; // ignore: use_build_context_synchronously
+    final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1035,40 +861,51 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
           Text(
             AppStrings.getCostInfo(currentLocale),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 16),
-          FutureBuilder<List<_RecipeSauceDisplay>>(
-            future: _fetchRecipeSauceDisplays(),
+          FutureBuilder<double>(
+            future: _computeTotalSauceCost(),
             builder: (context, snapshot) {
-              final sauceItems = snapshot.data ?? const <_RecipeSauceDisplay>[];
-              final sauceSum = sauceItems.fold(0.0, (s, e) => s + e.cost);
+              final sauceSum = snapshot.data ?? 0.0;
               final ingredientSum = _totalCost;
               final total = ingredientSum + sauceSum;
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withOpacity(0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.accent.withOpacity(0.3)),
+                  border: Border.all(
+                      color: colorScheme.primary.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(AppStrings.getIngredientCostLabel(currentLocale)),
-                        Text(
-                          NumberFormatter.formatCurrency(
-                            ingredientSum,
-                            currentLocale,
-                            context.watch<NumberFormatCubit>().state,
+                        Flexible(
+                          child: Text(
+                            AppStrings.getIngredientCostLabel(currentLocale),
+                            style: TextStyle(color: colorScheme.onSurface),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w600,
+                        ),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            NumberFormatter.formatCurrency(
+                              ingredientSum,
+                              currentLocale,
+                              context.watch<NumberFormatCubit>().state,
+                            ),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
@@ -1077,35 +914,54 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(AppStrings.getSauceCostLabel(currentLocale)),
-                        Text(
-                          NumberFormatter.formatCurrency(
-                            sauceSum,
-                            currentLocale,
-                            context.watch<NumberFormatCubit>().state,
+                        Flexible(
+                          child: Text(
+                            AppStrings.getSauceCostLabel(currentLocale),
+                            style: TextStyle(color: colorScheme.onSurface),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w600,
+                        ),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            NumberFormatter.formatCurrency(
+                              sauceSum,
+                              currentLocale,
+                              context.watch<NumberFormatCubit>().state,
+                            ),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const Divider(height: 20),
+                    Divider(height: 20, color: colorScheme.outlineVariant),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          AppStrings.getTotalCost(currentLocale),
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w700,
+                        Flexible(
+                          child: Text(
+                            AppStrings.getTotalCost(currentLocale),
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Text(
-                          NumberFormatter.formatCurrency(total, currentLocale,
-                              context.watch<NumberFormatCubit>().state),
-                          style: AppTextStyles.headline4.copyWith(
-                            color: AppColors.accent,
-                            fontWeight: FontWeight.w700,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            NumberFormatter.formatCurrency(total, currentLocale,
+                                context.watch<NumberFormatCubit>().state),
+                            style: AppTextStyles.headline4.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ],
@@ -1144,180 +1000,101 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
     return unit.name;
   }
 
-  void _addIngredient() {
-    final currentLocale = context.read<LocaleCubit>().state;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppStrings.getSelectIngredient(currentLocale)),
-        content: Container(
-          width: double.maxFinite,
-          constraints: const BoxConstraints(maxHeight: 400),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _availableIngredients.length,
-                  itemBuilder: (context, index) {
-                    final ingredient = _availableIngredients[index];
-                    final isSelected = _selectedIngredients.any(
-                      (i) => i.id == ingredient.id,
-                    );
-                    final unitPrice = _calculateUnitPrice(ingredient);
-
-                    return Hero(
-                      tag: 'ingredient_${ingredient.id}',
-                      child: Material(
-                        color: Colors.transparent,
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: AppColors.accent.withOpacity(0.1),
-                            child: Text(
-                              ingredient.name[0],
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.accent,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            ingredient.name,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${NumberFormatter.formatCurrency(ingredient.purchasePrice, currentLocale, context.watch<NumberFormatCubit>().state)} / ${_formatNumber(ingredient.purchaseAmount)} ${_getUnitName(ingredient.purchaseUnitId)}',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              Text(
-                                '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)}',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.accent,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          trailing: isSelected
-                              ? const Icon(
-                                  Icons.check_circle,
-                                  color: AppColors.success,
-                                )
-                              : const Icon(
-                                  Icons.add_circle_outline,
-                                  color: AppColors.textSecondary,
-                                ),
-                          onTap: () {
-                            if (isSelected) {
-                              setState(() {
-                                _selectedIngredients.removeWhere(
-                                  (i) => i.id == ingredient.id,
-                                );
-                                _ingredientAmounts.remove(ingredient.id);
-                                _ingredientCosts.remove(ingredient.id);
-                                _calculateTotalCost();
-                              });
-                            } else {
-                              setState(() {
-                                _selectedIngredients.add(ingredient);
-                              });
-                            }
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppStrings.getCancel(currentLocale)),
-          ),
-        ],
-      ),
+  void _addIngredient() async {
+    final result = await RouterHelper.goToRecipeIngredientSelect(
+      context,
+      currentSelectedIngredients: _selectedIngredients,
+      currentIngredientAmounts: _ingredientAmounts,
+      currentIngredientUnitIds: _ingredientUnitIds,
     );
+
+    if (result != null && mounted) {
+      final selectedIngredients = result['ingredients'] as List<Ingredient>?;
+      final amounts = result['amounts'] as Map<String, double>?;
+      final unitIds = result['unitIds'] as Map<String, String>?;
+
+      if (selectedIngredients != null) {
+        setState(() {
+          _selectedIngredients = selectedIngredients;
+          if (amounts != null) {
+            for (var key in amounts.keys) {
+              _ingredientAmounts[key] = amounts[key]!;
+            }
+          }
+          if (unitIds != null) {
+            for (var key in unitIds.keys) {
+              _ingredientUnitIds[key] = unitIds[key]!;
+            }
+          }
+
+          for (final ing in _selectedIngredients) {
+            final amount = _ingredientAmounts[ing.id] ?? 0.0;
+            if (amount > 0) {
+              final selectedUnitId =
+                  _ingredientUnitIds[ing.id] ?? ing.purchaseUnitId;
+              final basePurchase = uc.UnitConverter.toBaseUnit(
+                ing.purchaseAmount,
+                ing.purchaseUnitId,
+              );
+              final unitPrice = ing.purchasePrice / basePurchase;
+              final baseUsage = uc.UnitConverter.toBaseUnit(
+                amount,
+                selectedUnitId,
+              );
+              _ingredientCosts[ing.id] = unitPrice * baseUsage;
+            }
+          }
+          _calculateTotalCost();
+        });
+      }
+    }
   }
 
-  Future<List<_RecipeSauceDisplay>> _fetchRecipeSauceDisplays() async {
-    final recipeRepo = context.read<RecipeRepository>();
-    final sauceRepo = context.read<SauceRepository>();
-    final sauceCostService = context.read<SauceCostService>();
-    final entries = await recipeRepo.getRecipeSauces(widget.recipe.id);
-    final sauces = await sauceRepo.getAllSauces();
-    final map = {for (final s in sauces) s.id: s};
-    final List<_RecipeSauceDisplay> results = [];
-    for (final e in entries) {
-      final unitCost = await sauceCostService.getSauceUnitCost(e.sauceId);
-      final baseUsage = uc.UnitConverter.toBaseUnit(e.amount, e.unitId);
-      final cost = unitCost * baseUsage;
-      results.add(
-        _RecipeSauceDisplay(
-          entry: e,
-          sauceName: map[e.sauceId]?.name ?? '소스(${e.sauceId})',
-          cost: cost,
-        ),
-      );
-    }
-    return results;
+  void _editIngredient(Ingredient ingredient) {
+    // 인라인 편집 기능을 제공하므로 별도 다이얼로그는 불필요할 수 있음
+  }
+
+  void _removeIngredient(Ingredient ingredient) {
+    setState(() {
+      _selectedIngredients.removeWhere((i) => i.id == ingredient.id);
+      _ingredientAmounts.remove(ingredient.id);
+      _ingredientUnitIds.remove(ingredient.id);
+      _ingredientCosts.remove(ingredient.id);
+      _calculateTotalCost();
+    });
   }
 
   void _addSauce() async {
     final currentLocale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     final sauceRepo = context.read<SauceRepository>();
     final sauces = await sauceRepo.getAllSauces();
     Sauce? selected;
-    final amountController = TextEditingController(text: '0');
     String unitId = 'g';
-
-    // ignore: use_build_context_synchronously
+    final amountController = TextEditingController(text: '0');
+    if (!mounted) return;
     await showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setStateDialog) => AlertDialog(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: colorScheme.surface,
           title: Text(AppStrings.getSelectSauce(currentLocale)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButton<Sauce>(
-                value: selected,
-                hint: Text(AppStrings.getSelectSauce(currentLocale)),
-                items: sauces
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s.name)))
-                    .toList(),
-                onChanged: (v) => setStateDialog(() => selected = v),
-              ),
-              const SizedBox(height: 8),
-              AppInputField(
-                label: AppStrings.getQuantity(currentLocale),
-                hint: '0',
-                controller: amountController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [ThousandsSeparatorInputFormatter()],
-              ),
-              const SizedBox(height: 8),
-              DropdownButton<String>(
-                value: unitId,
-                items: const [
-                  DropdownMenuItem(value: 'g', child: Text('g')),
-                  DropdownMenuItem(value: 'ml', child: Text('ml')),
-                  DropdownMenuItem(value: '개', child: Text('개')),
-                ],
-                onChanged: (v) => setStateDialog(() => unitId = v ?? 'g'),
-              ),
-            ],
+          content: Container(
+            width: double.maxFinite,
+            height: 300,
+            child: ListView.builder(
+              itemCount: sauces.length,
+              itemBuilder: (context, index) {
+                final s = sauces[index];
+                final isSelected = selected?.id == s.id;
+                return ListTile(
+                  selected: isSelected,
+                  title: Text(s.name,
+                      style: TextStyle(color: colorScheme.onSurface)),
+                  onTap: () => setDialogState(() => selected = s),
+                );
+              },
+            ),
           ),
           actions: [
             TextButton(
@@ -1326,22 +1103,16 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
             ),
             TextButton(
               onPressed: () async {
-                final s = selected;
-                final clean = amountController.text.replaceAll(
-                  RegExp(r'[^\d]'),
-                  '',
-                );
-                final amount = double.tryParse(clean) ?? 0;
-                if (s != null && amount > 0) {
+                if (selected != null) {
                   await context.read<rc.RecipeCubit>().addSauceToRecipe(
                         recipeId: widget.recipe.id,
-                        sauceId: s.id,
-                        amount: amount,
-                        unitId: unitId,
+                        sauceId: selected!.id,
+                        amount: 0,
+                        unitId: 'g',
                       );
-                  if (mounted) setState(() {});
+                  if (mounted) Navigator.pop(context);
+                  setState(() {});
                 }
-                if (context.mounted) Navigator.pop(context);
               },
               child: Text(AppStrings.getAdd(currentLocale)),
             ),
@@ -1351,215 +1122,93 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
     );
   }
 
-  // 인라인 입력으로 대체됨
-
-  void _removeSauce(RecipeSauce entry) async {
+  void _removeSauceEntry(String sauceId) async {
     await context.read<rc.RecipeCubit>().removeSauceFromRecipe(
           recipeId: widget.recipe.id,
-          sauceId: entry.sauceId,
+          sauceId: sauceId,
         );
-    if (mounted) setState(() {});
+    setState(() {});
   }
 
-  void _editIngredient(Ingredient ingredient) {
-    final currentLocale = context.read<LocaleCubit>().state;
-    final currentAmount = _ingredientAmounts[ingredient.id] ?? 0.0;
-    final unitPrice = _calculateUnitPrice(ingredient);
+  Future<double> _computeTotalSauceCost() async {
+    final displays = await _fetchRecipeSauceDisplays();
+    double sum = 0;
+    for (final d in displays) sum += d.cost;
+    return sum;
+  }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppStrings.getEditIngredientAmount(currentLocale)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Hero(
-              tag: 'ingredient_${ingredient.id}',
-              child: Material(
-                color: Colors.transparent,
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: AppColors.accent.withOpacity(0.1),
-                      child: Text(
-                        ingredient.name[0],
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            ingredient.name,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)}',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.accent,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            AppInputField(
-              label:
-                  '${AppStrings.getInputAmount(currentLocale)} (${_getUnitName(ingredient.purchaseUnitId)})',
-              hint: '0',
-              keyboardType: TextInputType.number,
-              inputFormatters: [ThousandsSeparatorInputFormatter()],
-              initialValue: currentAmount > 0
-                  ? NumberFormatter.formatNumber(
-                      currentAmount.toInt(),
-                      context.watch<NumberFormatCubit>().state,
-                    )
-                  : null,
-              onChanged: (value) {
-                final newAmount = _extractNumberFromText(value).toDouble();
-                _calculateIngredientCost(ingredient.id, newAmount);
-              },
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.divider),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppStrings.getCalculatedCost(currentLocale),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    NumberFormatter.formatCurrency(
-                      _ingredientCosts[ingredient.id] ?? 0.0,
-                      currentLocale,
-                      context.watch<NumberFormatCubit>().state,
-                    ),
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.accent,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+  Future<List<_RecipeSauceDisplay>> _fetchRecipeSauceDisplays() async {
+    final sauceRepo = context.read<SauceRepository>();
+    final sauceCostService = context.read<SauceCostService>();
+    final currentRecipe = await context
+        .read<rc.RecipeCubit>()
+        .recipeRepo
+        .getRecipeById(widget.recipe.id);
+    if (currentRecipe == null) return [];
+    final list = <_RecipeSauceDisplay>[];
+    for (final rs in currentRecipe.sauces) {
+      final s = await sauceRepo.getSauceById(rs.sauceId);
+      final unitCost = await sauceCostService.getSauceUnitCost(rs.sauceId);
+      final baseUsage = uc.UnitConverter.toBaseUnit(rs.amount, rs.unitId);
+      list.add(
+        _RecipeSauceDisplay(
+          entry: rs,
+          sauceName: s?.name ?? '소스(${rs.sauceId})',
+          cost: unitCost * baseUsage,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppStrings.getCancel(currentLocale)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(AppStrings.getSave(currentLocale)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _removeIngredient(Ingredient ingredient) {
-    setState(() {
-      _selectedIngredients.removeWhere((i) => i.id == ingredient.id);
-      _ingredientAmounts.remove(ingredient.id);
-      _ingredientCosts.remove(ingredient.id);
-      _calculateTotalCost();
-    });
+      );
+    }
+    return list;
   }
 
   void _saveRecipe() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
     final currentLocale = context.read<LocaleCubit>().state;
-    if (_selectedIngredients.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppStrings.getRecipeIngredientsRequired(currentLocale)),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
+    final colorScheme = Theme.of(context).colorScheme;
+    if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
-
+    setState(() => _isLoading = true);
     try {
-      // 선택된 재료들을 RecipeIngredient로 변환
-      final recipeIngredients = <RecipeIngredient>[];
-      for (final ingredient in _selectedIngredients) {
-        final amount = _ingredientAmounts[ingredient.id] ?? 0.0;
-        if (amount > 0) {
-          recipeIngredients.add(
-            RecipeIngredient(
-              id: const Uuid().v4(),
-              recipeId: widget.recipe.id,
-              ingredientId: ingredient.id,
-              amount: amount,
-              unitId: _ingredientUnitIds[ingredient.id] ??
-                  ingredient.purchaseUnitId,
-              calculatedCost: _ingredientCosts[ingredient.id] ?? 0.0,
-            ),
-          );
-        }
+      final currentRecipe = await context
+          .read<rc.RecipeCubit>()
+          .recipeRepo
+          .getRecipeById(widget.recipe.id);
+      if (currentRecipe == null) return;
+
+      final updatedIngredients = <RecipeIngredient>[];
+      for (final ing in _selectedIngredients) {
+        final amount = _ingredientAmounts[ing.id] ?? 0.0;
+        final unitId = _ingredientUnitIds[ing.id] ?? ing.purchaseUnitId;
+        updatedIngredients.add(RecipeIngredient(
+          id: const Uuid().v4(),
+          recipeId: widget.recipe.id,
+          ingredientId: ing.id,
+          amount: amount,
+          unitId: unitId,
+          calculatedCost: _ingredientCosts[ing.id] ?? 0.0,
+        ));
       }
 
-      final updatedRecipe = widget.recipe.copyWith(
+      final updatedRecipe = currentRecipe.copyWith(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
-        outputAmount: widget.recipe.outputAmount, // 기존 값 유지
-        outputUnit: widget.recipe.outputUnit, // 기존 값 유지
-        ingredients: recipeIngredients, // 재료 정보 포함
         tagIds: _selectedTagId.isNotEmpty ? [_selectedTagId] : [],
-        updatedAt: DateTime.now(),
+        ingredients: updatedIngredients,
       );
 
-      await context.read<RecipeCubit>().updateRecipe(updatedRecipe);
-
-      // 레시피 수정 성공 시 뒤로가기
-      if (mounted) {
-        context.pop();
-      }
+      await context.read<rc.RecipeCubit>().updateRecipe(updatedRecipe);
+      if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppStrings.getRecipeUpdateError(currentLocale)),
-            backgroundColor: AppColors.error,
+            content: Text(
+                AppStrings.getRecipeUpdateError(currentLocale, e.toString())),
+            backgroundColor: colorScheme.error,
           ),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 }

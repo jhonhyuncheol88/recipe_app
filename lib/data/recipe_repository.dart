@@ -42,6 +42,15 @@ class RecipeRepository {
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
       }
+
+      // 레시피 소스들 추가
+      for (final sauce in recipe.sauces) {
+        await txn.insert(
+          'recipe_sauces',
+          sauce.toJson(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
     });
   }
 
@@ -54,7 +63,8 @@ class RecipeRepository {
     for (final recipeMap in recipeMaps) {
       final recipe = Recipe.fromJson(recipeMap);
       final ingredients = await _getRecipeIngredients(recipe.id);
-      recipes.add(recipe.copyWith(ingredients: ingredients));
+      final sauces = await getRecipeSauces(recipe.id);
+      recipes.add(recipe.copyWith(ingredients: ingredients, sauces: sauces));
     }
 
     return recipes;
@@ -72,7 +82,8 @@ class RecipeRepository {
     if (maps.isNotEmpty) {
       final recipe = Recipe.fromJson(maps.first);
       final ingredients = await _getRecipeIngredients(id);
-      return recipe.copyWith(ingredients: ingredients);
+      final sauces = await getRecipeSauces(id);
+      return recipe.copyWith(ingredients: ingredients, sauces: sauces);
     }
     return null;
   }
@@ -90,7 +101,8 @@ class RecipeRepository {
     for (final recipeMap in maps) {
       final recipe = Recipe.fromJson(recipeMap);
       final ingredients = await _getRecipeIngredients(recipe.id);
-      recipes.add(recipe.copyWith(ingredients: ingredients));
+      final sauces = await getRecipeSauces(recipe.id);
+      recipes.add(recipe.copyWith(ingredients: ingredients, sauces: sauces));
     }
 
     return recipes;
@@ -160,6 +172,22 @@ class RecipeRepository {
         await txn.insert(
           'recipe_ingredients',
           ingredient.toJson(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+
+      // 기존 소스들 삭제
+      await txn.delete(
+        'recipe_sauces',
+        where: 'recipe_id = ?',
+        whereArgs: [recipe.id],
+      );
+
+      // 새로운 소스들 추가
+      for (final sauce in recipe.sauces) {
+        await txn.insert(
+          'recipe_sauces',
+          sauce.toJson(),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
       }

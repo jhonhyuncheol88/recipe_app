@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
@@ -94,7 +93,7 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
             // amount와 unit이 있으면 사용, 없으면 기본값
             final amount = ingredientData['amount'];
             final unit = ingredientData['unit'] ?? '개';
-            
+
             // amount를 숫자로 변환 시도
             double? parsedAmount;
             if (amount != null) {
@@ -104,7 +103,7 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
                 parsedAmount = double.tryParse(amount);
               }
             }
-            
+
             _ingredients.add({
               'name': ingredientData['name'] ?? '', // 이름
               'purchasePrice': 0.0, // 사용자가 입력할 수 있도록 0으로 설정
@@ -162,9 +161,8 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
         'name': '',
         'purchasePrice': 0.0,
         'purchaseAmount': 0.0,
-        'purchaseUnitId': _availableUnits.isNotEmpty
-            ? _availableUnits.first.id
-            : '',
+        'purchaseUnitId':
+            _availableUnits.isNotEmpty ? _availableUnits.first.id : '',
         'expiryDate': null,
         'tagIds': <String>[],
       });
@@ -239,10 +237,11 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
   }
 
   void _showValidationError(String fieldName, int index) {
+    final colorScheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${index + 1}번째 재료의 $fieldName을(를) 확인해주세요'),
-        backgroundColor: AppColors.error,
+        backgroundColor: colorScheme.error,
       ),
     );
   }
@@ -263,8 +262,8 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
           await cubit.addIngredient(
             name: ingredientData['name'].toString().trim(),
             purchasePrice: (ingredientData['purchasePrice'] as num).toDouble(),
-            purchaseAmount: (ingredientData['purchaseAmount'] as num)
-                .toDouble(),
+            purchaseAmount:
+                (ingredientData['purchaseAmount'] as num).toDouble(),
             purchaseUnitId: ingredientData['purchaseUnitId'].toString(),
             expiryDate: ingredientData['expiryDate'] as DateTime?,
             tagIds: List<String>.from(
@@ -283,10 +282,11 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
           context.pop();
           context.pop();
         } else {
+          final colorScheme = Theme.of(context).colorScheme;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppStrings.getBulkSaveFailed(currentLocale)),
-              backgroundColor: AppColors.error,
+              backgroundColor: colorScheme.error,
             ),
           );
         }
@@ -294,10 +294,11 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
     } catch (e) {
       if (mounted) {
         final currentLocale = context.read<LocaleCubit>().state;
+        final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppStrings.getBulkSaveFailed(currentLocale)),
-            backgroundColor: AppColors.error,
+            backgroundColor: colorScheme.error,
           ),
         );
       }
@@ -313,18 +314,19 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(
           AppStrings.getBulkAddIngredients(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
         ),
         actions: [
           if (!_isLoading)
@@ -334,8 +336,8 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
                 AppStrings.getBulkSave(currentLocale),
                 style: AppTextStyles.buttonMedium.copyWith(
                   color: _ingredients.isNotEmpty
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ),
@@ -346,11 +348,13 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
           : Column(
               children: [
                 _buildHeader(currentLocale),
+                const SizedBox(height: 8),
                 Expanded(
                   child: _ingredients.isEmpty
                       ? _buildEmptyState(currentLocale)
                       : _buildIngredientList(currentLocale),
                 ),
+                const SizedBox(height: 8),
                 _buildBottomActions(currentLocale),
               ],
             ),
@@ -358,18 +362,19 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
   }
 
   Widget _buildHeader(AppLocale currentLocale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             AppStrings.getBulkAddIngredientsDescription(currentLocale),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -379,7 +384,7 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
                   _ingredients.length,
                 ),
                 style: AppTextStyles.headline4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -388,7 +393,7 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
                   IconButton(
                     onPressed: _addIngredient,
                     icon: const Icon(Icons.add_circle_outline),
-                    color: AppColors.primary,
+                    color: colorScheme.primary,
                     tooltip: AppStrings.getAddIngredientToList(currentLocale),
                   ),
                   if (_ingredients.isNotEmpty)
@@ -396,7 +401,7 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
                       onPressed: () =>
                           setState(() => _showPreview = !_showPreview),
                       icon: Icon(_showPreview ? Icons.list : Icons.preview),
-                      color: AppColors.primary,
+                      color: colorScheme.primary,
                       tooltip: AppStrings.getPreview(currentLocale),
                     ),
                 ],
@@ -409,6 +414,7 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
   }
 
   Widget _buildEmptyState(AppLocale currentLocale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -416,20 +422,20 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
           Icon(
             Icons.inventory_2_outlined,
             size: 64,
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
           const SizedBox(height: 16),
           Text(
             AppStrings.getNoIngredients(currentLocale),
             style: AppTextStyles.headline4.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             AppStrings.getNoIngredientsDescription(currentLocale),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
             textAlign: TextAlign.center,
           ),
@@ -446,7 +452,7 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
 
   Widget _buildIngredientList(AppLocale currentLocale) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: _ingredients.length,
       itemBuilder: (context, index) {
         final ingredient = _ingredients[index];
@@ -460,11 +466,13 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
     Map<String, dynamic> ingredient,
     int index,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 20),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -473,19 +481,19 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
                 Text(
                   '${index + 1}번째 재료',
                   style: AppTextStyles.headline4.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 IconButton(
                   onPressed: () => _removeIngredient(index),
                   icon: const Icon(Icons.remove_circle_outline),
-                  color: AppColors.error,
+                  color: colorScheme.error,
                   tooltip: AppStrings.getRemoveIngredient(currentLocale),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             _buildIngredientForm(currentLocale, ingredient, index),
           ],
         ),
@@ -507,150 +515,193 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
           hint: AppStrings.getEnterIngredientNameHint(currentLocale),
           onChanged: (value) => _updateIngredient(index, 'name', value),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
 
-        // 가격과 수량을 한 줄에
-        Row(
+        // 가격
+        CurrencyInputField(
+          controller: _priceControllers[index],
+          label: AppStrings.getPurchasePrice(currentLocale),
+          hint: AppStrings.getEnterPriceHint(currentLocale),
+          locale: currentLocale,
+          onChanged: (value) {
+            final price = _parseFormattedPrice(value.toString());
+            if (price != null) {
+              _updateIngredient(index, 'purchasePrice', price);
+            }
+          },
+        ),
+        const SizedBox(height: 20),
+
+        // 단위와 수량을 한 줄에
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: CurrencyInputField(
-                controller: _priceControllers[index],
-                label: AppStrings.getPurchasePrice(currentLocale),
-                hint: AppStrings.getEnterPriceHint(currentLocale),
-                locale: currentLocale,
-                onChanged: (value) {
-                  final price = _parseFormattedPrice(value.toString());
-                  if (price != null) {
-                    _updateIngredient(index, 'purchasePrice', price);
-                  }
-                },
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: NumberInputField(
-                controller: _amountControllers[index],
-                label: AppStrings.getPurchaseAmount(currentLocale),
-                hint: AppStrings.getEnterAmountHint(currentLocale),
-                onChanged: (value) {
-                  final amount = _parseFormattedAmount(value.toString());
-                  if (amount != null) {
-                    _updateIngredient(index, 'purchaseAmount', amount);
-                  }
-                },
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppStrings.getUnit(currentLocale),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: ingredient['purchaseUnitId'].isNotEmpty
+                            ? ingredient['purchaseUnitId']
+                            : null,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                        items: _availableUnits.map((unit) {
+                          return DropdownMenuItem(
+                              value: unit.id, child: Text(unit.name));
+                        }).toList(),
+                        onChanged: (value) {
+                          _updateIngredient(
+                              index, 'purchaseUnitId', value ?? '');
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 3,
+                  child: NumberInputField(
+                    controller: _amountControllers[index],
+                    label: AppStrings.getPurchaseAmount(currentLocale),
+                    hint: AppStrings.getEnterAmountHint(currentLocale),
+                    locale: currentLocale,
+                    onChanged: (value) {
+                      final amount = _parseFormattedAmount(value.toString());
+                      if (amount != null) {
+                        _updateIngredient(index, 'purchaseAmount', amount);
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-        const SizedBox(height: 16),
-
-        // 단위 선택
-        DropdownButtonFormField<String>(
-          value: ingredient['purchaseUnitId'].isNotEmpty
-              ? ingredient['purchaseUnitId']
-              : null,
-          decoration: InputDecoration(
-            labelText: AppStrings.getUnit(currentLocale),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
-          items: _availableUnits.map((unit) {
-            return DropdownMenuItem(value: unit.id, child: Text(unit.name));
-          }).toList(),
-          onChanged: (value) {
-            _updateIngredient(index, 'purchaseUnitId', value ?? '');
-          },
-        ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
 
         // 유통기한
-        InkWell(
-          onTap: () => _selectExpiryDate(index),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.divider),
+        Builder(
+          builder: (context) {
+            final colorScheme = Theme.of(context).colorScheme;
+            return InkWell(
+              onTap: () => _selectExpiryDate(index),
               borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  color: AppColors.textSecondary,
-                  size: 20,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: colorScheme.outlineVariant),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    ingredient['expiryDate'] != null
-                        ? DateFormatter.formatDate(
-                            ingredient['expiryDate'],
-                            currentLocale,
-                          )
-                        : AppStrings.getSelectExpiryDate(currentLocale),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: ingredient['expiryDate'] != null
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      size: 20,
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        ingredient['expiryDate'] != null
+                            ? DateFormatter.formatDate(
+                                ingredient['expiryDate'],
+                                currentLocale,
+                              )
+                            : AppStrings.getSelectExpiryDate(currentLocale),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: ingredient['expiryDate'] != null
+                              ? colorScheme.onSurface
+                              : colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                    if (ingredient['expiryDate'] != null)
+                      IconButton(
+                        onPressed: () {
+                          _updateIngredient(index, 'expiryDate', null);
+                        },
+                        icon: const Icon(Icons.clear, size: 20),
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                  ],
                 ),
-                if (ingredient['expiryDate'] != null)
-                  IconButton(
-                    onPressed: () {
-                      _updateIngredient(index, 'expiryDate', null);
-                    },
-                    icon: const Icon(Icons.clear, size: 20),
-                    color: AppColors.textSecondary,
-                  ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // 태그 선택
-        Text(
-          '${AppStrings.getTags(currentLocale)} (하나만 선택)',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _availableTags.map((tag) {
-            final isSelected = ingredient['tagIds'].contains(tag.id);
-            return FilterChip(
-              label: Text(tag.name),
-              selected: isSelected,
-              onSelected: (selected) => _toggleTag(index, tag.id),
-              backgroundColor: AppColors.surface,
-              selectedColor: Color(
-                int.parse(tag.color.replaceAll('#', '0xFF')),
-              ),
-              labelStyle: AppTextStyles.bodySmall.copyWith(
-                color: isSelected ? Colors.white : AppColors.textSecondary,
               ),
             );
-          }).toList(),
+          },
+        ),
+        const SizedBox(height: 20),
+
+        // 태그 선택
+        Builder(
+          builder: (context) {
+            final colorScheme = Theme.of(context).colorScheme;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${AppStrings.getTags(currentLocale)} (하나만 선택)',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _availableTags.map((tag) {
+                    final isSelected = ingredient['tagIds'].contains(tag.id);
+                    return FilterChip(
+                      label: Text(tag.name),
+                      selected: isSelected,
+                      onSelected: (selected) => _toggleTag(index, tag.id),
+                      backgroundColor: colorScheme.surface,
+                      selectedColor: Color(
+                        int.parse(tag.color.replaceAll('#', '0xFF')),
+                      ),
+                      labelStyle: AppTextStyles.bodySmall.copyWith(
+                        color: isSelected
+                            ? Colors.white
+                            : colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
   }
 
   Widget _buildBottomActions(AppLocale currentLocale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.divider)),
+        color: colorScheme.surface,
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
       ),
       child: Row(
         children: [
@@ -680,21 +731,17 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
 
   void _selectExpiryDate(int index) async {
     final now = DateTime.now();
+    final colorScheme = Theme.of(context).colorScheme;
     final selectedDate = await showDatePicker(
       context: context,
-      initialDate:
-          (_ingredients[index]['expiryDate'] as DateTime?) ??
+      initialDate: (_ingredients[index]['expiryDate'] as DateTime?) ??
           now.add(const Duration(days: 7)),
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: AppColors.buttonText,
-              surface: AppColors.surface,
-            ),
+            colorScheme: colorScheme,
           ),
           child: child!,
         );

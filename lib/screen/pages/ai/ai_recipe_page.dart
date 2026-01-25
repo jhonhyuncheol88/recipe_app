@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
@@ -24,7 +23,6 @@ class _AiRecipePageState extends State<AiRecipePage> {
   @override
   void initState() {
     super.initState();
-    // 페이지 로드 시 AI 레시피 목록 가져오기
     context.read<RecipeCubit>().loadAiRecipes();
   }
 
@@ -36,20 +34,21 @@ class _AiRecipePageState extends State<AiRecipePage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return BlocBuilder<LocaleCubit, AppLocale>(
       builder: (context, currentLocale) {
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: colorScheme.surface,
           appBar: AppBar(
             title: Text(
               AppStrings.getAiRecipeManagement(currentLocale),
               style: AppTextStyles.headline3.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
               ),
             ),
-            backgroundColor: AppColors.surface,
+            backgroundColor: colorScheme.surface,
             elevation: 0,
-            actions: [],
+            iconTheme: IconThemeData(color: colorScheme.onSurface),
           ),
           body: Column(
             children: [
@@ -58,7 +57,9 @@ class _AiRecipePageState extends State<AiRecipePage> {
                 child: BlocBuilder<RecipeCubit, RecipeState>(
                   builder: (context, state) {
                     if (state is RecipeLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                      return Center(
+                          child: CircularProgressIndicator(
+                              color: colorScheme.primary));
                     }
 
                     if (state is AiRecipesEmpty) {
@@ -89,18 +90,20 @@ class _AiRecipePageState extends State<AiRecipePage> {
   }
 
   Widget _buildSearchAndFilter(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // 검색바
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
               hintText: AppStrings.getSearchAiRecipesHint(locale),
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: Icon(Icons.search,
+                  color: colorScheme.onSurface.withValues(alpha: 0.4)),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.clear),
+                icon: Icon(Icons.clear,
+                    color: colorScheme.onSurface.withValues(alpha: 0.4)),
                 onPressed: () {
                   _searchController.clear();
                   context.read<RecipeCubit>().loadAiRecipes();
@@ -108,13 +111,18 @@ class _AiRecipePageState extends State<AiRecipePage> {
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.divider),
+                borderSide: BorderSide(color: colorScheme.outlineVariant),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.outlineVariant),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.accent),
+                borderSide: BorderSide(color: colorScheme.primary),
               ),
             ),
+            style: TextStyle(color: colorScheme.onSurface),
             onSubmitted: (query) {
               if (query.isNotEmpty) {
                 context.read<RecipeCubit>().searchAiRecipes(query);
@@ -127,6 +135,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
   }
 
   Widget _buildEmptyState(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -136,13 +145,13 @@ class _AiRecipePageState extends State<AiRecipePage> {
             Icon(
               Icons.auto_awesome_outlined,
               size: 80,
-              color: AppColors.textSecondary,
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
             ),
             const SizedBox(height: 24),
             Text(
               AppStrings.getNoSavedAiRecipes(locale),
               style: AppTextStyles.headline4.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
@@ -151,7 +160,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
             Text(
               AppStrings.getNoSavedAiRecipesDescription(locale),
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               textAlign: TextAlign.center,
             ),
@@ -173,20 +182,20 @@ class _AiRecipePageState extends State<AiRecipePage> {
   }
 
   Widget _buildAiRecipeCard(AiRecipe aiRecipe, AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
-        // AI 레시피 상세 페이지로 이동
         context.push('/ai/recipe/detail', extra: {'aiRecipeId': aiRecipe.id});
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.divider, width: 1),
+          border: Border.all(color: colorScheme.outlineVariant, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadow.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+              color: colorScheme.shadow.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -195,12 +204,10 @@ class _AiRecipePageState extends State<AiRecipePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 헤더
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color:
-                    AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
@@ -215,7 +222,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
                         Text(
                           aiRecipe.recipeName,
                           style: AppTextStyles.headline4.copyWith(
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -224,8 +231,8 @@ class _AiRecipePageState extends State<AiRecipePage> {
                           Text(
                             aiRecipe.cuisineType!,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.accent,
-                              fontWeight: FontWeight.w600, // 굵기 증가로 가독성 향상
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -233,6 +240,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
                     ),
                   ),
                   PopupMenuButton<String>(
+                    color: colorScheme.surface,
                     onSelected: (value) =>
                         _handleMenuAction(value, aiRecipe, locale),
                     itemBuilder: (context) => [
@@ -240,9 +248,10 @@ class _AiRecipePageState extends State<AiRecipePage> {
                         value: 'convert',
                         child: Row(
                           children: [
-                            Icon(Icons.transform, color: AppColors.accent),
+                            Icon(Icons.transform, color: colorScheme.primary),
                             const SizedBox(width: 8),
-                            Text(AppStrings.getConvertToRecipe(locale)),
+                            Text(AppStrings.getConvertToRecipe(locale),
+                                style: TextStyle(color: colorScheme.onSurface)),
                           ],
                         ),
                       ),
@@ -250,22 +259,22 @@ class _AiRecipePageState extends State<AiRecipePage> {
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete, color: AppColors.error),
+                            Icon(Icons.delete, color: colorScheme.error),
                             const SizedBox(width: 8),
-                            Text(AppStrings.getDelete(locale)),
+                            Text(AppStrings.getDelete(locale),
+                                style: TextStyle(color: colorScheme.error)),
                           ],
                         ),
                       ),
                     ],
                     child: Icon(
                       Icons.more_vert,
-                      color: AppColors.textSecondary,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
               ),
             ),
-            // 내용
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -274,37 +283,34 @@ class _AiRecipePageState extends State<AiRecipePage> {
                   Text(
                     aiRecipe.description,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors
-                          .textPrimary, // textSecondary 대신 textPrimary로 변경하여 가독성 향상
+                      color: colorScheme.onSurface,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 16),
-                  // 정보 행
                   Row(
                     children: [
                       _buildInfoChip(
                         Icons.people,
                         '${aiRecipe.servings}${AppStrings.getPeople(locale)}',
-                        AppColors.info,
+                        colorScheme.secondary,
                       ),
                       const SizedBox(width: 8),
                       _buildInfoChip(
                         Icons.timer,
                         '${aiRecipe.totalTimeMinutes}${AppStrings.getMinutes(locale)}',
-                        AppColors.warning,
+                        colorScheme.primary,
                       ),
                       const SizedBox(width: 8),
                       _buildInfoChip(
                         Icons.trending_up,
                         aiRecipe.difficulty,
-                        AppColors.success,
+                        Colors.green,
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // 태그
                   if (aiRecipe.tags.isNotEmpty) ...[
                     Wrap(
                       spacing: 8,
@@ -316,21 +322,19 @@ class _AiRecipePageState extends State<AiRecipePage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.accent
-                                .withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+                            color: colorScheme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.accent
-                                  .withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+                              color: colorScheme.primary.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
                           child: Text(
                             tag,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.accent,
+                              color: colorScheme.primary,
                               fontSize: 12,
-                              fontWeight: FontWeight.w600, // 텍스트 굵게하여 가독성 향상
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         );
@@ -338,19 +342,18 @@ class _AiRecipePageState extends State<AiRecipePage> {
                     ),
                   ],
                   const SizedBox(height: 16),
-                  // 하단 정보
                   Row(
                     children: [
                       Icon(
                         Icons.schedule,
                         size: 16,
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurface.withValues(alpha: 0.4),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         _formatDate(aiRecipe.generatedAt, locale),
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
                       ),
                       const Spacer(),
@@ -361,21 +364,19 @@ class _AiRecipePageState extends State<AiRecipePage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.success
-                                .withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+                            color: Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.success
-                                  .withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+                              color: Colors.green.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
                           child: Text(
                             AppStrings.getConverted(locale),
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.success,
+                              color: Colors.green,
                               fontSize: 12,
-                              fontWeight: FontWeight.w600, // 텍스트 굵게하여 가독성 향상
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -394,10 +395,10 @@ class _AiRecipePageState extends State<AiRecipePage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: color.withAlpha(77), // withAlpha 사용 (약 30% 투명도)
+          color: color.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -411,7 +412,7 @@ class _AiRecipePageState extends State<AiRecipePage> {
             style: AppTextStyles.bodySmall.copyWith(
               color: color,
               fontSize: 12,
-              fontWeight: FontWeight.w600, // 텍스트 굵게하여 가독성 향상
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -420,18 +421,19 @@ class _AiRecipePageState extends State<AiRecipePage> {
   }
 
   Widget _buildErrorState(String message, AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 80, color: AppColors.error),
+            Icon(Icons.error_outline, size: 80, color: colorScheme.error),
             const SizedBox(height: 24),
             Text(
               message,
               style: AppTextStyles.headline4.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
@@ -440,11 +442,11 @@ class _AiRecipePageState extends State<AiRecipePage> {
               onPressed: () {
                 context.read<RecipeCubit>().loadAiRecipes();
               },
-              child: Text(AppStrings.getRetry(locale)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: AppColors.buttonText,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
               ),
+              child: Text(AppStrings.getRetry(locale)),
             ),
           ],
         ),
@@ -464,11 +466,15 @@ class _AiRecipePageState extends State<AiRecipePage> {
   }
 
   void _showConvertDialog(AiRecipe aiRecipe, AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.getConvertToRecipe(locale)),
-        content: Text(AppStrings.getConvertToRecipeDescription(locale)),
+        backgroundColor: colorScheme.surface,
+        title: Text(AppStrings.getConvertToRecipe(locale),
+            style: TextStyle(color: colorScheme.onSurface)),
+        content: Text(AppStrings.getConvertToRecipeDescription(locale),
+            style: TextStyle(color: colorScheme.onSurface)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -479,11 +485,11 @@ class _AiRecipePageState extends State<AiRecipePage> {
               Navigator.of(context).pop();
               context.read<RecipeCubit>().convertAiRecipeToRecipe(aiRecipe.id);
             },
-            child: Text(AppStrings.getConvertToRecipe(locale)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
-              foregroundColor: AppColors.buttonText,
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
             ),
+            child: Text(AppStrings.getConvertToRecipe(locale)),
           ),
         ],
       ),
@@ -491,11 +497,15 @@ class _AiRecipePageState extends State<AiRecipePage> {
   }
 
   void _showDeleteDialog(AiRecipe aiRecipe, AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.getDeleteAiRecipe(locale)),
-        content: Text(AppStrings.getDeleteAiRecipeConfirm(locale)),
+        backgroundColor: colorScheme.surface,
+        title: Text(AppStrings.getDeleteAiRecipe(locale),
+            style: TextStyle(color: colorScheme.onSurface)),
+        content: Text(AppStrings.getDeleteAiRecipeConfirm(locale),
+            style: TextStyle(color: colorScheme.onSurface)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -506,11 +516,11 @@ class _AiRecipePageState extends State<AiRecipePage> {
               Navigator.of(context).pop();
               context.read<RecipeCubit>().deleteAiRecipe(aiRecipe.id);
             },
-            child: Text(AppStrings.getDelete(locale)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: AppColors.buttonText,
+              backgroundColor: colorScheme.error,
+              foregroundColor: colorScheme.onPrimary,
             ),
+            child: Text(AppStrings.getDelete(locale)),
           ),
         ],
       ),

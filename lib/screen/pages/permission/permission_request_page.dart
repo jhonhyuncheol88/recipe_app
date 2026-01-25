@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../service/permission_service.dart';
 import '../../../util/app_strings.dart';
@@ -29,7 +28,6 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
   @override
   void initState() {
     super.initState();
-    // initState에서는 context를 사용할 수 없으므로 build에서 초기화
   }
 
   @override
@@ -70,16 +68,14 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
   @override
   Widget build(BuildContext context) {
     final locale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
-            // 상단 진행 바
             _buildProgressBar(locale),
-
-            // 권한 설명 페이지
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -95,8 +91,6 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
                 },
               ),
             ),
-
-            // 하단 버튼
             _buildBottomButtons(locale),
           ],
         ),
@@ -105,6 +99,7 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
   }
 
   Widget _buildProgressBar(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -116,13 +111,13 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
               Text(
                 AppStrings.getPermissionSetup(locale),
                 style: AppTextStyles.headline4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colorScheme.onSurface,
                 ),
               ),
               Text(
                 '${_currentPage + 1} / ${_permissions.length}',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
             ],
@@ -132,8 +127,8 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: (_currentPage + 1) / _permissions.length,
-              backgroundColor: AppColors.divider,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              backgroundColor: colorScheme.outlineVariant,
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
               minHeight: 6,
             ),
           ),
@@ -143,66 +138,57 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
   }
 
   Widget _buildPermissionPage(PermissionInfo info, AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         children: [
           const SizedBox(height: 40),
-
-          // 아이콘
           Container(
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: colorScheme.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               info.icon,
               size: 60,
-              color: AppColors.primary,
+              color: colorScheme.primary,
             ),
           ),
-
           const SizedBox(height: 32),
-
-          // 제목
           Text(
             info.titleGetter(locale),
             style: AppTextStyles.headline2.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
           ),
-
           const SizedBox(height: 16),
-
-          // 설명
           Text(
             info.descriptionGetter(locale),
             style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
+              color: colorScheme.onSurface.withOpacity(0.6),
               height: 1.5,
             ),
             textAlign: TextAlign.center,
           ),
-
           const SizedBox(height: 48),
-
-          // 혜택 목록
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.shadow,
+                  color: colorScheme.onSurface.withOpacity(0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
               ],
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,14 +197,14 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
                   children: [
                     Icon(
                       Icons.check_circle,
-                      color: AppColors.primary,
+                      color: colorScheme.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       AppStrings.getPermissionBenefitTitle(locale),
                       style: AppTextStyles.cardTitle.copyWith(
-                        color: AppColors.textPrimary,
+                        color: colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -233,7 +219,7 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
                             width: 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: AppColors.primary,
+                              color: colorScheme.primary,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -241,7 +227,7 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
                           Text(
                             benefitGetter(locale),
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
+                              color: colorScheme.onSurface.withOpacity(0.6),
                             ),
                           ),
                         ],
@@ -250,21 +236,18 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
               ],
             ),
           ),
-
           const SizedBox(height: 24),
-
-          // 안내 문구
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.secondary.withOpacity(0.1),
+              color: colorScheme.secondary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: AppColors.secondary,
+                  color: colorScheme.secondary,
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -272,7 +255,7 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
                   child: Text(
                     AppStrings.getChangeLaterInfo(locale),
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSecondary,
+                      color: colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),
                 ),
@@ -285,17 +268,19 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
   }
 
   Widget _buildBottomButtons(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: colorScheme.onSurface.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
         ],
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -312,7 +297,7 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
             child: Text(
               AppStrings.getSkipForNow(locale),
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textLight,
+                color: colorScheme.onSurface.withOpacity(0.4),
               ),
             ),
           ),
@@ -326,85 +311,51 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
     bool granted = false;
 
     try {
-      print('🎯 권한 요청 시작: ${currentPermission.permissionType}');
-
       switch (currentPermission.permissionType) {
         case PermissionType.notification:
           if (Platform.isIOS) {
-            // iOS에서는 NotificationService를 통해 iOS 네이티브 방식으로 요청
-            print('🔔 iOS 네이티브 알림 권한 요청 시작');
             granted = await _requestIOSNotificationPermission();
           } else {
-            // Android에서는 permission_handler 사용
             granted = await PermissionService.requestNotificationPermission();
           }
           break;
         case PermissionType.gallery:
-          // iOS에서는 image_picker가 자동으로 네이티브 권한 팝업 표시
-          // Android에서는 permission_handler 사용
-          print('📸 갤러리 권한 요청 시작');
           granted = await PermissionService.requestGalleryPermission();
           break;
       }
 
-      print('🎯 권한 요청 결과: $granted');
-
       if (granted) {
-        // 권한 허용됨
-        print('✅ 권한 허용됨 - 다음 페이지로 이동');
         _goToNextPage();
       } else {
-        // 권한 거부됨 - 다음 페이지로 이동할지 물어봄
-        print('❌ 권한 거부됨 - 거부 다이얼로그 표시');
         _showPermissionDeniedDialog();
       }
     } catch (e) {
-      // 에러 발생 시 다음 페이지로
-      print('⚠️ 권한 요청 중 에러 발생: $e');
       _goToNextPage();
     }
   }
 
-  /// iOS 네이티브 방식으로 알림 권한 요청
   Future<bool> _requestIOSNotificationPermission() async {
     try {
-      print('🔔 iOS 네이티브 알림 권한 요청 시작');
-
-      // flutter_local_notifications의 iOS 플랫폼 특정 구현을 통해 권한 요청
       final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
       final iosImplementation =
           flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>();
 
-      print('🔔 iOS 플랫폼 구현 얻기 완료');
-
-      // iOS 권한 직접 요청
       if (iosImplementation != null) {
-        print('🔔 iOS 권한 다이얼로그 표시');
         await iosImplementation.requestPermissions(
           alert: true,
           badge: true,
           sound: true,
         );
-        print('✅ iOS 권한 요청 완료');
-
-        // 잠시 대기
         await Future.delayed(const Duration(milliseconds: 500));
 
-        // 권한 상태 확인
         final status = await ph.Permission.notification.status;
-        print('🔔 iOS 알림 권한 상태: $status');
-
-        // provisional도 허용으로 처리
         final result = status.isGranted || status.isProvisional;
-        print(result ? '✅ iOS 알림 권한 허용됨' : '❌ iOS 알림 권한 거부됨');
         return result;
       } else {
-        print('❌ iOS 플랫폼 구현을 찾을 수 없음');
         return false;
       }
     } catch (e) {
-      print('❌ iOS 알림 권한 요청 실패: $e');
       return false;
     }
   }
@@ -425,11 +376,9 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
   }
 
   Future<void> _completePermissionSetup() async {
-    // 권한 요청 완료 상태 저장
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('permission_requested', true);
 
-    // 홈으로 이동
     if (mounted) {
       context.go('/');
     }
@@ -437,12 +386,16 @@ class _PermissionRequestPageState extends State<PermissionRequestPage> {
 
   void _showPermissionDeniedDialog() {
     final locale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.getPermissionDeniedTitle(locale)),
-        content: Text(AppStrings.getPermissionDeniedMessage(locale)),
+        backgroundColor: colorScheme.surface,
+        title: Text(AppStrings.getPermissionDeniedTitle(locale),
+            style: TextStyle(color: colorScheme.onSurface)),
+        content: Text(AppStrings.getPermissionDeniedMessage(locale),
+            style: TextStyle(color: colorScheme.onSurface)),
         actions: [
           TextButton(
             onPressed: () {

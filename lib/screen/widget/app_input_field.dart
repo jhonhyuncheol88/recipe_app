@@ -54,17 +54,24 @@ class AppInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.bodyMedium.copyWith(
-            fontWeight: FontWeight.w500,
-            color: enabled ? AppColors.textPrimary : AppColors.textLight,
+        if (label.isNotEmpty) ...[
+          Text(
+            label,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w500,
+              color: enabled
+                  ? colorScheme.onSurface
+                  : colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
+        ],
         TextFormField(
           controller: controller,
           initialValue: initialValue,
@@ -81,40 +88,47 @@ class AppInputField extends StatelessWidget {
           autofocus: autofocus,
           focusNode: focusNode,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: enabled ? AppColors.textPrimary : AppColors.textLight,
+            color: enabled
+                ? colorScheme.onSurface
+                : colorScheme.onSurface.withValues(alpha: 0.5),
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textLight,
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
             ),
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: enabled ? AppColors.surface : AppColors.dividerLight,
+            fillColor: enabled
+                ? (isDark
+                    ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
+                    : colorScheme.surface)
+                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.divider),
+              borderSide: BorderSide(color: colorScheme.outlineVariant),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.divider),
+              borderSide: BorderSide(color: colorScheme.outlineVariant),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.accent, width: 2),
+              borderSide: BorderSide(color: colorScheme.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error),
+              borderSide: BorderSide(color: colorScheme.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
+              borderSide: BorderSide(color: colorScheme.error, width: 2),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.divider),
+              borderSide: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -155,10 +169,10 @@ class NumberInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // controller가 있으면 그대로 사용, 없으면 포맷팅된 초기값으로 새로 생성
-    final effectiveController =
-        controller ??
+    final effectiveController = controller ??
         TextEditingController(
-          text: initialValue != null ? _formatNumber(initialValue!, context) : '',
+          text:
+              initialValue != null ? _formatNumber(initialValue!, context) : '',
         );
 
     // controller가 있고 초기값이 있으면 포맷팅
@@ -190,14 +204,17 @@ class NumberInputField extends StatelessWidget {
         FilteringTextInputFormatter.allow(RegExp(r'[\d,]')),
         _NumberInputFormatter(context.watch<NumberFormatCubit>().state),
       ],
-      prefixIcon: const Icon(Icons.scale, color: AppColors.textSecondary),
+      prefixIcon: Icon(Icons.scale,
+          color:
+              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
     );
   }
 
   // 숫자 포맷팅 (천 단위 구분자, 정수만)
   String _formatNumber(double number, BuildContext context) {
     final asInt = number.round();
-    return NumberFormatter.formatNumber(asInt, context.watch<NumberFormatCubit>().state);
+    return NumberFormatter.formatNumber(
+        asInt, context.watch<NumberFormatCubit>().state);
   }
 }
 
@@ -226,6 +243,7 @@ class DateInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final controller = TextEditingController(
       text: initialValue != null
           ? DateFormatter.formatDate(initialValue!, locale)
@@ -239,16 +257,16 @@ class DateInputField extends StatelessWidget {
       enabled: enabled,
       readOnly: true,
       validator: validator,
-      prefixIcon: const Icon(
+      prefixIcon: Icon(
         Icons.calendar_today,
-        color: AppColors.textSecondary,
+        color: colorScheme.onSurface.withValues(alpha: 0.6),
       ),
       suffixIcon: enabled
           ? IconButton(
               onPressed: () => _selectDate(context, controller),
-              icon: const Icon(
+              icon: Icon(
                 Icons.date_range,
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             )
           : null,
@@ -267,12 +285,7 @@ class DateInputField extends StatelessWidget {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.accent,
-              onPrimary: AppColors.buttonText,
-              surface: AppColors.surface,
-              onSurface: AppColors.textPrimary,
-            ),
+            colorScheme: Theme.of(context).colorScheme,
           ),
           child: child!,
         );
@@ -345,12 +358,9 @@ class CurrencyInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // controller가 있으면 그대로 사용, 없으면 빈 문자열로 생성
-    final effectiveController =
-        controller ??
+    final effectiveController = controller ??
         TextEditingController(
-          text: initialValue != null
-              ? initialValue!.toStringAsFixed(2)
-              : '',
+          text: initialValue != null ? initialValue!.toStringAsFixed(2) : '',
         );
 
     return AppInputField(
@@ -374,7 +384,9 @@ class CurrencyInputField extends StatelessWidget {
         FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
         _CurrencyInputFormatter(context.watch<NumberFormatCubit>().state),
       ],
-      prefixIcon: Icon(Icons.attach_money, color: AppColors.textSecondary),
+      prefixIcon: Icon(Icons.attach_money,
+          color:
+              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
     );
   }
 }
@@ -393,9 +405,10 @@ class _CurrencyInputFormatter extends TextInputFormatter {
     // 숫자와 소수점만 추출 (콤마 제거)
     // 소수점이 입력된 경우를 명시적으로 확인
     String text = newValue.text.replaceAll(RegExp(r'[^\d.]'), '');
-    
+
     // 소수점이 새로 입력된 경우를 감지
-    bool isDotInput = newValue.text.contains('.') && !oldValue.text.contains('.');
+    bool isDotInput =
+        newValue.text.contains('.') && !oldValue.text.contains('.');
 
     if (text.isEmpty) {
       return const TextEditingValue(text: '');
@@ -411,15 +424,13 @@ class _CurrencyInputFormatter extends TextInputFormatter {
     String integerPart = '';
     String decimalPart = '';
     bool hasDecimalPoint = text.contains('.');
-    
+
     if (hasDecimalPoint) {
       final parts = text.split('.');
       integerPart = parts[0];
       if (parts.length == 2) {
         // 소수점 2자리 초과 시 잘라내기
-        decimalPart = parts[1].length > 2 
-            ? parts[1].substring(0, 2) 
-            : parts[1];
+        decimalPart = parts[1].length > 2 ? parts[1].substring(0, 2) : parts[1];
       }
       text = '$integerPart.$decimalPart';
     } else {
@@ -445,7 +456,8 @@ class _CurrencyInputFormatter extends TextInputFormatter {
       } else {
         final integerNumber = int.tryParse(integerPart);
         if (integerNumber != null) {
-          formattedText = '${NumberFormatter.formatNumber(integerNumber, formatStyle)}.$decimalPart';
+          formattedText =
+              '${NumberFormatter.formatNumber(integerNumber, formatStyle)}.$decimalPart';
         } else {
           formattedText = text;
         }
@@ -457,7 +469,8 @@ class _CurrencyInputFormatter extends TextInputFormatter {
       } else {
         final integerNumber = int.tryParse(integerPart);
         if (integerNumber != null) {
-          formattedText = NumberFormatter.formatNumber(integerNumber, formatStyle);
+          formattedText =
+              NumberFormatter.formatNumber(integerNumber, formatStyle);
         } else {
           formattedText = text;
         }
@@ -466,7 +479,7 @@ class _CurrencyInputFormatter extends TextInputFormatter {
 
     // 커서 위치 계산
     int cursorPosition;
-    
+
     // 소수점이 입력된 경우: 소수점 뒤로 커서 이동
     if (isDotInput || (hasDecimalPoint && !oldValue.text.contains('.'))) {
       // 소수점이 새로 입력된 경우: 소수점 바로 뒤로 커서 이동
@@ -474,15 +487,20 @@ class _CurrencyInputFormatter extends TextInputFormatter {
       cursorPosition = dotIndex != -1 ? dotIndex + 1 : formattedText.length;
     } else if (hasDecimalPoint) {
       // 이미 소수점이 있는 경우: 소수점 뒤의 숫자 개수 기준으로 계산
-      String beforeCursor = newValue.text.substring(0, newValue.selection.baseOffset.clamp(0, newValue.text.length));
-      int digitsBeforeCursor = beforeCursor.replaceAll(RegExp(r'[^\d.]'), '').length;
-      
+      String beforeCursor = newValue.text.substring(
+          0, newValue.selection.baseOffset.clamp(0, newValue.text.length));
+      int digitsBeforeCursor =
+          beforeCursor.replaceAll(RegExp(r'[^\d.]'), '').length;
+
       // 소수점 위치 찾기
       int dotIndex = formattedText.indexOf('.');
       if (dotIndex != -1) {
         // 소수점 앞의 숫자 개수
-        int integerDigits = formattedText.substring(0, dotIndex).replaceAll(RegExp(r'[^\d]'), '').length;
-        
+        int integerDigits = formattedText
+            .substring(0, dotIndex)
+            .replaceAll(RegExp(r'[^\d]'), '')
+            .length;
+
         if (digitsBeforeCursor <= integerDigits) {
           // 정수 부분에 커서가 있는 경우: 천 단위 구분자 고려하여 계산
           cursorPosition = _findPositionInFormattedInteger(
@@ -504,7 +522,8 @@ class _CurrencyInputFormatter extends TextInputFormatter {
 
     return TextEditingValue(
       text: formattedText,
-      selection: TextSelection.collapsed(offset: cursorPosition.clamp(0, formattedText.length)),
+      selection: TextSelection.collapsed(
+          offset: cursorPosition.clamp(0, formattedText.length)),
     );
   }
 
@@ -542,20 +561,23 @@ class SearchInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppInputField(
       label: '',
       hint: hint,
       controller: controller,
       onChanged: onChanged,
       onSubmitted: onSubmitted,
-      prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+      prefixIcon: Icon(Icons.search,
+          color: colorScheme.onSurface.withValues(alpha: 0.6)),
       suffixIcon: controller?.text.isNotEmpty == true
           ? IconButton(
               onPressed: () {
                 controller?.clear();
                 onClear?.call();
               },
-              icon: const Icon(Icons.clear, color: AppColors.textSecondary),
+              icon: Icon(Icons.clear,
+                  color: colorScheme.onSurface.withValues(alpha: 0.6)),
             )
           : null,
     );

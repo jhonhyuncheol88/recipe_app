@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/app_strings.dart';
 import '../../util/app_locale.dart';
@@ -26,6 +25,7 @@ class RecipeQuickViewDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
@@ -114,13 +114,14 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
             // 헤더
             Row(
               children: [
-                Icon(Icons.restaurant, color: AppColors.primary, size: 24),
+                Icon(Icons.restaurant,
+                    color: Theme.of(context).colorScheme.primary, size: 24),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     widget.recipe.name,
                     style: AppTextStyles.headline4.copyWith(
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w800,
                       fontSize: 20,
                       letterSpacing: 0.5,
@@ -130,7 +131,10 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                 IconButton(
                   onPressed: widget.onClose,
                   icon: const Icon(Icons.close),
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
               ],
             ),
@@ -165,8 +169,8 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: AppColors.buttonText,
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  foregroundColor: Theme.of(context).colorScheme.onSecondary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -182,8 +186,8 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
               child: ElevatedButton(
                 onPressed: widget.onClose,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.buttonText,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -206,9 +210,9 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
 
     if (widget.isBottomSheet) {
       return Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: content,
       );
@@ -219,13 +223,14 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
 
   /// 배수 조정 섹션
   Widget _buildMultiplierSection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           AppStrings.getMultiplier(widget.locale),
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w700,
             fontSize: 16,
             letterSpacing: 0.3,
@@ -235,7 +240,7 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
         Text(
           AppStrings.getMultiplierDescription(widget.locale),
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
             fontWeight: FontWeight.w500,
             fontSize: 13,
             height: 1.4,
@@ -245,7 +250,7 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
         Text(
           AppStrings.getMultiplierRange(widget.locale),
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.7),
             fontWeight: FontWeight.w600,
             fontSize: 13,
             letterSpacing: 0.2,
@@ -260,7 +265,7 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                 min: 1.0,
                 max: 50.0,
                 divisions: 49, // 1부터 50까지 정수 단위 (49개 구간 = 50개 값)
-                activeColor: AppColors.primary,
+                activeColor: colorScheme.primary,
                 onChanged: (value) {
                   setState(() {
                     _multiplier = value.roundToDouble(); // 정수로 반올림
@@ -271,14 +276,15 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primary),
+                border: Border.all(
+                    color: colorScheme.primary.withValues(alpha: 0.5)),
               ),
               child: Text(
                 '${_multiplier.toStringAsFixed(0)}${_getMultiplierUnit()}',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w900, // w800 -> w900
                   fontSize: 18, // 16 -> 18
                   letterSpacing: 0.8, // 0.5 -> 0.8
@@ -294,14 +300,14 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
   /// 가격 표시 섹션
   Widget _buildPriceSection() {
     final totalPrice = widget.recipe.totalCost * _multiplier;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.accent.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+        color: colorScheme.secondary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: AppColors.accent.withAlpha(77)), // withAlpha 사용 (약 30% 투명도)
+        border: Border.all(color: colorScheme.secondary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +315,7 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
           Text(
             AppStrings.getTotalCost(widget.locale),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colorScheme.onSurface.withValues(alpha: 0.7),
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
@@ -336,14 +342,13 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.accent
-                        .withAlpha(51), // withAlpha 사용 (약 20% 투명도)
+                    color: colorScheme.secondary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '${_multiplier.toStringAsFixed(_multiplier % 1 == 0 ? 0 : 1)}${_getMultiplierUnit()}',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.accent,
+                      color: colorScheme.secondary,
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
                     ),
@@ -358,13 +363,14 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
 
   /// 메모 섹션
   Widget _buildMemoSection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           AppStrings.getRecipeMemo(widget.locale),
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w700,
             fontSize: 16,
             letterSpacing: 0.3,
@@ -375,9 +381,9 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.background,
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Text(
             widget.recipe.description.isNotEmpty
@@ -385,8 +391,8 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                 : AppStrings.getNoMemo(widget.locale),
             style: AppTextStyles.bodyMedium.copyWith(
               color: widget.recipe.description.isNotEmpty
-                  ? AppColors.textPrimary
-                  : AppColors.textSecondary,
+                  ? colorScheme.onSurface
+                  : colorScheme.onSurface.withValues(alpha: 0.6),
               fontWeight: FontWeight.w500,
               fontSize: 14,
               height: 1.5,
@@ -400,13 +406,14 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
 
   /// 재료 및 투입량 섹션
   Widget _buildIngredientsSection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           AppStrings.getIngredientsAndAmounts(widget.locale),
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w700,
             fontSize: 16,
             letterSpacing: 0.3,
@@ -418,14 +425,14 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.divider),
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
             child: Text(
               AppStrings.getNoRecipeIngredients(widget.locale),
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               textAlign: TextAlign.center,
             ),
@@ -437,9 +444,11 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color:
+                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.divider),
+                border: Border.all(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
               ),
               child: Row(
                 children: [
@@ -449,7 +458,7 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                         ? Text(
                             _ingredientNames[ingredient.ingredientId]!,
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textPrimary,
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                               letterSpacing: 0.2,
@@ -463,7 +472,7 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.primary,
+                                    colorScheme.primary,
                                   ),
                                 ),
                               ),
@@ -471,7 +480,8 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                               Text(
                                 ingredient.ingredientId,
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: colorScheme.onSurface
+                                      .withValues(alpha: 0.5),
                                   fontWeight: FontWeight.w500,
                                   fontSize: 13,
                                 ),
@@ -484,7 +494,7 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                     child: Text(
                       '${adjustedAmount.toStringAsFixed(1)} ${ingredient.unitId}',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurface.withValues(alpha: 0.8),
                         fontWeight: FontWeight.w900, // w700 -> w900
                         fontSize: 16, // 14 -> 16
                         letterSpacing: 0.5, // 0.2 -> 0.5
@@ -507,15 +517,17 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
 
     if (!mounted) return;
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     // 바텀시트 내부에서는 부모 Scaffold의 context를 사용
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     scaffoldMessenger.showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.check_circle,
-              color: Colors.white,
+              color: colorScheme.onPrimaryContainer,
               size: 20,
             ),
             const SizedBox(width: 8),
@@ -523,14 +535,14 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
               child: Text(
                 AppStrings.getRecipeShareCopied(widget.locale),
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: Colors.white,
+                  color: colorScheme.onPrimaryContainer,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: AppColors.success,
+        backgroundColor: colorScheme.primaryContainer,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(

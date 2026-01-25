@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
-import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/app_locale.dart';
 import '../../controller/setting/locale_cubit.dart';
@@ -20,11 +19,11 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 기본 언어를 선택되지 않았다면 현재 시스템 언어 또는 한국어 설정
     _selectedLocale ??= AppLocale.korea;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -32,60 +31,54 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 로고/아이콘
                 Container(
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(60),
                   ),
                   child: Icon(
                     Icons.language,
                     size: 60,
-                    color: AppColors.primary,
+                    color: colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: 32),
-
-                // 타이틀
                 Text(
                   _getTitleText(),
                   style: AppTextStyles.headline2.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-
-                // 부제목
                 Text(
                   _getSubtitleText(),
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
-
-                // 언어 선택 리스트
                 _buildLanguageList(),
-
                 const SizedBox(height: 32),
-
-                // 다음 버튼
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _selectedLocale != null ? _handleNext : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.buttonText,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      disabledBackgroundColor:
+                          colorScheme.onSurface.withValues(alpha: 0.1),
+                      disabledForegroundColor:
+                          colorScheme.onSurface.withValues(alpha: 0.3),
                     ),
                     child: Text(
                       _getNextButtonText(),
@@ -109,6 +102,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
       AppLocale.japan,
       AppLocale.vietnam,
     ];
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       children: languages.map((locale) {
@@ -126,11 +120,13 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary.withOpacity(0.1)
-                    : AppColors.surface,
+                    ? colorScheme.primary.withOpacity(0.05)
+                    : colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.divider,
+                  color: isSelected
+                      ? colorScheme.primary
+                      : colorScheme.outlineVariant,
                   width: 2,
                 ),
               ),
@@ -141,8 +137,8 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
                         ? Icons.radio_button_checked
                         : Icons.radio_button_unchecked,
                     color: isSelected
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withOpacity(0.4),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -152,7 +148,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
                         Text(
                           locale.displayName,
                           style: AppTextStyles.bodyLarge.copyWith(
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                             fontWeight:
                                 isSelected ? FontWeight.w600 : FontWeight.w400,
                           ),
@@ -161,7 +157,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
                         Text(
                           locale.nativeName,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
+                            color: colorScheme.onSurface.withValues(alpha: 0.4),
                           ),
                         ),
                       ],
@@ -170,7 +166,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
                   if (isSelected)
                     Icon(
                       Icons.check_circle,
-                      color: AppColors.primary,
+                      color: colorScheme.primary,
                       size: 24,
                     ),
                 ],
@@ -184,33 +180,24 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
 
   Future<void> _handleNext() async {
     if (_selectedLocale == null) return;
-
     if (!mounted) return;
 
     try {
-      // 1. 언어 선택 완료 플래그 먼저 저장
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('language_selected', true);
 
       if (!mounted) return;
-
-      // 2. LocaleCubit에 선택한 언어 저장 및 상태 업데이트
       final localeCubit = context.read<LocaleCubit>();
       await localeCubit.setLocale(_selectedLocale!);
 
-      // 3. SharedPreferences 변경사항 반영을 위한 짧은 대기
       await Future.delayed(const Duration(milliseconds: 300));
 
       if (!mounted) return;
-
-      // 4. 온보딩으로 이동
       context.go('/onboarding');
     } catch (e) {
-      // 에러 처리
-      print('언어 선택 처리 중 오류: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('오류가 발생했습니다. 다시 시도해주세요.'),
           ),
         );
@@ -218,7 +205,6 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
     }
   }
 
-  // 현재 선택된 언어에 따라 텍스트 반환
   String _getTitleText() {
     switch (_selectedLocale) {
       case AppLocale.korea:

@@ -1,0 +1,71 @@
+<ko-KR>
+• 한국 쉐프의 레시피(K-Food) 페이지가 추가되었습니다
+• 레시피 목록을 10개씩 더 보기 기능이 추가되었습니다
+• 영어, 중국어, 일본어, 베트남어로 레시피 이름, 재료, 양념, 조리방법을 번역할 수 있는 기능이 추가되었습니다
+• 재료 추가 시 수량과 단위 정보가 자동으로 입력됩니다
+• 영수증 인식 안내 문구가 더 친근하게 개선되었습니다
+</ko-KR>
+<en-AU>
+• Added Korean Chef's Recipes (K-Food) page
+• Added "Load 10 More" feature to view recipes in batches
+• Added translation feature for recipe names, ingredients, sauces, and cooking methods in English, Chinese, Japanese, and Vietnamese
+• Amount and unit information are now automatically filled when adding ingredients
+• Improved receipt recognition guidance with more user-friendly messages
+</en-AU>
+<en-CA>
+• Added Korean Chef's Recipes (K-Food) page
+• Added "Load 10 More" feature to view recipes in batches
+• Added translation feature for recipe names, ingredients, sauces, and cooking methods in English, Chinese, Japanese, and Vietnamese
+• Amount and unit information are now automatically filled when adding ingredients
+• Improved receipt recognition guidance with more user-friendly messages
+</en-CA>
+<en-GB>
+• Added Korean Chef's Recipes (K-Food) page
+• Added "Load 10 More" feature to view recipes in batches
+• Added translation feature for recipe names, ingredients, sauces, and cooking methods in English, Chinese, Japanese, and Vietnamese
+• Amount and unit information are now automatically filled when adding ingredients
+• Improved receipt recognition guidance with more user-friendly messages
+</en-GB>
+<en-IN>
+• Added Korean Chef's Recipes (K-Food) page
+• Added "Load 10 More" feature to view recipes in batches
+• Added translation feature for recipe names, ingredients, sauces, and cooking methods in English, Chinese, Japanese, and Vietnamese
+• Amount and unit information are now automatically filled when adding ingredients
+• Improved receipt recognition guidance with more user-friendly messages
+</en-IN>
+<en-SG>
+• Added Korean Chef's Recipes (K-Food) page
+• Added "Load 10 More" feature to view recipes in batches
+• Added translation feature for recipe names, ingredients, sauces, and cooking methods in English, Chinese, Japanese, and Vietnamese
+• Amount and unit information are now automatically filled when adding ingredients
+• Improved receipt recognition guidance with more user-friendly messages
+</en-SG>
+<en-US>
+• Added Korean Chef's Recipes (K-Food) page
+• Added "Load 10 More" feature to view recipes in batches
+• Added translation feature for recipe names, ingredients, sauces, and cooking methods in English, Chinese, Japanese, and Vietnamese
+• Amount and unit information are now automatically filled when adding ingredients
+• Improved receipt recognition guidance with more user-friendly messages
+</en-US>
+<en-ZA>
+• Added Korean Chef's Recipes (K-Food) page
+• Added "Load 10 More" feature to view recipes in batches
+• Added translation feature for recipe names, ingredients, sauces, and cooking methods in English, Chinese, Japanese, and Vietnamese
+• Amount and unit information are now automatically filled when adding ingredients
+• Improved receipt recognition guidance with more user-friendly messages
+</en-ZA>
+<ja-JP>
+• 韓国シェフのレシピ（K-Food）ページが追加されました
+• レシピを10件ずつ追加表示する機能が追加されました
+• 英語、中国語、日本語、ベトナム語でレシピ名、材料、調味料、調理方法を翻訳できる機能が追加されました
+• 材料を追加する際、数量と単位情報が自動入力されるようになりました
+• レシート認識の案内文がより分かりやすく改善されました
+</ja-JP>
+<vi>
+• Đã thêm trang Công thức của Đầu bếp Hàn Quốc (K-Food)
+• Đã thêm tính năng "Xem thêm 10" để xem công thức theo từng nhóm
+• Đã thêm tính năng dịch tên công thức, nguyên liệu, nước sốt và phương pháp nấu ăn sang tiếng Anh, Trung, Nhật và Việt
+• Thông tin số lượng và đơn vị hiện được tự động điền khi thêm nguyên liệu
+• Đã cải thiện hướng dẫn nhận dạng hóa đơn với thông điệp thân thiện hơn
+</vi>
+

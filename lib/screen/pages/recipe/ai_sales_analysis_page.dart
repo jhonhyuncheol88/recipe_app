@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/app_locale.dart';
@@ -37,11 +36,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
   @override
   void initState() {
     super.initState();
-
-    // AdCubit 초기화
     _adCubit = AdCubit();
-
-    // AdMobService에 AdCubit 설정
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AdMobForwardService.instance.setAdCubit(_adCubit);
     });
@@ -51,8 +46,6 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
   void dispose() {
     _specialRequestController.dispose();
     _adCubit.close();
-    // 🔴 추가: 페이지 종료 시 레시피 목록 새로고침
-    // AI 분석 후 뒤로가기 시 레시피 상태 복원
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<RecipeCubit>().loadRecipes();
@@ -61,31 +54,24 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     super.dispose();
   }
 
-  /// 광고 표시 후 AI 분석 진행
   Future<void> _showAdAndAnalyze() async {
     try {
-      // 전면 광고 표시 시도
       await AdMobForwardService.instance.showInterstitialAd();
-
-      // 광고 성공/실패와 관계없이 AI 분석 진행
       if (mounted) {
         _startAnalysis();
       }
     } catch (e) {
-      // 광고 오류 발생 시에도 AI 분석 진행
       if (mounted) {
         _startAnalysis();
       }
     }
   }
 
-  /// AI 분석 시작
   Future<void> _startAnalysis() async {
     if (_isAnalyzing) return;
 
     final currentLocale = context.read<LocaleCubit>().state;
 
-    // Recipe 객체가 없으면 분석할 수 없음
     if (widget.recipe == null) {
       setState(() {
         _errorMessage = AppStrings.getRecipeNotFound(currentLocale);
@@ -131,18 +117,19 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(
           AppStrings.getAiSalesAnalysis(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => context.pop(),
         ),
       ),
@@ -151,19 +138,12 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 레시피 정보 카드
             _buildRecipeInfoCard(currentLocale),
             const SizedBox(height: 20),
-
-            // 특별 요청사항 입력
             _buildSpecialRequestSection(currentLocale),
             const SizedBox(height: 20),
-
-            // 분석 시작 버튼
             _buildAnalysisButton(currentLocale),
             const SizedBox(height: 20),
-
-            // 분석 결과 또는 로딩/에러 상태
             if (_isAnalyzing) _buildLoadingState(currentLocale),
             if (_errorMessage != null) _buildErrorState(currentLocale),
             if (_analysisResult != null) _buildAnalysisResult(currentLocale),
@@ -173,8 +153,8 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     );
   }
 
-  /// 레시피 정보 카드
   Widget _buildRecipeInfoCard(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -184,7 +164,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
             Text(
               widget.recipe?.name ?? AppStrings.getRecipeNameNotFound(locale),
               style: AppTextStyles.headline4.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -193,7 +173,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
               Text(
                 widget.recipe!.description,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -230,23 +210,23 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     );
   }
 
-  /// 정보 아이템
   Widget _buildInfoItem(IconData icon, String label, String value) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
-        Icon(icon, color: AppColors.accent, size: 24),
+        Icon(icon, color: colorScheme.primary, size: 24),
         const SizedBox(height: 8),
         Text(
           label,
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -254,8 +234,8 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     );
   }
 
-  /// 특별 요청사항 입력 섹션
   Widget _buildSpecialRequestSection(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -265,7 +245,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
             Text(
               AppStrings.getSpecialRequest(locale),
               style: AppTextStyles.headline4.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -273,21 +253,29 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
             Text(
               AppStrings.getSpecialRequestHint(locale),
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _specialRequestController,
               maxLines: 3,
+              style: TextStyle(color: colorScheme.onSurface),
               decoration: InputDecoration(
                 hintText: AppStrings.getSpecialRequestHint(locale),
+                hintStyle: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.5)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: colorScheme.outline),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: colorScheme.outline),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AppColors.primary),
+                  borderSide: BorderSide(color: colorScheme.primary),
                 ),
               ),
             ),
@@ -297,7 +285,6 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     );
   }
 
-  /// 분석 시작 버튼
   Widget _buildAnalysisButton(AppLocale locale) {
     if (_isAnalyzing) {
       return SizedBox(
@@ -316,25 +303,22 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
       child: BlocBuilder<AdCubit, AdState>(
         bloc: _adCubit,
         builder: (context, adState) {
-          // 광고 시청 완료 상태일 때 AI 분석 실행
           if (adState is AdWatched) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _adCubit.reset(); // 상태 초기화
+              _adCubit.reset();
               _startAnalysis();
             });
           }
 
-          // 광고 실패 상태일 때도 AI 분석 실행 (광고 없이 진행)
           if (adState is AdFailed) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _adCubit.reset(); // 상태 초기화
+              _adCubit.reset();
               _startAnalysis();
             });
           }
 
           return AiAnalysisButton(
             onAnalysisRequested: () {
-              // 🔴 수동으로 광고 시도 후 분석 진행
               _showAdAndAnalyze();
             },
             buttonText: AppStrings.getStartAnalysis(locale),
@@ -349,8 +333,8 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     );
   }
 
-  /// 로딩 상태
   Widget _buildLoadingState(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: double.infinity,
       child: AppCard(
@@ -363,7 +347,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
               Text(
                 '${AppStrings.getAnalyzing(locale)}...',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -374,19 +358,19 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     );
   }
 
-  /// 에러 상태
   Widget _buildErrorState(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           children: [
-            Icon(Icons.error_outline, size: 64, color: AppColors.error),
+            Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: 16),
             Text(
               AppStrings.getAnalysisFailed(locale),
               style: AppTextStyles.headline4.copyWith(
-                color: AppColors.error,
+                color: colorScheme.error,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -394,7 +378,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
             Text(
               _errorMessage ?? AppStrings.getAnalysisFailedMessage(locale),
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               textAlign: TextAlign.center,
             ),
@@ -410,8 +394,8 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
     );
   }
 
-  /// 분석 결과
   Widget _buildAnalysisResult(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (_analysisResult == null) return const SizedBox.shrink();
 
     return Column(
@@ -420,7 +404,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
         Text(
           AppStrings.getAiSalesAnalysisTitle(locale),
           style: AppTextStyles.headline4.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -428,7 +412,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
         Text(
           AppStrings.getAiSalesAnalysisDescription(locale),
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 20),

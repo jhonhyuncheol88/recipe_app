@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../widget/index.dart';
@@ -14,7 +13,7 @@ import '../../../model/index.dart';
 import '../../../util/number_formatter.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
-import '../../../router/router_helper.dart';
+import '../../../router/index.dart';
 
 /// 재료 메인 페이지
 class IngredientMainPage extends StatefulWidget {
@@ -28,17 +27,14 @@ class _IngredientMainPageState extends State<IngredientMainPage>
     with SingleTickerProviderStateMixin {
   String _selectedFilter = '전체';
   late final TabController _tabController;
-  String _searchQuery = ''; // 검색 쿼리 추가
+  String _searchQuery = '';
 
-  // 필터 옵션
   final List<String> _filterOptions = ['전체', '냉장', '냉동', '실온'];
 
   @override
   void initState() {
     super.initState();
-    // 페이지 로드 시 재료 목록 가져오기
     context.read<IngredientCubit>().loadIngredients();
-    // 소스 목록도 초기 로드
     context.read<SauceCubit>().loadSauces();
     _tabController = TabController(length: 2, vsync: this)
       ..addListener(() {
@@ -49,32 +45,38 @@ class _IngredientMainPageState extends State<IngredientMainPage>
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(
           AppStrings.getIngredientManagement(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         actions: [
+          IconButton(
+            onPressed: () => context.push(AppRouter.ingredientBatchEdit),
+            icon: Icon(Icons.edit_note, color: colorScheme.onSurface),
+            tooltip: '일괄 수정',
+          ),
           TextButton.icon(
             onPressed: () => RouterHelper.goToOcrMain(context),
             icon: Icon(
               Icons.receipt_long,
-              color: AppColors.textLight,
+              color: colorScheme.primary,
               size: 20,
             ),
             label: Text(
               AppStrings.getScanReceipt(currentLocale),
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textLight,
+                color: colorScheme.primary,
                 fontWeight: FontWeight.w800,
               ),
             ),
             style: TextButton.styleFrom(
-              backgroundColor: AppColors.primary.withAlpha(26), // withAlpha 사용 (약 10% 투명도)
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -84,8 +86,9 @@ class _IngredientMainPageState extends State<IngredientMainPage>
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.accent,
-          unselectedLabelColor: AppColors.textSecondary,
+          labelColor: colorScheme.primary,
+          unselectedLabelColor: colorScheme.onSurface.withValues(alpha: 0.6),
+          indicatorColor: colorScheme.primary,
           tabs: [
             Tab(text: AppStrings.getIngredients(currentLocale)),
             Tab(text: AppStrings.getSauces(currentLocale)),
@@ -116,6 +119,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
 
   Widget _buildFilterSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     final Map<String, String> localized = {
       '전체': AppStrings.getAll(currentLocale),
       '냉장': AppStrings.getIngredientTagFresh(currentLocale),
@@ -124,7 +128,6 @@ class _IngredientMainPageState extends State<IngredientMainPage>
     };
     return Column(
       children: [
-        // 검색바 추가
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: TextField(
@@ -133,13 +136,17 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                 _searchQuery = value;
               });
             },
+            style: TextStyle(color: colorScheme.onSurface),
             decoration: InputDecoration(
-              hintText: AppStrings.getSearchIngredientHint(
-                  context.watch<LocaleCubit>().state),
-              prefixIcon: const Icon(Icons.search),
+              hintText: AppStrings.getSearchIngredientHint(currentLocale),
+              hintStyle: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.5)),
+              prefixIcon: Icon(Icons.search,
+                  color: colorScheme.onSurface.withValues(alpha: 0.5)),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.clear),
+                      icon: Icon(Icons.clear,
+                          color: colorScheme.onSurface.withValues(alpha: 0.5)),
                       onPressed: () {
                         setState(() {
                           _searchQuery = '';
@@ -149,18 +156,21 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                   : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.divider),
+                borderSide: BorderSide(color: colorScheme.outlineVariant),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.outlineVariant),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.primary, width: 2),
+                borderSide: BorderSide(color: colorScheme.primary, width: 2),
               ),
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: colorScheme.surface,
             ),
           ),
         ),
-        // 기존 필터 칩들
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: SingleChildScrollView(
@@ -179,13 +189,13 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                       });
                       _applyFilter(filter);
                     },
-                    backgroundColor: AppColors.surface,
-                    selectedColor: AppColors.primary,
-                    checkmarkColor: AppColors.buttonText,
+                    backgroundColor: colorScheme.surface,
+                    selectedColor: colorScheme.primary.withValues(alpha: 0.2),
+                    checkmarkColor: colorScheme.primary,
                     labelStyle: AppTextStyles.bodySmall.copyWith(
                       color: isSelected
-                          ? AppColors.buttonText
-                          : AppColors.textSecondary,
+                          ? colorScheme.primary
+                          : colorScheme.onSurface.withValues(alpha: 0.6),
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
@@ -203,6 +213,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
     return BlocBuilder<SauceCubit, SauceState>(
       builder: (context, state) {
         final currentLocale = context.watch<LocaleCubit>().state;
+        final colorScheme = Theme.of(context).colorScheme;
         if (state is SauceLoading) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -211,13 +222,15 @@ class _IngredientMainPageState extends State<IngredientMainPage>
             child: Text(
               AppStrings.getNoSauces(currentLocale),
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           );
         }
         if (state is SauceError) {
-          return Center(child: Text(state.message));
+          return Center(
+              child: Text(state.message,
+                  style: TextStyle(color: colorScheme.error)));
         }
         if (state is SauceLoaded) {
           final sauces = state.sauces;
@@ -227,16 +240,24 @@ class _IngredientMainPageState extends State<IngredientMainPage>
             itemBuilder: (context, index) {
               final sauce = sauces[index];
               return Card(
+                color: colorScheme.surface,
                 margin: const EdgeInsets.only(bottom: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: colorScheme.outlineVariant),
+                ),
                 child: ListTile(
-                  title: Text(sauce.name, style: AppTextStyles.bodyMedium),
+                  title: Text(sauce.name,
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: colorScheme.onSurface)),
                   subtitle: Text(
                     '${AppStrings.getTotalWeight(currentLocale)}: ${NumberFormatter.formatNumber(sauce.totalWeight.toInt(), context.watch<NumberFormatCubit>().state)} | ${AppStrings.getTotalCost(currentLocale)}: ${NumberFormatter.formatCurrency(sauce.totalCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: Icon(Icons.chevron_right,
+                      color: colorScheme.onSurface.withValues(alpha: 0.3)),
                   onTap: () => context.push('/sauce/edit', extra: sauce),
                 ),
               );
@@ -250,11 +271,12 @@ class _IngredientMainPageState extends State<IngredientMainPage>
 
   Widget _buildSauceFab() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return FloatingActionButton.extended(
       heroTag: 'sauce_add_button',
       onPressed: _createSauce,
-      backgroundColor: AppColors.textLight, // 더 연한 회색
-      foregroundColor: AppColors.buttonText,
+      backgroundColor: colorScheme.primaryContainer,
+      foregroundColor: colorScheme.onPrimaryContainer,
       icon: const Icon(Icons.add),
       label: Text(AppStrings.getAddSauceButton(currentLocale)),
     );
@@ -262,15 +284,22 @@ class _IngredientMainPageState extends State<IngredientMainPage>
 
   void _createSauce() async {
     final currentLocale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     final controller = TextEditingController();
+    if (!mounted) return;
     final name = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.getEnterSauceName(currentLocale)),
+        backgroundColor: colorScheme.surface,
+        title: Text(AppStrings.getEnterSauceName(currentLocale),
+            style: TextStyle(color: colorScheme.onSurface)),
         content: TextField(
           controller: controller,
+          style: TextStyle(color: colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: AppStrings.getSauceNameExample(currentLocale),
+            hintStyle:
+                TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5)),
           ),
         ),
         actions: [
@@ -295,8 +324,6 @@ class _IngredientMainPageState extends State<IngredientMainPage>
     }
   }
 
-  // 선택 모드 제거됨
-
   Widget _buildIngredientList(IngredientState state) {
     if (state is IngredientLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -308,23 +335,24 @@ class _IngredientMainPageState extends State<IngredientMainPage>
 
     if (state is IngredientError) {
       final currentLocale = context.watch<LocaleCubit>().state;
+      final colorScheme = Theme.of(context).colorScheme;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: AppColors.error),
+            Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: 16),
             Text(
               AppStrings.getErrorOccurred(currentLocale),
               style: AppTextStyles.headline4.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               state.message,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               textAlign: TextAlign.center,
             ),
@@ -343,8 +371,8 @@ class _IngredientMainPageState extends State<IngredientMainPage>
 
     if (state is IngredientLoaded) {
       final ingredients = state.ingredients;
+      final colorScheme = Theme.of(context).colorScheme;
 
-      // 검색 필터링 적용
       final filteredIngredients = _searchQuery.isEmpty
           ? ingredients
           : ingredients
@@ -361,7 +389,6 @@ class _IngredientMainPageState extends State<IngredientMainPage>
 
       if (filteredIngredients.isEmpty) {
         if (_searchQuery.isNotEmpty) {
-          // 검색 결과가 없는 경우
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -369,20 +396,20 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                 Icon(
                   Icons.search_off,
                   size: 64,
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface.withValues(alpha: 0.3),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   '검색 결과가 없습니다',
                   style: AppTextStyles.headline4.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '다른 검색어를 입력해보세요',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -411,7 +438,6 @@ class _IngredientMainPageState extends State<IngredientMainPage>
   }
 
   Widget _buildIngredientCard(Ingredient ingredient) {
-    // 단위당 가격 계산
     final unitPrice = ingredient.purchasePrice / ingredient.purchaseAmount;
     final currentLocale = context.watch<LocaleCubit>().state;
 
@@ -423,41 +449,27 @@ class _IngredientMainPageState extends State<IngredientMainPage>
         price: ingredient.purchasePrice,
         amount: ingredient.purchaseAmount,
         unit: ingredient.purchaseUnitId,
-        unitPrice: unitPrice, // 단위당 가격 추가
-        expiryDate: ingredient.expiryDate, // 유통기한 추가
-        locale: currentLocale, // 로컬화 지원 추가
+        unitPrice: unitPrice,
+        expiryDate: ingredient.expiryDate,
+        locale: currentLocale,
       ),
     );
   }
 
-  // 선택 모드 제거됨
-
   Widget _buildFloatingActionButton() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return FloatingActionButton.extended(
       heroTag: 'ingredient_add_button',
       onPressed: _addIngredient,
-      backgroundColor: AppColors.textLight, // 더 연한 회색
-      foregroundColor: AppColors.buttonText,
-      icon: const Icon(Icons.add),
+      backgroundColor: colorScheme.primaryContainer,
+      foregroundColor: colorScheme.onPrimaryContainer,
       label: Text(
         AppStrings.getAddIngredient(currentLocale),
         style: AppTextStyles.buttonMedium,
       ),
     );
   }
-
-  // 선택 모드 제거됨: 토글/취소/선택 메서드 삭제
-
-  // 선택 모드 제거됨: 레시피 만들기 관련 선택 동작 삭제
-
-  // 사용 안 함: 인라인 피커로 대체됨
-
-  // 선택 모드 제거됨: 인라인 소스 피커 삭제
-
-  // 선택 모드 제거됨: 선택 재료를 소스에 추가하는 보조 함수 삭제
-
-  // void _scanReceipt() {}
 
   void _addIngredient() {
     context.push('/ingredient/add');
@@ -480,11 +492,8 @@ class _IngredientMainPageState extends State<IngredientMainPage>
     }
   }
 
-  // void _startIngredientAnimation(Ingredient ingredient) {}
-
-  // void _viewIngredient(Ingredient ingredient) {}
-
   void _showIngredientDetailBottomSheet(Ingredient ingredient) {
+    final colorScheme = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -494,22 +503,21 @@ class _IngredientMainPageState extends State<IngredientMainPage>
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [
-              // 핸들 바
               Container(
                 margin: const EdgeInsets.only(top: 8),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
+                  color: colorScheme.onSurface.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              // 헤더
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Row(
@@ -518,12 +526,12 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
+                        color: colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         Icons.inventory_2,
-                        color: AppColors.primary,
+                        color: colorScheme.primary,
                         size: 24,
                       ),
                     ),
@@ -535,7 +543,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                           Text(
                             ingredient.name,
                             style: AppTextStyles.headline4.copyWith(
-                              color: AppColors.textPrimary,
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -543,7 +551,8 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                           Text(
                             '${ingredient.purchaseAmount} ${ingredient.purchaseUnitId}',
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -551,15 +560,14 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.close,
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurface.withValues(alpha: 0.3),
                       ),
                     ),
                   ],
                 ),
               ),
-              // 상세 정보
               Expanded(
                 child: SingleChildScrollView(
                   controller: scrollController,
@@ -590,7 +598,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
                         _buildDetailRow(
                           '만료일',
                           '2024년 12월 31일',
-                          valueColor: AppColors.success,
+                          valueColor: colorScheme.primary,
                         ),
                       ]),
                       const SizedBox(height: 32),
@@ -632,13 +640,14 @@ class _IngredientMainPageState extends State<IngredientMainPage>
   }
 
   Widget _buildDetailSection(String title, List<Widget> children) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: AppTextStyles.headline4.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -646,9 +655,9 @@ class _IngredientMainPageState extends State<IngredientMainPage>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.background,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Column(children: children),
         ),
@@ -657,6 +666,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
   }
 
   Widget _buildDetailRow(String label, String value, {Color? valueColor}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -665,13 +675,13 @@ class _IngredientMainPageState extends State<IngredientMainPage>
           Text(
             label,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           Text(
             value,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: valueColor ?? AppColors.textPrimary,
+              color: valueColor ?? colorScheme.onSurface,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -681,6 +691,7 @@ class _IngredientMainPageState extends State<IngredientMainPage>
   }
 
   Widget _buildTagChips(List<String> tags) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -689,13 +700,13 @@ class _IngredientMainPageState extends State<IngredientMainPage>
             (tag) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
                 tag,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.primary,
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -710,11 +721,14 @@ class _IngredientMainPageState extends State<IngredientMainPage>
   }
 
   void _deleteIngredient(Ingredient ingredient) {
+    final colorScheme = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('재료 삭제'),
-        content: Text('${ingredient.name}을(를) 삭제하시겠습니까?'),
+        backgroundColor: colorScheme.surface,
+        title: Text('재료 삭제', style: TextStyle(color: colorScheme.onSurface)),
+        content: Text('${ingredient.name}을(를) 삭제하시겠습니까?',
+            style: TextStyle(color: colorScheme.onSurface)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -725,17 +739,11 @@ class _IngredientMainPageState extends State<IngredientMainPage>
               Navigator.of(context).pop();
               context.read<IngredientCubit>().deleteIngredient(ingredient.id);
             },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.error),
             child: const Text('삭제'),
           ),
         ],
       ),
     );
   }
-
-  // void _onIngredientBallTapped(String ingredientId, List<Ingredient> ingredients) {}
-
-  // void _onIngredientBallLongPressed(String ingredientId, List<Ingredient> ingredients) {}
-
-  // void _onIngredientPositionSaved(Ingredient updatedIngredient) {}
 }

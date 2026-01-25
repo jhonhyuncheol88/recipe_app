@@ -1719,4 +1719,55 @@ mixin AppStringsAi {
         return 'Đã xảy ra lỗi trong quá trình phân tích Gemini';
     }
   }
+
+  static String getConvertToRecipeTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '레시피 변환';
+      case AppLocale.japan:
+        return 'レシピ変換';
+      case AppLocale.china:
+        return '食谱转换';
+      case AppLocale.usa:
+        return 'Recipe Conversion';
+      case AppLocale.euro:
+        return 'Recipe Conversion';
+      case AppLocale.vietnam:
+        return 'Chuyển đổi công thức';
+    }
+  }
+
+  static String getConvertToRecipeMessage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이 AI 레시피를 일반 레시피로 변환하여 저장하시겠습니까?';
+      case AppLocale.japan:
+        return 'このAIレシピを通常レシピに変換して保存しますか？';
+      case AppLocale.china:
+        return '您要将此AI食谱转换为普通食谱并保存吗？';
+      case AppLocale.usa:
+        return 'Do you want to convert and save this AI recipe as a regular recipe?';
+      case AppLocale.euro:
+        return 'Do you want to convert and save this AI recipe as a regular recipe?';
+      case AppLocale.vietnam:
+        return 'Bạn có muốn chuyển đổi và lưu công thức AI này dưới dạng công thức thông thường không?';
+    }
+  }
+
+  static String getRecipeConverted(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '일반 레시피로 변환되었습니다';
+      case AppLocale.japan:
+        return '通常レシピに変換されました';
+      case AppLocale.china:
+        return '已转换为普通食谱';
+      case AppLocale.usa:
+        return 'Converted to regular recipe';
+      case AppLocale.euro:
+        return 'Converted to regular recipe';
+      case AppLocale.vietnam:
+        return 'Đã chuyển đổi thành công thức thông thường';
+    }
+  }
 }

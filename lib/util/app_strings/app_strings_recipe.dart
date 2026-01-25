@@ -502,21 +502,29 @@ mixin AppStringsRecipe {
     }
   }
 
-  static String getRecipeUpdateError(AppLocale locale) {
+  static String getRecipeUpdateError(AppLocale locale, [String? error]) {
+    String base;
     switch (locale) {
       case AppLocale.korea:
-        return '레시피 수정에 실패했습니다';
+        base = '레시피 수정에 실패했습니다';
+        break;
       case AppLocale.japan:
-        return 'レシピ更新に失敗しました';
+        base = 'レシピ更新に失敗しました';
+        break;
       case AppLocale.china:
-        return '修改食谱失败';
+        base = '修改食谱失败';
+        break;
       case AppLocale.usa:
-        return 'Failed to update recipe';
+        base = 'Failed to update recipe';
+        break;
       case AppLocale.euro:
-        return 'Failed to update recipe';
+        base = 'Failed to update recipe';
+        break;
       case AppLocale.vietnam:
-        return 'Không thể cập nhật công thức';
+        base = 'Không thể cập nhật công thức';
+        break;
     }
+    return error != null ? '$base: $error' : base;
   }
 
   /// 레시피 수정 관련
@@ -974,6 +982,58 @@ mixin AppStringsRecipe {
         return '1x ~ 50x (Ganzzahlige Einheiten)';
       case AppLocale.vietnam:
         return '1x ~ 50x (Số nguyên)';
+    }
+  }
+
+  /// 재료 선택 관련
+  static String getSelectRecipeIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재료 선택';
+      case AppLocale.japan:
+        return '材料を選択';
+      case AppLocale.china:
+        return '选择材料';
+      case AppLocale.usa:
+        return 'Select Ingredients';
+      case AppLocale.euro:
+        return 'Select Ingredients';
+      case AppLocale.vietnam:
+        return 'Chọn nguyên liệu';
+    }
+  }
+
+  static String getSelectedIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '선택된 재료';
+      case AppLocale.japan:
+        return '選択された材料';
+      case AppLocale.china:
+        return '已选择的材料';
+      case AppLocale.usa:
+        return 'Selected Ingredients';
+      case AppLocale.euro:
+        return 'Selected Ingredients';
+      case AppLocale.vietnam:
+        return 'Nguyên liệu đã chọn';
+    }
+  }
+
+  static String getComplete(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '완료';
+      case AppLocale.japan:
+        return '完了';
+      case AppLocale.china:
+        return '完成';
+      case AppLocale.usa:
+        return 'Complete';
+      case AppLocale.euro:
+        return 'Complete';
+      case AppLocale.vietnam:
+        return 'Hoàn thành';
     }
   }
 }

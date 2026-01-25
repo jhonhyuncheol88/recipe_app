@@ -15,8 +15,10 @@ import '../screen/pages/ingredient/ingredient_edit_page.dart';
 import '../screen/pages/recipe/recipe_main_page.dart';
 import '../screen/pages/recipe/recipe_add_page.dart';
 import '../screen/pages/recipe/recipe_edit_page.dart';
+import '../screen/pages/recipe/recipe_ingredient_select_page.dart';
 import '../screen/pages/sauce/sauce_main_page.dart';
 import '../screen/pages/sauce/sauce_edit_page.dart';
+import '../screen/pages/sauce/sauce_ingredient_select_page.dart';
 import '../model/index.dart';
 import '../screen/pages/settings_page.dart';
 import '../screen/pages/ai/ai_tabbar_page.dart';
@@ -30,8 +32,8 @@ import '../screen/pages/onboarding/onboarding_page.dart';
 import '../screen/pages/language_selection_page.dart';
 import '../screen/pages/encyclopedia/encyclopedia_main_page.dart';
 import '../screen/pages/encyclopedia/encyclopedia_recipe_detail_page.dart';
+import '../presentation/pages/batch_edit/batch_edit_page.dart';
 
-import '../theme/app_colors.dart';
 import '../util/app_locale.dart';
 
 import '../model/ingredient.dart';
@@ -51,9 +53,11 @@ class AppRouter {
   static const String settings = '/settings';
   static const String widgetExamples = '/widget-examples';
   static const String recipeCreate = '/recipe/create';
+  static const String recipeIngredientSelect = '/recipe/ingredient-select';
   static const String ingredientAdd = '/ingredient/add';
   static const String ingredientBulkAdd = '/ingredient/bulk-add';
   static const String ingredientEdit = '/ingredient/edit';
+  static const String ingredientBatchEdit = '/ingredient/batch-edit';
   static const String recipeEdit = '/recipe/edit';
   static const String ingredientDetail = '/ingredient/detail';
   static const String recipeDetail = '/recipe/detail';
@@ -62,6 +66,7 @@ class AppRouter {
   static const String ocrResult = '/ocr/result';
   static const String sauces = '/sauces';
   static const String sauceEdit = '/sauce/edit';
+  static const String sauceIngredientSelect = '/sauce/ingredient-select';
   static const String login = '/login';
   static const String accountInfo = '/account-info';
   static const String languageSelection = '/language-selection';
@@ -159,6 +164,10 @@ class AppRouter {
               return IngredientEditPage(ingredient: ingredient!);
             },
           ),
+          GoRoute(
+            path: ingredientBatchEdit,
+            builder: (context, state) => const BatchEditPage(),
+          ),
 
           // 레시피 관련 라우트
           GoRoute(
@@ -176,6 +185,15 @@ class AppRouter {
             },
           ),
           GoRoute(
+            path: sauceIngredientSelect,
+            builder: (context, state) {
+              final args = state.extra as Map<String, dynamic>?;
+              return SauceIngredientSelectPage(
+                sauceId: args?['sauceId'] as String? ?? '',
+              );
+            },
+          ),
+          GoRoute(
             path: recipeCreate,
             builder: (context, state) {
               final args = state.extra as Map<String, dynamic>?;
@@ -183,6 +201,20 @@ class AppRouter {
                 selectedIngredients:
                     args?['selectedIngredients'] as List<Ingredient>?,
                 selectedSauces: args?['selectedSauces'] as List<Sauce>?,
+              );
+            },
+          ),
+          GoRoute(
+            path: recipeIngredientSelect,
+            builder: (context, state) {
+              final args = state.extra as Map<String, dynamic>?;
+              return RecipeIngredientSelectPage(
+                currentSelectedIngredients:
+                    args?['currentSelectedIngredients'] as List<Ingredient>?,
+                currentIngredientAmounts:
+                    args?['currentIngredientAmounts'] as Map<String, double>?,
+                currentIngredientUnitIds:
+                    args?['currentIngredientUnitIds'] as Map<String, String>?,
               );
             },
           ),
@@ -209,17 +241,18 @@ class AppRouter {
                 if (recipe != null) {
                   return EncyclopediaRecipeDetailPage(
                     recipe: recipe,
-                    translationData: extra['translationData'] as Map<String, dynamic>?,
+                    translationData:
+                        extra['translationData'] as Map<String, dynamic>?,
                   );
                 }
               }
-              
+
               // extra가 EncyclopediaRecipe인 경우 (기존 호환성)
               final recipe = state.extra as EncyclopediaRecipe?;
               if (recipe != null) {
                 return EncyclopediaRecipeDetailPage(recipe: recipe);
               }
-              
+
               // extra가 없으면 번호로 찾기
               final numberStr = state.pathParameters['number'] ?? '';
               final number = int.tryParse(numberStr);
@@ -308,55 +341,57 @@ class AppRouter {
 
         // 에러 페이지
         errorBuilder: (context, state) => BlocBuilder<LocaleCubit, AppLocale>(
-          builder: (context, currentLocale) => Scaffold(
-            backgroundColor: AppColors.background,
-            appBar: AppBar(
-              title: Text(AppStrings.getPageNotFoundTitle(currentLocale)),
-              backgroundColor: AppColors.surface,
-              elevation: 0,
-            ),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: AppColors.error),
-                  const SizedBox(height: 16),
-                  Text(
-                    AppStrings.getPageNotFoundTitle(currentLocale),
-                    style: Theme.of(
-                      context,
-                    )
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(color: AppColors.textPrimary),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppStrings.getPageNotFoundSubtitle(currentLocale),
-                    style: Theme.of(
-                      context,
-                    )
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: AppColors.textSecondary),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () => context.go(home),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.buttonPrimary,
-                      foregroundColor: AppColors.buttonText,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(AppStrings.getBackToHome(currentLocale)),
-                  ),
-                ],
+          builder: (context, currentLocale) {
+            final colorScheme = Theme.of(context).colorScheme;
+            return Scaffold(
+              backgroundColor: colorScheme.surface,
+              appBar: AppBar(
+                title: Text(AppStrings.getPageNotFoundTitle(currentLocale)),
+                backgroundColor: colorScheme.surface,
+                elevation: 0,
               ),
-            ),
-          ),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline,
+                        size: 64, color: colorScheme.error),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppStrings.getPageNotFoundTitle(currentLocale),
+                      style: Theme.of(
+                        context,
+                      )
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(color: colorScheme.onSurface),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      AppStrings.getPageNotFoundSubtitle(currentLocale),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => context.go(home),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(AppStrings.getBackToHome(currentLocale)),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       );
 }
@@ -384,6 +419,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return BlocBuilder<LocaleCubit, AppLocale>(
       builder: (context, currentLocale) {
+        final colorScheme = Theme.of(context).colorScheme;
         return Scaffold(
           body: IndexedStack(index: _currentIndex, children: _pages),
           bottomNavigationBar: Column(
@@ -413,9 +449,10 @@ class _HomePageState extends State<HomePage> {
                   }
                 },
                 type: BottomNavigationBarType.fixed,
-                backgroundColor: AppColors.surface,
-                selectedItemColor: AppColors.accent,
-                unselectedItemColor: AppColors.textSecondary,
+                backgroundColor: colorScheme.surface,
+                selectedItemColor: colorScheme.primary,
+                unselectedItemColor:
+                    colorScheme.onSurface.withValues(alpha: 0.6),
                 items: [
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.inventory_2),
@@ -455,11 +492,12 @@ class ScanReceiptPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<LocaleCubit, AppLocale>(
       builder: (context, currentLocale) {
+        final colorScheme = Theme.of(context).colorScheme;
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: colorScheme.surface,
           appBar: AppBar(
             title: Text(AppStrings.getScanReceipt(currentLocale)),
-            backgroundColor: AppColors.surface,
+            backgroundColor: colorScheme.surface,
             elevation: 0,
           ),
           body: Center(

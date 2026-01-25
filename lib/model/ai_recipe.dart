@@ -1,6 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'dart:convert';
+import 'package:logger/logger.dart';
 import 'ingredient.dart';
+
+final logger = Logger();
 
 /// AI가 생성한 레시피 모델
 class AiRecipe extends Equatable {
@@ -67,9 +70,8 @@ class AiRecipe extends Equatable {
       'ingredients': jsonEncode(ingredients),
       'instructions': jsonEncode(instructions),
       'tips': tips != null ? jsonEncode(tips) : null,
-      'nutritional_info': nutritionalInfo != null
-          ? jsonEncode(nutritionalInfo)
-          : null,
+      'nutritional_info':
+          nutritionalInfo != null ? jsonEncode(nutritionalInfo) : null,
       'estimated_cost': estimatedCost,
       'tags': jsonEncode(tags),
       'creativity_score': creativityScore,
@@ -307,7 +309,7 @@ class AiRecipe extends Equatable {
         }
       } catch (e) {
         // 개별 재료 파싱 실패 시 로그만 남기고 계속 진행
-        print('재료 파싱 실패: $ingredient, 오류: $e');
+        logger.e('재료 파싱 실패: $ingredient, 오류: $e');
       }
     }
 
@@ -342,29 +344,29 @@ class AiRecipe extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    recipeName,
-    description,
-    cuisineType,
-    servings,
-    prepTimeMinutes,
-    cookTimeMinutes,
-    totalTimeMinutes,
-    difficulty,
-    ingredients,
-    instructions,
-    tips,
-    nutritionalInfo,
-    estimatedCost,
-    tags,
-    creativityScore,
-    generatedAt,
-    sourceIngredients,
-    aiModel,
-    promptVersion,
-    isConvertedToRecipe,
-    convertedRecipeId,
-  ];
+        id,
+        recipeName,
+        description,
+        cuisineType,
+        servings,
+        prepTimeMinutes,
+        cookTimeMinutes,
+        totalTimeMinutes,
+        difficulty,
+        ingredients,
+        instructions,
+        tips,
+        nutritionalInfo,
+        estimatedCost,
+        tags,
+        creativityScore,
+        generatedAt,
+        sourceIngredients,
+        aiModel,
+        promptVersion,
+        isConvertedToRecipe,
+        convertedRecipeId,
+      ];
 }
 
 /// AI 레시피의 재료 정보를 담는 클래스
@@ -436,7 +438,7 @@ class IngredientComparisonResult {
         matchedIngredient!.purchaseUnitId,
       );
     } catch (e) {
-      print('단위 변환 실패: $e');
+      logger.e('단위 변환 실패: $e');
       return null;
     }
   }

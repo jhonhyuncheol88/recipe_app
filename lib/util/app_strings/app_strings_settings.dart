@@ -1111,4 +1111,106 @@ mixin AppStringsSettings {
         return 'Kiểu châu Âu (100.000.000)';
     }
   }
+
+  static String getDisplaySettings(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '화면 설정';
+      case AppLocale.japan:
+        return '表示設定';
+      case AppLocale.china:
+        return '显示设置';
+      case AppLocale.usa:
+        return 'Display Settings';
+      case AppLocale.euro:
+        return 'Display Settings';
+      case AppLocale.vietnam:
+        return 'Cài đặt hiển thị';
+    }
+  }
+
+  static String getThemeColor(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '테마 색상';
+      case AppLocale.japan:
+        return 'テーマカラー';
+      case AppLocale.china:
+        return '主题颜色';
+      case AppLocale.usa:
+        return 'Theme Color';
+      case AppLocale.euro:
+        return 'Theme Color';
+      case AppLocale.vietnam:
+        return 'Màu chủ đề';
+    }
+  }
+
+  static String getDarkMode(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '다크 모드';
+      case AppLocale.japan:
+        return 'ダークモード';
+      case AppLocale.china:
+        return '深色模式';
+      case AppLocale.usa:
+        return 'Dark Mode';
+      case AppLocale.euro:
+        return 'Dark Mode';
+      case AppLocale.vietnam:
+        return 'Chế độ tối';
+    }
+  }
+
+  static String getOn(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '켜짐';
+      case AppLocale.japan:
+        return '온';
+      case AppLocale.china:
+        return '开启';
+      case AppLocale.usa:
+        return 'On';
+      case AppLocale.euro:
+        return 'On';
+      case AppLocale.vietnam:
+        return 'Bật';
+    }
+  }
+
+  static String getOff(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '꺼짐';
+      case AppLocale.japan:
+        return 'オフ';
+      case AppLocale.china:
+        return '关闭';
+      case AppLocale.usa:
+        return 'Off';
+      case AppLocale.euro:
+        return 'Off';
+      case AppLocale.vietnam:
+        return 'Tắt';
+    }
+  }
+
+  static String getThemeColorSelection(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '테마 색상 선택';
+      case AppLocale.japan:
+        return 'テーマカラーの選択';
+      case AppLocale.china:
+        return '选择主题颜色';
+      case AppLocale.usa:
+        return 'Select Theme Color';
+      case AppLocale.euro:
+        return 'Select Theme Color';
+      case AppLocale.vietnam:
+        return 'Chọn màu chủ đề';
+    }
+  }
 }

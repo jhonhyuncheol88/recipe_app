@@ -27,6 +27,8 @@ class AppEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: SingleChildScrollView(
         child: Padding(
@@ -39,20 +41,21 @@ class AppEmptyState extends StatelessWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: (iconColor ?? AppColors.primary).withOpacity(0.1),
+                  color:
+                      (iconColor ?? colorScheme.primary).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   icon,
                   size: 60,
-                  color: iconColor ?? AppColors.accent,
+                  color: iconColor ?? colorScheme.secondary,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
                 title,
                 style: AppTextStyles.headline4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -61,7 +64,7 @@ class AppEmptyState extends StatelessWidget {
                 Text(
                   subtitle!,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -73,8 +76,8 @@ class AppEmptyState extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onActionPressed,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.buttonPrimary,
-                      foregroundColor: AppColors.buttonText,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -109,11 +112,12 @@ class IngredientEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppEmptyState(
       title: AppStrings.getNoIngredients(currentLocale),
       subtitle: AppStrings.getNoIngredientsDescription(currentLocale),
       icon: Icons.inventory_2,
-      iconColor: AppColors.accent,
+      iconColor: colorScheme.secondary,
       onActionPressed: onScanPressed ?? onAddPressed,
       actionText: onScanPressed != null
           ? AppStrings.getScanReceiptButton(currentLocale)
@@ -132,11 +136,12 @@ class RecipeEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppEmptyState(
       title: AppStrings.getNoRecipes(currentLocale),
       subtitle: AppStrings.getNoRecipesDescription(currentLocale),
       icon: Icons.restaurant_menu,
-      iconColor: AppColors.accent,
+      iconColor: colorScheme.secondary,
     );
   }
 }
@@ -149,11 +154,12 @@ class SearchEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AppEmptyState(
       title: '검색 결과가 없습니다',
       subtitle: '"$searchTerm"에 대한 결과를 찾을 수 없습니다.\n다른 검색어를 시도해보세요.',
       icon: Icons.search_off,
-      iconColor: AppColors.textLight,
+      iconColor: colorScheme.onSurface.withValues(alpha: 0.4),
     );
   }
 }
@@ -166,20 +172,21 @@ class AppLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
             ),
             const SizedBox(height: 16),
             Text(
               message,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ],

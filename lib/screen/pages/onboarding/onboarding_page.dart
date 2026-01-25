@@ -3,8 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/onboarding/onboarding_cubit.dart';
-import '../../../theme/app_colors.dart';
+import '../../../controller/setting/theme_cubit.dart';
 import '../../../theme/app_text_styles.dart';
+import '../../../theme/app_colors.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/app_strings.dart';
 import '../../../router/router_helper.dart';
@@ -26,7 +27,7 @@ class _OnboardingPageState extends State<OnboardingPage>
   late Animation<double> _gradientAnimation;
 
   int _currentPage = 0;
-  final int _totalPages = 5;
+  final int _totalPages = 6;
 
   @override
   void initState() {
@@ -97,7 +98,6 @@ class _OnboardingPageState extends State<OnboardingPage>
     _resetAndStartAnimation();
   }
 
-  // 애니메이션 중복 제거를 위한 헬퍼 메서드
   void _resetAndStartAnimation() {
     _animationController.reset();
     _animationController.forward();
@@ -115,16 +115,17 @@ class _OnboardingPageState extends State<OnboardingPage>
   @override
   Widget build(BuildContext context) {
     final locale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       body: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.background, // Solid Color (깨끗한 화이트)
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // 상단 건너뛰기 버튼
               Align(
                 alignment: Alignment.topRight,
                 child: Padding(
@@ -142,7 +143,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                       child: Text(
                         AppStrings.getOnboardingSkip(locale),
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textPrimary,
+                          color: colorScheme.onSurface,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -150,8 +151,6 @@ class _OnboardingPageState extends State<OnboardingPage>
                   ),
                 ),
               ),
-
-              // 페이지 콘텐츠
               Expanded(
                 child: PageView(
                   controller: _pageController,
@@ -166,12 +165,11 @@ class _OnboardingPageState extends State<OnboardingPage>
                     _buildFeaturesPage(locale),
                     _buildComparisonPage(locale),
                     _buildStartPage(locale),
+                    _buildThemeSelectionPage(locale),
                     _buildAdNoticePage(locale),
                   ],
                 ),
               ),
-
-              // 하단 네비게이션
               _buildBottomNavigation(locale),
             ],
           ),
@@ -181,6 +179,7 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   Widget _buildWelcomePage(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
@@ -195,8 +194,6 @@ class _OnboardingPageState extends State<OnboardingPage>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
-
-                // 3D 효과가 있는 앱 아이콘
                 AnimatedBuilder(
                   animation: _gradientAnimation,
                   builder: (context, child) {
@@ -210,35 +207,33 @@ class _OnboardingPageState extends State<OnboardingPage>
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: colorScheme.surface,
                           borderRadius: BorderRadius.circular(30),
-                          boxShadow: const [
+                          boxShadow: [
                             BoxShadow(
-                              color: AppColors.shadow,
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.1),
                               blurRadius: 20,
-                              offset: Offset(0, 10),
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.restaurant_menu,
                           size: 56,
-                          color: AppColors.accent,
+                          color: colorScheme.primary,
                         ),
                       ),
                     );
                   },
                 ),
-
                 const SizedBox(height: 50),
-
-                // 메인 타이틀
                 AnimatedTextKit(
                   animatedTexts: [
                     TypewriterAnimatedText(
                       AppStrings.getOnboardingWelcome(locale),
                       textStyle: AppTextStyles.headline1.copyWith(
-                        color: AppColors.textPrimary,
+                        color: colorScheme.onSurface,
                         fontWeight: FontWeight.w800,
                         fontSize: 32,
                         letterSpacing: -0.5,
@@ -248,10 +243,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                   ],
                   totalRepeatCount: 1,
                 ),
-
                 const SizedBox(height: 30),
-
-                // 서브타이틀
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
@@ -261,7 +253,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                   child: Text(
                     AppStrings.getOnboardingSubtitle(locale),
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.textSecondary,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                       height: 1.5,
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
@@ -269,9 +261,6 @@ class _OnboardingPageState extends State<OnboardingPage>
                     textAlign: TextAlign.center,
                   ),
                 ),
-
-                const SizedBox(height: 40),
-
                 const SizedBox(height: 40),
               ],
             ),
@@ -282,6 +271,7 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   Widget _buildFeaturesPage(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
@@ -295,8 +285,6 @@ class _OnboardingPageState extends State<OnboardingPage>
             child: Column(
               children: [
                 const SizedBox(height: 30),
-
-                // 제목
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -306,19 +294,15 @@ class _OnboardingPageState extends State<OnboardingPage>
                   child: Text(
                     AppStrings.getOnboardingMainFeatures(locale),
                     style: AppTextStyles.headline3.copyWith(
-                      color: AppColors.textPrimary,
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                       fontSize: 22,
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
-                // 벤토 그리드 레이아웃
                 Column(
                   children: [
-                    // 첫 번째 행: 이미지 스캔 + AI 레시피
                     Row(
                       children: [
                         Expanded(
@@ -326,8 +310,8 @@ class _OnboardingPageState extends State<OnboardingPage>
                           child: _buildFeatureCard(
                             icon: Icons.camera_alt,
                             title: AppStrings.getOnboardingImageScan(locale),
-                            color: AppColors.accent,
-                            height: 180, // 높이 증가
+                            color: colorScheme.primary,
+                            height: 180,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -336,16 +320,13 @@ class _OnboardingPageState extends State<OnboardingPage>
                           child: _buildFeatureCard(
                             icon: Icons.auto_awesome,
                             title: AppStrings.getOnboardingAiRecipe(locale),
-                            color: AppColors.secondary,
-                            height: 180, // 높이 증가
+                            color: colorScheme.secondary,
+                            height: 180,
                           ),
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 16),
-
-                    // 두 번째 행: 원가 계산 + 유통기한 관리
                     Row(
                       children: [
                         Expanded(
@@ -355,8 +336,8 @@ class _OnboardingPageState extends State<OnboardingPage>
                             title: AppStrings.getOnboardingCostCalculation(
                               locale,
                             ),
-                            color: AppColors.success,
-                            height: 180, // 높이 증가
+                            color: Colors.green,
+                            height: 180,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -367,13 +348,12 @@ class _OnboardingPageState extends State<OnboardingPage>
                             title: AppStrings.getOnboardingExpiryManagement(
                               locale,
                             ),
-                            color: AppColors.warning,
-                            height: 180, // 높이 증가
+                            color: Colors.orange,
+                            height: 180,
                           ),
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 30),
                   ],
                 ),
@@ -391,18 +371,19 @@ class _OnboardingPageState extends State<OnboardingPage>
     required Color color,
     required double height,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       height: height,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.dividerLight, width: 1),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant, width: 1),
+        boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: colorScheme.onSurface.withValues(alpha: 0.05),
             blurRadius: 12,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -412,7 +393,7 @@ class _OnboardingPageState extends State<OnboardingPage>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 32),
@@ -422,13 +403,13 @@ class _OnboardingPageState extends State<OnboardingPage>
             child: Text(
               title,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textPrimary,
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
                 height: 1.3,
               ),
               textAlign: TextAlign.center,
-              maxLines: 6, // 최대 줄 수 증가 (영어 대응)
+              maxLines: 6,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -438,6 +419,7 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   Widget _buildComparisonPage(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
@@ -451,8 +433,6 @@ class _OnboardingPageState extends State<OnboardingPage>
             child: Column(
               children: [
                 const SizedBox(height: 30),
-
-                // 제목
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -462,54 +442,41 @@ class _OnboardingPageState extends State<OnboardingPage>
                   child: Text(
                     AppStrings.getOnboardingBeforeAfter(locale),
                     style: AppTextStyles.headline3.copyWith(
-                      color: AppColors.textPrimary,
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                       fontSize: 22,
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
-                // Before & After 카드들
                 Column(
                   children: [
-                    // Before
                     _buildComparisonCard(
                       title: 'Before',
                       content: AppStrings.getOnboardingBefore(locale),
                       icon: Icons.hourglass_empty,
-                      color: AppColors.error,
+                      color: colorScheme.error,
                       isBefore: true,
                     ),
-
                     const SizedBox(height: 24),
-
-                    // 화살표
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: _surfaceCard(radius: 20, withShadow: false),
-                      child: const Icon(
+                      child: Icon(
                         Icons.keyboard_arrow_down,
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurface.withValues(alpha: 0.4),
                         size: 32,
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
-                    // After
                     _buildComparisonCard(
                       title: 'After',
                       content: AppStrings.getOnboardingAfter(locale),
                       icon: Icons.auto_awesome,
-                      color: AppColors.success,
+                      color: Colors.green,
                       isBefore: false,
                     ),
-
                     const SizedBox(height: 40),
-
-                    // 사용 예시
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: _surfaceCard(radius: 16),
@@ -518,7 +485,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                           Text(
                             AppStrings.getOnboardingUsageExample(locale),
                             style: AppTextStyles.bodyLarge.copyWith(
-                              color: AppColors.textPrimary,
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.w700,
                               fontSize: 18,
                             ),
@@ -527,7 +494,8 @@ class _OnboardingPageState extends State<OnboardingPage>
                           Text(
                             AppStrings.getOnboardingExample(locale),
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.6),
                               fontWeight: FontWeight.w500,
                               height: 1.5,
                             ),
@@ -540,17 +508,17 @@ class _OnboardingPageState extends State<OnboardingPage>
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.success.withOpacity(0.15),
+                              color: Colors.green.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.success.withOpacity(0.4),
+                                color: Colors.green.withValues(alpha: 0.4),
                                 width: 1,
                               ),
                             ),
                             child: Text(
                               AppStrings.getOnboardingCostExample(locale),
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.success,
+                                color: Colors.green,
                                 fontWeight: FontWeight.w700,
                               ),
                               textAlign: TextAlign.center,
@@ -563,17 +531,17 @@ class _OnboardingPageState extends State<OnboardingPage>
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.warning.withOpacity(0.15),
+                              color: Colors.orange.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.warning.withOpacity(0.4),
+                                color: Colors.orange.withValues(alpha: 0.4),
                                 width: 1,
                               ),
                             ),
                             child: Text(
                               AppStrings.getOnboardingExpiryExample(locale),
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.warning,
+                                color: Colors.orange,
                                 fontWeight: FontWeight.w700,
                               ),
                               textAlign: TextAlign.center,
@@ -582,7 +550,6 @@ class _OnboardingPageState extends State<OnboardingPage>
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 30),
                   ],
                 ),
@@ -601,17 +568,18 @@ class _OnboardingPageState extends State<OnboardingPage>
     required Color color,
     required bool isBefore,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.35), width: 1.5),
-        boxShadow: const [
+        border: Border.all(color: color.withValues(alpha: 0.35), width: 1.5),
+        boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: colorScheme.onSurface.withValues(alpha: 0.05),
             blurRadius: 12,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -620,7 +588,7 @@ class _OnboardingPageState extends State<OnboardingPage>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 32),
@@ -642,7 +610,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                 Text(
                   content,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                     height: 1.4,
                   ),
@@ -656,6 +624,7 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   Widget _buildStartPage(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
@@ -669,8 +638,6 @@ class _OnboardingPageState extends State<OnboardingPage>
             child: Column(
               children: [
                 const SizedBox(height: 40),
-
-                // 3D 효과가 있는 완성 아이콘
                 AnimatedBuilder(
                   animation: _gradientAnimation,
                   builder: (context, child) {
@@ -684,40 +651,37 @@ class _OnboardingPageState extends State<OnboardingPage>
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: colorScheme.surface,
                           borderRadius: BorderRadius.circular(60),
-                          boxShadow: const [
+                          boxShadow: [
                             BoxShadow(
-                              color: AppColors.shadow,
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.1),
                               blurRadius: 20,
-                              offset: Offset(0, 10),
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
                         child: const Icon(
                           Icons.check_circle,
                           size: 60,
-                          color: AppColors.success,
+                          color: Colors.green,
                         ),
                       ),
                     );
                   },
                 ),
-
                 const SizedBox(height: 40),
-
                 Text(
                   AppStrings.getOnboardingReady(locale),
                   style: AppTextStyles.headline1.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w800,
                     fontSize: 32,
                     letterSpacing: -0.5,
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -727,7 +691,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                   child: Text(
                     AppStrings.getOnboardingReadyMessage(locale),
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.textSecondary,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                       height: 1.5,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -735,10 +699,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                     textAlign: TextAlign.center,
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
-                // 시작 설정 옵션
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: _surfaceCard(radius: 16),
@@ -747,7 +708,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                       Text(
                         AppStrings.getOnboardingOptionalSettings(locale),
                         style: AppTextStyles.bodyLarge.copyWith(
-                          color: AppColors.textPrimary,
+                          color: colorScheme.onSurface,
                           fontWeight: FontWeight.w700,
                           fontSize: 18,
                         ),
@@ -769,7 +730,6 @@ class _OnboardingPageState extends State<OnboardingPage>
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 40),
                 const SizedBox(height: 30),
               ],
@@ -785,22 +745,23 @@ class _OnboardingPageState extends State<OnboardingPage>
     required String title,
     required String subtitle,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: colorScheme.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.dividerLight, width: 1),
+        border: Border.all(color: colorScheme.outlineVariant, width: 1),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: AppColors.accent, size: 20),
+            child: Icon(icon, color: colorScheme.primary, size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -810,7 +771,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                 Text(
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -818,7 +779,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                 Text(
                   subtitle,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -831,26 +792,32 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   BoxDecoration _surfaceCard({double radius = 16, bool withShadow = true}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return BoxDecoration(
-      color: AppColors.surface,
+      color: colorScheme.surface,
       borderRadius: BorderRadius.circular(radius),
       border: Border.all(
-        color: AppColors.dividerLight,
+        color: colorScheme.outlineVariant,
         width: 1,
       ),
       boxShadow: withShadow
-          ? const [
+          ? [
               BoxShadow(
-                color: AppColors.shadow,
+                color: colorScheme.onSurface.withValues(alpha: 0.05),
                 blurRadius: 12,
-                offset: Offset(0, 6),
+                offset: const Offset(0, 6),
               ),
             ]
           : null,
     );
   }
 
-  Widget _buildAdNoticePage(AppLocale locale) {
+  Widget _buildThemeSelectionPage(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final themeCubit = context.watch<ThemeCubit>();
+    final currentTheme = themeCubit.state.themeType;
+    final isDark = themeCubit.state.brightness == Brightness.dark;
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
@@ -867,17 +834,199 @@ class _OnboardingPageState extends State<OnboardingPage>
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: _surfaceCard(radius: 20),
-                  child: const Icon(
+                  child: Icon(
+                    Icons.palette,
+                    size: 48,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  AppStrings.getThemeColor(locale),
+                  style: AppTextStyles.headline3.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: _surfaceCard(radius: 16),
+                  child: Text(
+                    AppStrings.getThemeColorSelection(locale),
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // 테마 색상 선택
+                Column(
+                  children: ThemeType.values.map((type) {
+                    final typeColorScheme = AppColors.getColorScheme(
+                        type, isDark ? Brightness.dark : Brightness.light);
+                    final isSelected = currentTheme == type;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: GestureDetector(
+                        onTap: () {
+                          context.read<ThemeCubit>().changeTheme(type);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? typeColorScheme.primary.withValues(alpha: 0.1)
+                                : colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isSelected
+                                  ? typeColorScheme.primary
+                                  : colorScheme.outlineVariant,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: typeColorScheme.primary
+                                          .withValues(alpha: 0.2),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: typeColorScheme.primary,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: colorScheme.onSurface
+                                        .withValues(alpha: 0.1),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(
+                                  type.displayName,
+                                  style: AppTextStyles.bodyLarge.copyWith(
+                                    color: isSelected
+                                        ? typeColorScheme.primary
+                                        : colorScheme.onSurface,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  Icons.check_circle,
+                                  color: typeColorScheme.primary,
+                                  size: 24,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+                // 다크 모드 토글
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: _surfaceCard(radius: 16),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isDark ? Icons.dark_mode : Icons.light_mode,
+                        color: colorScheme.primary,
+                        size: 28,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppStrings.getDarkMode(locale),
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                color: colorScheme.onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              isDark
+                                  ? AppStrings.getOn(locale)
+                                  : AppStrings.getOff(locale),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: isDark,
+                        onChanged: (value) {
+                          context.read<ThemeCubit>().toggleBrightness();
+                        },
+                        activeColor: colorScheme.primary,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdNoticePage(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32.0,
+              vertical: 20.0,
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: _surfaceCard(radius: 20),
+                  child: Icon(
                     Icons.ads_click,
                     size: 48,
-                    color: AppColors.accent,
+                    color: colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: 32),
                 Text(
                   AppStrings.getOnboardingAdNoticeTitle(locale),
                   style: AppTextStyles.headline3.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
                   textAlign: TextAlign.center,
@@ -892,7 +1041,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                       Text(
                         AppStrings.getOnboardingAdNoticeDescription(locale),
                         style: AppTextStyles.bodyLarge.copyWith(
-                          color: AppColors.textSecondary,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
                           height: 1.5,
                         ),
                       ),
@@ -900,13 +1049,13 @@ class _OnboardingPageState extends State<OnboardingPage>
                       Row(
                         children: [
                           const Icon(Icons.check_circle,
-                              color: AppColors.success, size: 20),
+                              color: Colors.green, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               AppStrings.getOnboardingAdNoticePoint(locale),
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.textPrimary,
+                                color: colorScheme.onSurface,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -923,8 +1072,8 @@ class _OnboardingPageState extends State<OnboardingPage>
                   child: ElevatedButton(
                     onPressed: _completeOnboarding,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.buttonPrimary,
-                      foregroundColor: AppColors.buttonText,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -941,7 +1090,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                 Text(
                   AppStrings.getOnboardingAdNoticeFooter(locale),
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -955,11 +1104,11 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   Widget _buildBottomNavigation(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
       child: Column(
         children: [
-          // 페이지 인디케이터
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(_totalPages, (index) {
@@ -973,21 +1122,17 @@ class _OnboardingPageState extends State<OnboardingPage>
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(6),
                     color: _currentPage == index
-                        ? AppColors.accent
-                        : AppColors.divider,
+                        ? colorScheme.primary
+                        : colorScheme.outlineVariant,
                   ),
                 ),
               );
             }),
           ),
-
           const SizedBox(height: 30),
-
-          // 네비게이션 버튼
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // 이전 버튼
               if (_currentPage > 0)
                 Container(
                   decoration: _surfaceCard(radius: 20, withShadow: false),
@@ -1003,12 +1148,12 @@ class _OnboardingPageState extends State<OnboardingPage>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.arrow_back,
-                            color: AppColors.textPrimary, size: 20),
+                            color: colorScheme.onSurface, size: 20),
                         const SizedBox(width: 8),
                         Text(
                           '이전',
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1018,8 +1163,6 @@ class _OnboardingPageState extends State<OnboardingPage>
                 )
               else
                 const SizedBox(width: 100),
-
-              // 다음 버튼
               if (_currentPage < _totalPages - 1)
                 Container(
                   decoration: _surfaceCard(radius: 20, withShadow: false),
@@ -1037,7 +1180,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                         Text(
                           AppStrings.getOnboardingNext(locale),
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textPrimary,
+                            color: colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1045,7 +1188,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                         Icon(
                           Icons.arrow_forward,
                           size: 20,
-                          color: AppColors.textPrimary,
+                          color: colorScheme.onSurface,
                         ),
                       ],
                     ),

@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
-import '../../../util/app_locale.dart';
 import '../../../util/number_formatter.dart';
 import 'package:intl/intl.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
-
 import '../../../model/ingredient.dart';
 import '../../../model/tag.dart';
 import '../../../model/unit.dart';
@@ -32,8 +29,6 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   late final TextEditingController _priceController;
   late final TextEditingController _amountController;
 
-  // 포맷팅된 값 저장용 (미사용 필드 제거)
-
   late String _selectedUnitId;
   DateTime? _expiryDate;
   String _selectedTagId = '';
@@ -50,7 +45,6 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   void _initializeControllers() {
     _nameController = TextEditingController(text: widget.ingredient.name);
-    // _priceController는 build에서 초기화 (context 필요)
     _priceController = TextEditingController();
     _amountController = TextEditingController(
       text: NumberFormat(
@@ -81,7 +75,6 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   }
 
   void _loadTags() {
-    // TODO: TagCubit에서 태그 목록 가져오기
     final locale = context.read<LocaleCubit>().state;
     setState(() {
       _availableTags = DefaultTags.ingredientTagsFor(locale);
@@ -89,7 +82,6 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   }
 
   void _loadUnits() {
-    // TODO: UnitRepository에서 단위 목록 가져오기
     setState(() {
       _availableUnits = [
         Unit(id: 'g', name: 'g', type: 'weight', conversionFactor: 1.0),
@@ -115,24 +107,25 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     _initializePriceController(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(
           AppStrings.getEditIngredient(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
         ),
         actions: [
           IconButton(
             onPressed: _isLoading ? null : _confirmDeleteIngredient,
-            icon: const Icon(Icons.delete, color: AppColors.error),
+            icon: Icon(Icons.delete, color: colorScheme.error),
             tooltip: AppStrings.getDelete(currentLocale),
           ),
           TextButton(
@@ -140,7 +133,9 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
             child: Text(
               AppStrings.getSave(currentLocale),
               style: AppTextStyles.buttonMedium.copyWith(
-                color: _isLoading ? AppColors.textSecondary : AppColors.primary,
+                color: _isLoading
+                    ? colorScheme.onSurface.withValues(alpha: 0.3)
+                    : colorScheme.primary,
               ),
             ),
           ),
@@ -171,13 +166,14 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   Widget _buildBasicInfoSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           AppStrings.getBasicInformation(currentLocale),
           style: AppTextStyles.headline4.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -199,11 +195,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
           hint: AppStrings.getEnterPrice(currentLocale),
           controller: _priceController,
           locale: currentLocale,
-          onChanged: (price) {
-            // 가격이 변경될 때 처리
-            print(
-                'CurrencyInputField onChanged: price=$price (type: ${price.runtimeType})');
-          },
+          onChanged: (price) {},
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return AppStrings.getPriceRequired(currentLocale);
@@ -223,9 +215,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
               label: AppStrings.getPurchaseAmount(currentLocale),
               hint: AppStrings.getEnterAmount(currentLocale),
               controller: _amountController,
-              onChanged: (amount) {
-                // 수량이 변경될 때 처리
-              },
+              onChanged: (amount) {},
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return AppStrings.getAmountRequired(currentLocale);
@@ -244,10 +234,19 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
                       _availableUnits.any((unit) => unit.id == _selectedUnitId)
                   ? _selectedUnitId
                   : null,
+              dropdownColor: colorScheme.surface,
+              style: TextStyle(color: colorScheme.onSurface),
               decoration: InputDecoration(
                 labelText: AppStrings.getUnit(currentLocale),
+                labelStyle: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.6)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: colorScheme.outlineVariant),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: colorScheme.outlineVariant),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -277,13 +276,14 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   Widget _buildTagSelectionSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           AppStrings.getTags(currentLocale),
           style: AppTextStyles.headline4.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -291,7 +291,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         Text(
           AppStrings.getSelectTagsDescription(currentLocale),
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 12),
@@ -312,12 +312,13 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
                   }
                 });
               },
-              backgroundColor: AppColors.surface,
-              selectedColor: Color(
-                int.parse(tag.color.replaceAll('#', '0xFF')),
-              ),
+              backgroundColor: colorScheme.surface,
+              selectedColor: colorScheme.primary.withValues(alpha: 0.2),
+              checkmarkColor: colorScheme.primary,
               labelStyle: AppTextStyles.bodySmall.copyWith(
-                color: isSelected ? Colors.white : AppColors.textSecondary,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             );
           }).toList(),
@@ -328,13 +329,14 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   Widget _buildExpiryDateSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           AppStrings.getExpiryDate(currentLocale),
           style: AppTextStyles.headline4.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -342,7 +344,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         Text(
           AppStrings.getExpiryDateDescription(currentLocale),
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 12),
@@ -352,14 +354,14 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              border: Border.all(),
+              border: Border.all(color: colorScheme.outlineVariant),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.calendar_today,
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurface.withValues(alpha: 0.4),
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -370,8 +372,8 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
                         : AppStrings.getSelectExpiryDate(currentLocale),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: _expiryDate != null
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
+                          ? colorScheme.onSurface
+                          : colorScheme.onSurface.withOpacity(0.4),
                     ),
                   ),
                 ),
@@ -382,8 +384,9 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
                         _expiryDate = null;
                       });
                     },
-                    icon: const Icon(Icons.clear, size: 20),
-                    color: AppColors.textSecondary,
+                    icon: Icon(Icons.clear,
+                        size: 20,
+                        color: colorScheme.onSurface.withValues(alpha: 0.4)),
                   ),
               ],
             ),
@@ -408,6 +411,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   void _selectExpiryDate() async {
     final now = DateTime.now();
+    final colorScheme = Theme.of(context).colorScheme;
     final selectedDate = await showDatePicker(
       context: context,
       initialDate: _expiryDate ?? now.add(const Duration(days: 7)),
@@ -416,11 +420,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: AppColors.buttonText,
-              surface: AppColors.surface,
-            ),
+            colorScheme: colorScheme,
           ),
           child: child!,
         );
@@ -434,26 +434,21 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
     }
   }
 
-  // 포맷팅된 가격 파싱 (소수점 포함)
   double? _parseFormattedPrice(String value) {
     if (value.isEmpty) return null;
-    // 숫자와 소수점만 추출 (천 단위 구분자 제거)
     final cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
-    final parsed = double.tryParse(cleanValue);
-    // 디버그 로그
-    print(
-        '_parseFormattedPrice: input="$value", clean="$cleanValue", parsed=$parsed');
-    return parsed;
+    return double.tryParse(cleanValue);
   }
 
-  // 포맷팅된 수량 파싱
   double? _parseFormattedAmount(String value) {
+    if (value.isEmpty) return null;
     final numbers = value.replaceAll(RegExp(r'[^\d.]'), '');
     return double.tryParse(numbers);
   }
 
   void _updateIngredient() async {
     final currentLocale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -462,7 +457,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppStrings.getUnitRequired(currentLocale)),
-          backgroundColor: AppColors.error,
+          backgroundColor: colorScheme.error,
         ),
       );
       return;
@@ -476,12 +471,6 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
       final parsedPrice = _parseFormattedPrice(_priceController.text) ?? 0.0;
       final parsedAmount = _parseFormattedAmount(_amountController.text) ?? 0.0;
 
-      // 디버그 로그
-      print(
-          '_updateIngredient: priceController.text="${_priceController.text}"');
-      print('_updateIngredient: parsedPrice=$parsedPrice');
-      print('_updateIngredient: parsedAmount=$parsedAmount');
-
       final updatedIngredient = widget.ingredient.copyWith(
         name: _nameController.text.trim(),
         purchasePrice: parsedPrice,
@@ -490,9 +479,6 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         expiryDate: _expiryDate,
         tagIds: _selectedTagId.isNotEmpty ? [_selectedTagId] : [],
       );
-
-      print(
-          '_updateIngredient: updatedIngredient.purchasePrice=${updatedIngredient.purchasePrice}');
 
       context.read<IngredientCubit>().updateIngredient(updatedIngredient);
 
@@ -503,7 +489,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
             content: Text(
               AppStrings.getIngredientUpdatedSuccessfully(currentLocale),
             ),
-            backgroundColor: AppColors.success,
+            backgroundColor: colorScheme.primary,
           ),
         );
       }
@@ -512,7 +498,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppStrings.getIngredientUpdateFailed(currentLocale)),
-            backgroundColor: AppColors.error,
+            backgroundColor: colorScheme.error,
           ),
         );
       }
@@ -527,12 +513,16 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   Future<void> _confirmDeleteIngredient() async {
     final currentLocale = context.read<LocaleCubit>().state;
+    final colorScheme = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.getDelete(currentLocale)),
+        backgroundColor: colorScheme.surface,
+        title: Text(AppStrings.getDelete(currentLocale),
+            style: TextStyle(color: colorScheme.onSurface)),
         content: Text(
           '${widget.ingredient.name} ${AppStrings.getDeleteRecipeConfirm(currentLocale)}',
+          style: TextStyle(color: colorScheme.onSurface),
         ),
         actions: [
           TextButton(
@@ -541,7 +531,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.error),
             child: Text(AppStrings.getDelete(currentLocale)),
           ),
         ],

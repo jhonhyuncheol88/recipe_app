@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_strings.dart';
 import '../../widget/index.dart';
 import '../../widget/recipe_quick_view_dialog.dart';
-import '../../widget/recipe_price_chart_bottom_sheet.dart';
+
 import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/recipe/recipe_state.dart';
 import '../../../model/recipe.dart';
@@ -110,9 +109,10 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       appBar: AppBar(
         title: Text(
           AppStrings.getRecipeManagement(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.headline4
+              .copyWith(color: Theme.of(context).colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         actions: [
           if (_isSelectionMode) ...[
@@ -121,16 +121,22 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
               child: Text(
                 AppStrings.getCancelSelection(currentLocale),
                 style: AppTextStyles.buttonMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
               ),
             ),
           ] else ...[
             IconButton(
               onPressed: _toggleSelectionMode,
-              icon: const Icon(
+              icon: Icon(
                 Icons.select_all,
-                color: AppColors.textSecondary,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -141,21 +147,20 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
           return Column(
             children: [
               // AppBar 아래 바깥쪽 구분선
-              const Divider(height: 1, thickness: 1, color: AppColors.divider),
+              const Divider(
+                  height: 1,
+                  thickness: 1), // color removed to use theme default
               if (_isSelectionMode) ...[
                 _buildSelectionHeader(),
                 // Selection Header 아래 안쪽 구분선
-                const Divider(
-                    height: 1, thickness: 1, color: AppColors.divider),
+                const Divider(height: 1, thickness: 1),
               ],
               _buildSearchSection(),
               // Search Section 아래 안쪽 구분선
-              const Divider(
-                  height: 1, thickness: 1, color: AppColors.dividerLight),
+              const Divider(height: 1, thickness: 1),
               _buildFilterSection(),
               // Filter Section 아래 안쪽 구분선
-              const Divider(
-                  height: 1, thickness: 1, color: AppColors.dividerLight),
+              const Divider(height: 1, thickness: 1),
               Expanded(child: _buildRecipeList(recipeState)),
             ],
           );
@@ -174,7 +179,9 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
           context.watch<LocaleCubit>().state,
         ),
         controller: _searchController,
-        prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+        prefixIcon: Icon(Icons.search,
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
         onChanged: (value) {
           context.read<RecipeCubit>().searchRecipes(value);
         },
@@ -202,12 +209,18 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
                   });
                   _applyFilter(filter, currentLocale);
                 },
-                selectedColor:
-                    AppColors.accent.withAlpha(51), // withAlpha 사용 (약 20% 투명도)
-                checkmarkColor: AppColors.accent,
+                selectedColor: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.2),
+                checkmarkColor: Theme.of(context).colorScheme.primary,
                 labelStyle: AppTextStyles.bodySmall.copyWith(
-                  color:
-                      isSelected ? AppColors.accent : AppColors.textSecondary,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
@@ -222,15 +235,16 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     final currentLocale = context.watch<LocaleCubit>().state;
     return Container(
       padding: const EdgeInsets.all(16),
-      color: AppColors.primaryLight,
+      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
       child: Row(
         children: [
-          Icon(Icons.check_circle, color: AppColors.accent, size: 20),
+          Icon(Icons.check_circle,
+              color: Theme.of(context).colorScheme.primary, size: 20),
           const SizedBox(width: 8),
           Text(
             AppStrings.getSelectedCount(currentLocale, _selectedRecipes.length),
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.accent,
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -239,7 +253,8 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
             onPressed: _deleteSelectedRecipes,
             child: Text(
               AppStrings.getDeleteSelected(context.watch<LocaleCubit>().state),
-              style: AppTextStyles.buttonSmall.copyWith(color: AppColors.error),
+              style: AppTextStyles.buttonSmall
+                  .copyWith(color: Theme.of(context).colorScheme.error),
             ),
           ),
         ],
@@ -269,12 +284,16 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 64, color: AppColors.error),
+              Icon(Icons.error_outline,
+                  size: 64, color: Theme.of(context).colorScheme.error),
               const SizedBox(height: 16),
               Text(
                 state.message,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -373,8 +392,8 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       return FloatingActionButton(
         heroTag: 'recipe_delete_button',
         onPressed: _deleteSelectedRecipes,
-        backgroundColor: AppColors.error,
-        foregroundColor: AppColors.buttonText,
+        backgroundColor: Theme.of(context).colorScheme.error,
+        foregroundColor: Theme.of(context).colorScheme.onError,
         child: const Icon(Icons.delete),
       );
     }
@@ -382,9 +401,8 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     return FloatingActionButton.extended(
       heroTag: 'recipe_add_button',
       onPressed: _addRecipe,
-      backgroundColor: AppColors.textLight, // 더 연한 회색
-      foregroundColor: AppColors.buttonText,
-      icon: const Icon(Icons.add),
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
       label: Text(
         AppStrings.getAddRecipeButton(currentLocale),
         style: AppTextStyles.buttonMedium,
@@ -479,7 +497,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
                       content: Text(
                         AppStrings.getDeleteError(currentLocale, e.toString()),
                       ),
-                      backgroundColor: AppColors.error,
+                      backgroundColor: Theme.of(context).colorScheme.error,
                     ),
                   );
                 }
@@ -487,7 +505,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
             },
             child: Text(
               AppStrings.getDelete(currentLocale),
-              style: const TextStyle(color: AppColors.error),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
         ],
@@ -529,7 +547,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
                       content: Text(
                         AppStrings.getDeleteError(currentLocale, e.toString()),
                       ),
-                      backgroundColor: AppColors.error,
+                      backgroundColor: Theme.of(context).colorScheme.error,
                     ),
                   );
                 }
@@ -537,7 +555,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
             },
             child: Text(
               AppStrings.getDelete(currentLocale),
-              style: const TextStyle(color: AppColors.error),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
         ],
@@ -635,7 +653,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppStrings.getCopied(currentLocale)),
-          backgroundColor: AppColors.success,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           duration: const Duration(seconds: 2),
         ),
       );
