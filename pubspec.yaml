@@ -16,10 +16,10 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.12+30
+version: 1.0.16+34
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.7.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -56,7 +56,7 @@ dependencies:
   animated_text_kit: ^4.2.2
   
   # 폰트
-  google_fonts: ^6.1.0
+  google_fonts: ^6.3.2
   
   # 유틸리티
   uuid: ^4.3.3

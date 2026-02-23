@@ -7,7 +7,7 @@ import '../util/app_locale.dart';
 
 /// AI 분석 서비스 (식자재 인식, 레시피 구성 분석 등)
 class AiAnalysisService {
-  static const String _modelName = 'gemini-2.0-flash-exp';
+  static const String _modelName = 'gemini-3-flash-preview';
   late final GenerativeModel _model;
   late final GenerativeModel _visionModel;
 

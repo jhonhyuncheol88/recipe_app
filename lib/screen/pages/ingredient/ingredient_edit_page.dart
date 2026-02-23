@@ -411,12 +411,21 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   void _selectExpiryDate() async {
     final now = DateTime.now();
+    final firstDate = now;
+    final lastDate = now.add(const Duration(days: 365));
+    DateTime initialDate = _expiryDate ?? now.add(const Duration(days: 7));
+    if (initialDate.isBefore(firstDate)) {
+      initialDate = firstDate;
+    } else if (initialDate.isAfter(lastDate)) {
+      initialDate = lastDate;
+    }
+
     final colorScheme = Theme.of(context).colorScheme;
     final selectedDate = await showDatePicker(
       context: context,
-      initialDate: _expiryDate ?? now.add(const Duration(days: 7)),
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(

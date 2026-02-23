@@ -14,7 +14,7 @@ enum ProfitMargin {
 
 /// AI 기반 판매 분석 서비스
 class AiSalesAnalysisService {
-  static const String _modelName = 'gemini-2.0-flash-exp';
+  static const String _modelName = 'gemini-3-flash-preview';
   late final GenerativeModel _model;
 
   // 총 매출 대비 원가율 설정 (총 매출 중 원가가 차지하는 비율)

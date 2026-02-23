@@ -7,7 +7,6 @@ import 'package:recipe_app/util/app_strings.dart';
 import '../controller/setting/locale_cubit.dart';
 import '../controller/recipe/recipe_cubit.dart';
 import '../controller/ingredient/ingredient_cubit.dart';
-import '../controller/encyclopedia/encyclopedia_cubit.dart';
 import '../screen/pages/ingredient/ingredient_main_page.dart';
 import '../screen/pages/ingredient/ingredient_add_page.dart';
 import '../screen/pages/ingredient/ingredient_bulk_add_page.dart';
@@ -36,9 +35,6 @@ import '../presentation/pages/batch_edit/batch_edit_page.dart';
 
 import '../util/app_locale.dart';
 
-import '../model/ingredient.dart';
-import '../model/recipe.dart';
-import '../model/ocr_result.dart';
 import '../model/encyclopedia_recipe.dart';
 
 /// 앱 라우터 설정
@@ -410,8 +406,6 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     const IngredientMainPage(),
     const RecipeMainPage(),
-    const AiTabbarPage(),
-    const EncyclopediaMainPage(),
     const SettingsPage(),
   ];
 
@@ -440,12 +434,6 @@ class _HomePageState extends State<HomePage> {
                   } else if (index == 0) {
                     // 재료 탭
                     context.read<IngredientCubit>().loadIngredients();
-                  } else if (index == 2) {
-                    // AI 탭 - AI 레시피 목록 로드
-                    context.read<RecipeCubit>().loadAiRecipes();
-                  } else if (index == 3) {
-                    // 백과사전 탭 - 페이지를 열 때마다 랜덤으로 섞기
-                    context.read<EncyclopediaCubit>().loadRecipes();
                   }
                 },
                 type: BottomNavigationBarType.fixed,
@@ -461,14 +449,6 @@ class _HomePageState extends State<HomePage> {
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.restaurant_menu),
                     label: AppStrings.getRecipes(currentLocale),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.auto_awesome),
-                    label: AppStrings.getAi(currentLocale),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.menu_book),
-                    label: AppStrings.getEncyclopediaTab(currentLocale),
                   ),
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.settings),

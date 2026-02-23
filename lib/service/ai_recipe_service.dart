@@ -6,7 +6,7 @@ import '../util/app_locale.dart';
 
 /// AI 레시피 생성 서비스 (Gemini API 기반)
 class AiRecipeService {
-  static const String _modelName = 'gemini-2.0-flash-exp';
+  static const String _modelName = 'gemini-3-flash-preview';
   late final GenerativeModel _model;
 
   AiRecipeService() {
