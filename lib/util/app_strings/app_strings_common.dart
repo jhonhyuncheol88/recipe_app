@@ -507,6 +507,78 @@ mixin AppStringsCommon {
     }
   }
 
+  /// 유통기한 알림 섹션 라벨 (당일)
+  static String getExpirySectionToday(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '[만료임박- 당일]';
+      case AppLocale.japan:
+        return '[本日期限]';
+      case AppLocale.china:
+        return '[当天到期]';
+      case AppLocale.usa:
+        return '[Expiring today]';
+      case AppLocale.euro:
+        return '[Heute fällig]';
+      case AppLocale.vietnam:
+        return '[Hết hạn hôm nay]';
+    }
+  }
+
+  /// 유통기한 알림 섹션 라벨 (1일)
+  static String getExpirySectionIn1Day(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '[만료임박- 1일]';
+      case AppLocale.japan:
+        return '[1日後期限]';
+      case AppLocale.china:
+        return '[1天后到期]';
+      case AppLocale.usa:
+        return '[Expiring in 1 day]';
+      case AppLocale.euro:
+        return '[In 1 Tag fällig]';
+      case AppLocale.vietnam:
+        return '[Hết hạn sau 1 ngày]';
+    }
+  }
+
+  /// 유통기한 알림 섹션 라벨 (3일)
+  static String getExpirySectionIn3Days(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '[만료임박- 3일]';
+      case AppLocale.japan:
+        return '[3日後期限]';
+      case AppLocale.china:
+        return '[3天后到期]';
+      case AppLocale.usa:
+        return '[Expiring in 3 days]';
+      case AppLocale.euro:
+        return '[In 3 Tagen fällig]';
+      case AppLocale.vietnam:
+        return '[Hết hạn sau 3 ngày]';
+    }
+  }
+
+  /// 유통기한 알림 제목
+  static String getExpiryNotificationTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '[유통기한 알림]';
+      case AppLocale.japan:
+        return '[消費期限お知らせ]';
+      case AppLocale.china:
+        return '[保质期提醒]';
+      case AppLocale.usa:
+        return '[Expiry alert]';
+      case AppLocale.euro:
+        return '[Haltbarkeitshinweis]';
+      case AppLocale.vietnam:
+        return '[Thông báo hết hạn]';
+    }
+  }
+
   /// 다이얼로그
   static String getLanguageSelection(AppLocale locale) {
     switch (locale) {

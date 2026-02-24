@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:developer' as developer;
+import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/index.dart';
@@ -8,6 +8,8 @@ import '../../data/ingredient_repository.dart';
 import '../../data/sauce_repository.dart';
 import '../../service/sauce_expiry_service.dart';
 import '../../service/notification_service.dart';
+import '../../util/app_strings.dart';
+import '../../util/app_locale.dart';
 
 abstract class ExpiryNotificationState {}
 
@@ -24,6 +26,7 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
   final SauceExpiryService sauceExpiryService;
   final NotificationService _notificationService;
   final Uuid _uuid = const Uuid();
+  static final _logger = Logger(printer: PrettyPrinter(methodCount: 0));
 
   // SharedPreferences keys
   static const String _kNotifEnabled = 'notif_enabled';
@@ -57,22 +60,14 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
 
   void setNotificationsEnabled(bool enabled) {
     notificationsEnabled = enabled;
-    developer.log('Notifications toggle -> $enabled', name: 'ExpiryNotif');
+    _logger.i('[ExpiryNotif] Notifications toggle -> $enabled');
     _savePrefs();
     if (!enabled) {
-      // 예약된 모든 알림 취소
-      developer.log(
-        'Cancelling all scheduled notifications',
-        name: 'ExpiryNotif',
-      );
+      _logger.i('[ExpiryNotif] Cancelling all scheduled notifications');
       _notificationService.cancelAll();
       emit(ExpiryNotificationsLoaded(const []));
     } else {
-      // DB에서 다시 읽어 스케줄 등록
-      developer.log(
-        'Reloading and scheduling notifications',
-        name: 'ExpiryNotif',
-      );
+      _logger.i('[ExpiryNotif] Reloading and scheduling notifications');
       loadExpiryNotifications();
     }
   }
@@ -123,12 +118,11 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
 
   /// 재료와 소스의 만료 임계값에 따라 노티피케이션 목록 산출 (메모리 상)
   Future<void> loadExpiryNotifications() async {
-    developer.log('loadExpiryNotifications() start', name: 'ExpiryNotif');
+    _logger.i('[ExpiryNotif] loadExpiryNotifications() start');
     final List<ExpiryNotification> list = [];
 
-    // 알림 전역 OFF 시 빈 목록 반환
     if (!notificationsEnabled) {
-      developer.log('Skipped: notifications disabled', name: 'ExpiryNotif');
+      _logger.i('[ExpiryNotif] Skipped: notifications disabled');
       emit(ExpiryNotificationsLoaded(const []));
       return;
     }
@@ -136,10 +130,7 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
     // 재료 알림 (시간 단위로 평가)
     final now = DateTime.now();
     final ingredients = await ingredientRepository.getAllIngredients();
-    developer.log(
-      'Fetched ingredients: ${ingredients.length}',
-      name: 'ExpiryNotif',
-    );
+    _logger.i('[ExpiryNotif] Fetched ingredients: ${ingredients.length}');
     for (final ing in ingredients) {
       if (ing.expiryDate == null) continue;
       final remaining = ing.expiryDate!.difference(now);
@@ -167,7 +158,7 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
 
     // 소스 알림 (소스 자체는 만료일 없음 → 구성 재료로 계산, 시간 단위 평가)
     final sauces = await sauceRepository.getAllSauces();
-    developer.log('Fetched sauces: ${sauces.length}', name: 'ExpiryNotif');
+    _logger.i('[ExpiryNotif] Fetched sauces: ${sauces.length}');
     for (final sauce in sauces) {
       final expiry = await sauceExpiryService.getSauceExpiryDate(sauce.id);
       if (expiry == null) continue;
@@ -195,37 +186,120 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
     }
 
     emit(ExpiryNotificationsLoaded(list));
-    developer.log(
-      'Computed notifications: ${list.length}',
-      name: 'ExpiryNotif',
-    );
+    _logger.i('[ExpiryNotif] Computed notifications: ${list.length}');
 
-    // 스케줄링: 알림 상태/토글에 맞춰 예약 등록
     try {
-      developer.log('Clearing previous schedule...', name: 'ExpiryNotif');
+      _logger.i('[ExpiryNotif] Clearing previous schedule...');
       await _notificationService.cancelAll();
+
+      final prefs = await SharedPreferences.getInstance();
+      final locale = _getLocaleFromPrefs(prefs);
+
+      final grouped = <String, List<({String name, DateTime expiryAt})>>{};
+      final now = DateTime.now();
+
       for (final n in list) {
-        developer.log(
-          'Schedule -> ${n.ingredientName} at ${n.expiryDate.toIso8601String()} [warning:$warningEnabled danger:$dangerEnabled expired:$expiredEnabled]',
-          name: 'ExpiryNotif',
-        );
-        await _notificationService.scheduleForItem(
-          itemId: n.ingredientId,
-          itemName: n.ingredientName,
-          expiryAt: n.expiryDate,
-          warningEnabled: warningEnabled,
-          dangerEnabled: dangerEnabled,
-          expiredEnabled: expiredEnabled,
-          notificationTime: notificationTime,
+        if (warningEnabled) {
+          final at = DateTime(
+            n.expiryDate.year,
+            n.expiryDate.month,
+            n.expiryDate.day - 3,
+            notificationTime.hour,
+            notificationTime.minute,
+          );
+          if (at.isAfter(now)) {
+            final key = '${at.millisecondsSinceEpoch}';
+            grouped.putIfAbsent(key, () => []).add((name: n.ingredientName, expiryAt: n.expiryDate));
+          }
+        }
+        if (dangerEnabled) {
+          final at = DateTime(
+            n.expiryDate.year,
+            n.expiryDate.month,
+            n.expiryDate.day - 1,
+            notificationTime.hour,
+            notificationTime.minute,
+          );
+          if (at.isAfter(now)) {
+            final key = '${at.millisecondsSinceEpoch}';
+            grouped.putIfAbsent(key, () => []).add((name: n.ingredientName, expiryAt: n.expiryDate));
+          }
+        }
+        if (expiredEnabled) {
+          final at = DateTime(
+            n.expiryDate.year,
+            n.expiryDate.month,
+            n.expiryDate.day,
+            notificationTime.hour,
+            notificationTime.minute,
+          );
+          if (at.isAfter(now)) {
+            final key = '${at.millisecondsSinceEpoch}';
+            grouped.putIfAbsent(key, () => []).add((name: n.ingredientName, expiryAt: n.expiryDate));
+          }
+        }
+      }
+
+      final title = AppStrings.getExpiryNotificationTitle(locale);
+      final sectionToday = AppStrings.getExpirySectionToday(locale);
+      final section1Day = AppStrings.getExpirySectionIn1Day(locale);
+      final section3Days = AppStrings.getExpirySectionIn3Days(locale);
+
+      for (final entry in grouped.entries) {
+        final atMs = int.parse(entry.key);
+        final at = DateTime.fromMillisecondsSinceEpoch(atMs);
+        final notifDate = DateTime(at.year, at.month, at.day);
+
+        final items = entry.value;
+        final byDiff = <int, List<String>>{};
+        for (final item in items) {
+          final expDate = DateTime(item.expiryAt.year, item.expiryAt.month, item.expiryAt.day);
+          final diff = expDate.difference(notifDate).inDays;
+          if (diff == 0 || diff == 1 || diff == 3) {
+            byDiff.putIfAbsent(diff, () => []).add(item.name);
+          }
+        }
+
+        final sections = <String>[];
+        if (byDiff.containsKey(0)) {
+          sections.add(sectionToday);
+          sections.addAll(byDiff[0]!);
+        }
+        if (byDiff.containsKey(1)) {
+          sections.add(section1Day);
+          sections.addAll(byDiff[1]!);
+        }
+        if (byDiff.containsKey(3)) {
+          sections.add(section3Days);
+          sections.addAll(byDiff[3]!);
+        }
+        final body = sections.join('\n');
+
+        await _notificationService.scheduleConsolidated(
+          at: at,
+          title: title,
+          body: body,
         );
       }
-      developer.log(
-        'Scheduling done: ${list.length} items',
-        name: 'ExpiryNotif',
-      );
+
+      _logger.i('[ExpiryNotif] Scheduling done: ${grouped.length} consolidated notifications');
+      final pending = await _notificationService.getPending();
+      _logger.i('[ExpiryNotif] Pending notifications: ${pending.length}');
+      for (final p in pending) {
+        _logger.d('[ExpiryNotif]   - id:${p.id} ${p.title}');
+      }
     } catch (e) {
-      developer.log('Scheduling failed: $e', name: 'ExpiryNotif');
+      _logger.e('[ExpiryNotif] Scheduling failed: $e');
     }
+  }
+
+  AppLocale _getLocaleFromPrefs(SharedPreferences prefs) {
+    final saved = prefs.getString('app_locale_code');
+    if (saved != null) {
+      final found = AppLocale.fromLocaleCode(saved);
+      if (found != null) return found;
+    }
+    return AppLocale.defaultLocale;
   }
 
   bool _isTypeEnabled(NotificationType type) {
@@ -252,16 +326,15 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
       final minute = prefs.getInt(_kNotifTime + '_minute') ?? 0;
       notificationTime = TimeOfDay(hour: hour, minute: minute);
 
-      developer.log(
-        'Prefs loaded -> enabled:$notificationsEnabled warning:$warningEnabled danger:$dangerEnabled expired:$expiredEnabled time:${notificationTime.hour}:${notificationTime.minute}',
-        name: 'ExpiryNotif',
+      _logger.i(
+        '[ExpiryNotif] Prefs loaded -> enabled:$notificationsEnabled warning:$warningEnabled danger:$dangerEnabled expired:$expiredEnabled time:${notificationTime.hour}:${notificationTime.minute}',
       );
       // Emit empty list to trigger UI rebuild with restored toggles.
       // Actual scheduling will be triggered after NotificationService.initialize()
       // from main.dart.
       emit(ExpiryNotificationsLoaded(const []));
     } catch (e) {
-      developer.log('Prefs load failed: $e', name: 'ExpiryNotif');
+      _logger.e('[ExpiryNotif] Prefs load failed: $e');
     }
   }
 
@@ -277,12 +350,11 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
       await prefs.setInt(_kNotifTime + '_hour', notificationTime.hour);
       await prefs.setInt(_kNotifTime + '_minute', notificationTime.minute);
 
-      developer.log(
-        'Prefs saved -> enabled:$notificationsEnabled warning:$warningEnabled danger:$dangerEnabled expired:$expiredEnabled time:${notificationTime.hour}:${notificationTime.minute}',
-        name: 'ExpiryNotif',
+      _logger.i(
+        '[ExpiryNotif] Prefs saved -> enabled:$notificationsEnabled warning:$warningEnabled danger:$dangerEnabled expired:$expiredEnabled time:${notificationTime.hour}:${notificationTime.minute}',
       );
     } catch (e) {
-      developer.log('Prefs save failed: $e', name: 'ExpiryNotif');
+      _logger.e('[ExpiryNotif] Prefs save failed: $e');
     }
   }
 }

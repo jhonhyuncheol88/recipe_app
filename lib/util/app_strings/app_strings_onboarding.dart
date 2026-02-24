@@ -428,6 +428,23 @@ mixin AppStringsOnboarding {
     }
   }
 
+  static String getOnboardingPrevious(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이전';
+      case AppLocale.japan:
+        return '前へ';
+      case AppLocale.china:
+        return '上一步';
+      case AppLocale.usa:
+        return 'Previous';
+      case AppLocale.euro:
+        return 'Previous';
+      case AppLocale.vietnam:
+        return 'Previous';
+    }
+  }
+
   static String getOnboardingReady(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:

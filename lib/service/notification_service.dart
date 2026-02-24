@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:logger/logger.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
 class NotificationService {
+  /// exactAllowWhileIdle 실패 시 inexactAllowWhileIdle로 폴백 (exact_alarms_not_permitted 대응)
+  static bool _useExactAlarms = true;
+  static final _logger = Logger(printer: PrettyPrinter(methodCount: 0));
+
   NotificationService();
 
   final FlutterLocalNotificationsPlugin _plugin =
@@ -21,7 +28,7 @@ class NotificationService {
     bool requestIOSPermission = true, // iOS에서 권한 요청 여부
   }) async {
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/launcher_icon');
     final DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings(
       requestAlertPermission: requestIOSPermission,
@@ -41,38 +48,55 @@ class NotificationService {
       },
     );
 
-    // Timezone 초기화
+    // Timezone 초기화 - flutter_timezone으로 기기 IANA 타임존 획득
     tz.initializeTimeZones();
     try {
-      final deviceTimeZone = DateTime.now().timeZoneName;
-      final deviceLocation = tz.getLocation(deviceTimeZone);
+      final tzInfo = await FlutterTimezone.getLocalTimezone();
+      final deviceLocation = tz.getLocation(tzInfo.identifier);
       tz.setLocalLocation(deviceLocation);
     } catch (e) {
-      // 기기 시간대 감지 실패 시 UTC로 fallback
       tz.setLocalLocation(tz.getLocation('UTC'));
     }
-    // Android 채널 사전 생성
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      _channelId,
-      _channelName,
-      description: _channelDescription,
-      importance: Importance.high,
-    );
+    // Android 채널 사전 생성 및 알림 권한 요청
     final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.createNotificationChannel(channel);
+    if (androidPlugin != null) {
+      await androidPlugin.requestNotificationsPermission();
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        _channelId,
+        _channelName,
+        description: _channelDescription,
+        importance: Importance.max,
+        enableVibration: true,
+        playSound: true,
+      );
+      await androidPlugin.createNotificationChannel(channel);
+    }
   }
 
-  NotificationDetails _details() {
-    const android = AndroidNotificationDetails(
-      _channelId,
-      _channelName,
-      channelDescription: _channelDescription,
-      importance: Importance.high,
-      priority: Priority.high,
-    );
+  NotificationDetails _details({String? body}) {
+    final android = body != null && body.isNotEmpty
+        ? AndroidNotificationDetails(
+            _channelId,
+            _channelName,
+            channelDescription: _channelDescription,
+            importance: Importance.max,
+            priority: Priority.max,
+            enableVibration: true,
+            playSound: true,
+            styleInformation: BigTextStyleInformation(body),
+          )
+        : const AndroidNotificationDetails(
+            _channelId,
+            _channelName,
+            channelDescription: _channelDescription,
+            importance: Importance.max,
+            priority: Priority.max,
+            enableVibration: true,
+            playSound: true,
+          );
     const ios = DarwinNotificationDetails();
-    return const NotificationDetails(android: android, iOS: ios);
+    return NotificationDetails(android: android, iOS: ios);
   }
 
   Future<void> cancelAll() async {
@@ -100,7 +124,50 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
-    await _plugin.show(id, title, body, _details(), payload: payload);
+    await _plugin.show(id, title, body, _details(body: body), payload: payload);
+  }
+
+  AndroidScheduleMode get _scheduleMode =>
+      _useExactAlarms
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle;
+
+  Future<void> _zonedSchedule({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledDate,
+    required NotificationDetails details,
+    String? payload,
+    DateTimeComponents? matchDateTimeComponents,
+  }) async {
+    try {
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        scheduledDate,
+        details,
+        androidScheduleMode: _scheduleMode,
+        matchDateTimeComponents: matchDateTimeComponents,
+        payload: payload,
+      );
+    } on PlatformException catch (e) {
+      if (e.code == 'exact_alarms_not_permitted' && _useExactAlarms) {
+        _useExactAlarms = false;
+        await _zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledDate,
+          details: details,
+          payload: payload,
+          matchDateTimeComponents: matchDateTimeComponents,
+        );
+      } else {
+        rethrow;
+      }
+    }
   }
 
   /// 지정 시각에 1회 알림
@@ -112,13 +179,12 @@ class NotificationService {
     String? payload,
   }) async {
     final tzTime = tz.TZDateTime.from(when, tz.local);
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      tzTime,
-      _details(),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    await _zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tzTime,
+      details: _details(body: body),
       payload: payload,
     );
   }
@@ -143,94 +209,34 @@ class NotificationService {
     if (next.isBefore(now)) {
       next = next.add(const Duration(days: 1));
     }
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      next,
-      _details(),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
+    await _zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: next,
+      details: _details(body: body),
       payload: payload,
+      matchDateTimeComponents: DateTimeComponents.time,
     );
   }
 
-  Future<void> scheduleForItem({
-    required String itemId,
-    required String itemName,
-    required DateTime expiryAt,
-    required TimeOfDay notificationTime, // 알람 시간 추가
-    bool warningEnabled = true,
-    bool dangerEnabled = true,
-    bool expiredEnabled = true,
+  /// 일자·시각 기준 통합 알람 1개 스케줄 (여러 재료를 하나의 알림으로)
+  Future<void> scheduleConsolidated({
+    required DateTime at,
+    required String title,
+    required String body,
   }) async {
-    final now = DateTime.now();
-    final baseId = _stableIdFromString(itemId) * 10;
-
-    // 경고: 만료 72시간 전 + 사용자 설정 시간
-    if (warningEnabled) {
-      final at = DateTime(
-        expiryAt.year,
-        expiryAt.month,
-        expiryAt.day - 3, // 3일 전
-        notificationTime.hour,
-        notificationTime.minute,
-      );
-      if (at.isAfter(now)) {
-        await _plugin.zonedSchedule(
-          baseId + 1,
-          '[만료 경고] $itemName',
-          '3일 이내에 만료됩니다.',
-          tz.TZDateTime.from(at, tz.local),
-          _details(),
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          payload: 'warning:$itemId',
-        );
-      }
-    }
-
-    // 위험: 만료 24시간 전 + 사용자 설정 시간
-    if (dangerEnabled) {
-      final at = DateTime(
-        expiryAt.year,
-        expiryAt.month,
-        expiryAt.day - 1, // 1일 전
-        notificationTime.hour,
-        notificationTime.minute,
-      );
-      if (at.isAfter(now)) {
-        await _plugin.zonedSchedule(
-          baseId + 2,
-          '[만료 임박] $itemName',
-          '1일 이내에 만료됩니다.',
-          tz.TZDateTime.from(at, tz.local),
-          _details(),
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          payload: 'danger:$itemId',
-        );
-      }
-    }
-
-    // 만료 시점 + 사용자 설정 시간
-    if (expiredEnabled) {
-      final at = DateTime(
-        expiryAt.year,
-        expiryAt.month,
-        expiryAt.day, // 당일
-        notificationTime.hour,
-        notificationTime.minute,
-      );
-      if (at.isAfter(now)) {
-        await _plugin.zonedSchedule(
-          baseId + 3,
-          '[만료] $itemName',
-          '유통기한이 지났습니다.',
-          tz.TZDateTime.from(at, tz.local),
-          _details(),
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          payload: 'expired:$itemId',
-        );
-      }
-    }
+    final id = _stableIdFromString(at.toIso8601String());
+    _logger.d(
+      '[ExpiryNotif] scheduleConsolidated: $title at ${at.toIso8601String()}',
+    );
+    await _zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(at, tz.local),
+      details: _details(body: body),
+      payload: title,
+    );
   }
 }

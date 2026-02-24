@@ -17,6 +17,9 @@ import 'service/admob_forward.dart';
 import 'service/initial_data_service.dart';
 import 'service/in_app_review_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 import 'service/notification_service.dart';
 import 'controller/ocr/ocr_cubit.dart';
 import 'controller/encyclopedia/encyclopedia_cubit.dart';
@@ -55,6 +58,17 @@ void main() async {
 
   // 필수 초기화는 실패해도 앱 실행을 계속함
   await _safePreRunInitialization(logger);
+
+  // 타임존 초기화 (zonedSchedule 전 반드시 필요)
+  try {
+    tz.initializeTimeZones();
+    final tzInfo = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
+    logger.i('✅ 타임존 초기화 완료: ${tzInfo.identifier}');
+  } catch (e) {
+    tz.setLocalLocation(tz.getLocation('UTC'));
+    logger.w('⚠️ 타임존 초기화 실패, UTC 사용: $e');
+  }
 
   logger.i('🎨 MyApp 실행');
   runApp(const MyApp());
@@ -439,8 +453,8 @@ class _PermissionRequesterState extends State<PermissionRequester> {
     });
   }
 
-  // NotificationService는 권한 요청 없이 초기화만 수행합니다
-  // 실제 권한 요청은 PermissionRequestPage에서 PermissionService를 통해 이루어집니다
+  // NotificationService.initialize()에서 Android POST_NOTIFICATIONS, iOS 알림 권한 요청
+  // 초기화 완료 후 loadExpiryNotifications()로 알람 스케줄 등록
 
   @override
   Widget build(BuildContext context) => widget.child;
@@ -450,7 +464,7 @@ class _PermissionRequesterState extends State<PermissionRequester> {
       if (!mounted) return;
       final service = context.read<NotificationService>();
 
-      // iOS에서는 네이티브 권한 팝업 표시
+      // iOS: 네이티브 권한 팝업, Android 13+: POST_NOTIFICATIONS 런타임 요청
       print('🔔 알림 서비스 초기화 및 권한 요청');
       await service.initialize(requestIOSPermission: true);
 

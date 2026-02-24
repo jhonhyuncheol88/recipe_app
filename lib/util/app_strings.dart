@@ -371,6 +371,14 @@ class AppStrings {
       AppStringsSettings.getExpiryWarningDescription(locale);
   static String getExpiryWarningNotification(AppLocale locale) =>
       AppStringsSettings.getExpiryWarningNotification(locale);
+  static String getExpirySectionToday(AppLocale locale) =>
+      AppStringsCommon.getExpirySectionToday(locale);
+  static String getExpirySectionIn1Day(AppLocale locale) =>
+      AppStringsCommon.getExpirySectionIn1Day(locale);
+  static String getExpirySectionIn3Days(AppLocale locale) =>
+      AppStringsCommon.getExpirySectionIn3Days(locale);
+  static String getExpiryNotificationTitle(AppLocale locale) =>
+      AppStringsCommon.getExpiryNotificationTitle(locale);
   static String getExportComplete(AppLocale locale) =>
       AppStringsSettings.getExportComplete(locale);
   static String getExportCompleteMessage(AppLocale locale, String location) =>
@@ -636,6 +644,8 @@ class AppStrings {
       AppStringsOnboarding.getOnboardingMainFeatures(locale);
   static String getOnboardingNext(AppLocale locale) =>
       AppStringsOnboarding.getOnboardingNext(locale);
+  static String getOnboardingPrevious(AppLocale locale) =>
+      AppStringsOnboarding.getOnboardingPrevious(locale);
   static String getOnboardingOptionalSettings(AppLocale locale) =>
       AppStringsOnboarding.getOnboardingOptionalSettings(locale);
   static String getOnboardingReady(AppLocale locale) =>

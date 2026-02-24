@@ -176,10 +176,9 @@ class IngredientCubit extends Cubit<IngredientState> {
       } catch (_) {}
 
       emit(IngredientLoaded(ingredients: ingredients));
-      // 재료 수정 후 알림 스케줄 갱신 (유통기한 변경 가능)
+      // 재료 수정 후 알림 스케줄 갱신 (유통기한 추가/변경/제거 모두 반영)
       try {
-        if (ingredient.expiryDate != null &&
-            _expiryNotificationCubit?.notificationsEnabled == true) {
+        if (_expiryNotificationCubit?.notificationsEnabled == true) {
           await _expiryNotificationCubit!.loadExpiryNotifications();
         }
       } catch (_) {}

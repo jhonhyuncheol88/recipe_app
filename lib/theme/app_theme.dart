@@ -46,7 +46,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
-            color: isDark ? Colors.white10 : Color(0xFFEEEEEE),
+            color: isDark ? Colors.white10 : Color(0xFFEDE8E4),
             width: 1,
           ),
         ),
@@ -89,16 +89,16 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor:
-            isDark ? Colors.white.withValues(alpha: 0.05) : Color(0xFFFAFAFA),
+            isDark ? Colors.white.withValues(alpha: 0.05) : Color(0xFFF8F5F2),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide:
-              BorderSide(color: isDark ? Colors.white24 : Color(0xFFEEEEEE)),
+              BorderSide(color: isDark ? Colors.white24 : Color(0xFFEDE8E4)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide:
-              BorderSide(color: isDark ? Colors.white24 : Color(0xFFEEEEEE)),
+              BorderSide(color: isDark ? Colors.white24 : Color(0xFFEDE8E4)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -157,9 +157,9 @@ class AppTheme {
 
       // 스낵바 테마
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: isDark ? Colors.white : const Color(0xFF323232),
+        backgroundColor: isDark ? Colors.white : const Color(0xFF4A4541),
         contentTextStyle: AppTextStyles.bodyMedium.copyWith(
-          color: isDark ? Colors.black : Colors.white,
+          color: isDark ? Colors.black : const Color(0xFFF8F5F2),
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         behavior: SnackBarBehavior.floating,
@@ -190,7 +190,7 @@ class AppTheme {
 
       // 구분선 테마
       dividerTheme: DividerThemeData(
-        color: isDark ? Colors.white24 : Color(0xFFEEEEEE),
+        color: isDark ? Colors.white24 : Color(0xFFEDE8E4),
         thickness: 1,
         space: 1,
       ),
