@@ -32,6 +32,7 @@ import '../screen/pages/language_selection_page.dart';
 import '../screen/pages/encyclopedia/encyclopedia_main_page.dart';
 import '../screen/pages/encyclopedia/encyclopedia_recipe_detail_page.dart';
 import '../presentation/pages/batch_edit/batch_edit_page.dart';
+import '../screen/pages/settings/recipe_tag_management_page.dart';
 
 import '../util/app_locale.dart';
 
@@ -67,6 +68,7 @@ class AppRouter {
   static const String accountInfo = '/account-info';
   static const String languageSelection = '/language-selection';
   static const String onboarding = '/onboarding';
+  static const String recipeTagManagement = '/settings/recipe-tags';
   static const String encyclopedia = '/encyclopedia';
   static const String encyclopediaRecipeDetail = '/encyclopedia/recipe/:number';
 
@@ -264,6 +266,12 @@ class AppRouter {
           GoRoute(
             path: settings,
             builder: (context, state) => const SettingsPage(),
+          ),
+
+          // 레시피 메뉴 태그 관리 페이지
+          GoRoute(
+            path: recipeTagManagement,
+            builder: (context, state) => const RecipeTagManagementPage(),
           ),
 
           // 로그인 페이지

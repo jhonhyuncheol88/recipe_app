@@ -1036,4 +1036,125 @@ mixin AppStringsRecipe {
         return 'Hoàn thành';
     }
   }
+
+  static String getRecipeTagManagement(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea: return '메뉴 태그 관리';
+      case AppLocale.japan: return 'メニュータグ管理';
+      case AppLocale.china: return '菜单标签管理';
+      case AppLocale.usa:   return 'Menu Tag Management';
+      case AppLocale.euro:  return 'Menu Tag Management';
+      case AppLocale.vietnam: return 'Quản lý thẻ menu';
+    }
+  }
+
+  static String getRecipeTagManagementDescription(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea: return '레시피 분류 태그 추가, 수정, 순서 변경';
+      case AppLocale.japan: return 'レシピタグの追加・編集・並べ替え';
+      case AppLocale.china: return '添加、编辑和重新排序菜谱标签';
+      case AppLocale.usa:   return 'Add, edit, and reorder recipe tags';
+      case AppLocale.euro:  return 'Add, edit, and reorder recipe tags';
+      case AppLocale.vietnam: return 'Thêm, chỉnh sửa và sắp xếp lại thẻ';
+    }
+  }
+
+  static String getAddTag(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea: return '태그 추가';
+      case AppLocale.japan: return 'タグを追加';
+      case AppLocale.china: return '添加标签';
+      case AppLocale.usa:   return 'Add Tag';
+      case AppLocale.euro:  return 'Add Tag';
+      case AppLocale.vietnam: return 'Thêm thẻ';
+    }
+  }
+
+  static String getEditTag(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea: return '태그 수정';
+      case AppLocale.japan: return 'タグを編集';
+      case AppLocale.china: return '编辑标签';
+      case AppLocale.usa:   return 'Edit Tag';
+      case AppLocale.euro:  return 'Edit Tag';
+      case AppLocale.vietnam: return 'Chỉnh sửa thẻ';
+    }
+  }
+
+  static String getDeleteTag(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea: return '태그 삭제';
+      case AppLocale.japan: return 'タグを削除';
+      case AppLocale.china: return '删除标签';
+      case AppLocale.usa:   return 'Delete Tag';
+      case AppLocale.euro:  return 'Delete Tag';
+      case AppLocale.vietnam: return 'Xóa thẻ';
+    }
+  }
+
+  static String getDeleteTagConfirm(AppLocale locale, String name) {
+    switch (locale) {
+      case AppLocale.korea: return '"$name" 태그를 삭제하시겠습니까?';
+      case AppLocale.japan: return 'タグ "$name" を削除しますか？';
+      case AppLocale.china: return '确定删除标签 "$name"？';
+      case AppLocale.usa:   return 'Delete tag "$name"?';
+      case AppLocale.euro:  return 'Delete tag "$name"?';
+      case AppLocale.vietnam: return 'Xóa thẻ "$name"?';
+    }
+  }
+
+  static String getTagName(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea: return '태그 이름';
+      case AppLocale.japan: return 'タグ名';
+      case AppLocale.china: return '标签名称';
+      case AppLocale.usa:   return 'Tag Name';
+      case AppLocale.euro:  return 'Tag Name';
+      case AppLocale.vietnam: return 'Tên thẻ';
+    }
+  }
+
+  static String getTagColor(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea: return '색상';
+      case AppLocale.japan: return '色';
+      case AppLocale.china: return '颜色';
+      case AppLocale.usa:   return 'Color';
+      case AppLocale.euro:  return 'Color';
+      case AppLocale.vietnam: return 'Màu sắc';
+    }
+  }
+
+  static String getNoTags(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea: return '등록된 태그가 없습니다';
+      case AppLocale.japan: return 'タグがありません';
+      case AppLocale.china: return '暂无标签';
+      case AppLocale.usa:   return 'No tags yet';
+      case AppLocale.euro:  return 'No tags yet';
+      case AppLocale.vietnam: return 'Chưa có thẻ nào';
+    }
+  }
+
+  static String getTagReorderHint(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea: return '길게 눌러 드래그하면 순서를 변경할 수 있습니다';
+      case AppLocale.japan: return '長押しでドラッグして順序を変更できます';
+      case AppLocale.china: return '长按拖动可以调整顺序';
+      case AppLocale.usa:   return 'Long press and drag to reorder';
+      case AppLocale.euro:  return 'Long press and drag to reorder';
+      case AppLocale.vietnam: return 'Nhấn giữ và kéo để sắp xếp lại';
+    }
+  }
+
+  static String getTagUsageCount(AppLocale locale, int count) {
+    switch (locale) {
+      case AppLocale.korea: return '레시피 $count개에서 사용 중';
+      case AppLocale.japan: return 'レシピ $count 件で使用中';
+      case AppLocale.china: return '在 $count 个菜谱中使用';
+      case AppLocale.usa:   return 'Used in $count recipe(s)';
+      case AppLocale.euro:  return 'Used in $count recipe(s)';
+      case AppLocale.vietnam: return 'Đang dùng trong $count công thức';
+    }
+  }
 }

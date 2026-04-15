@@ -262,6 +262,12 @@ class _SettingsPageState extends State<SettingsPage> {
     return Column(
       children: [
         SettingsListTile(
+          title: AppStrings.getRecipeTagManagement(locale),
+          subtitle: AppStrings.getRecipeTagManagementDescription(locale),
+          icon: Icons.label_outline,
+          onTap: () => context.push('/settings/recipe-tags'),
+        ),
+        SettingsListTile(
           title: AppStrings.getOnboarding(locale),
           subtitle: AppStrings.getOnboardingDescription(locale),
           icon: Icons.auto_awesome,

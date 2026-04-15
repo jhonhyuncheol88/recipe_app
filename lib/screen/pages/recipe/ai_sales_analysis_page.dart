@@ -13,7 +13,6 @@ import '../../../controller/setting/number_format_cubit.dart';
 import '../../../model/recipe.dart';
 import '../../widget/ai_sales_analysis_widget.dart';
 import '../../widget/index.dart';
-import '../../widget/ai_analysis_ad_dialog.dart';
 
 /// AI 판매 분석 페이지
 class AiSalesAnalysisPage extends StatefulWidget {
@@ -395,29 +394,7 @@ class _AiSalesAnalysisPageState extends State<AiSalesAnalysisPage> {
   }
 
   Widget _buildAnalysisResult(AppLocale locale) {
-    final colorScheme = Theme.of(context).colorScheme;
     if (_analysisResult == null) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AppStrings.getAiSalesAnalysisTitle(locale),
-          style: AppTextStyles.headline4.copyWith(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          AppStrings.getAiSalesAnalysisDescription(locale),
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-        ),
-        const SizedBox(height: 20),
-        AiSalesAnalysisWidget(analysisResult: _analysisResult!, locale: locale),
-      ],
-    );
+    return AiSalesAnalysisWidget(analysisResult: _analysisResult!, locale: locale);
   }
 }

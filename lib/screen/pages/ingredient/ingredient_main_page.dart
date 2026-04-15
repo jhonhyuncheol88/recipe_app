@@ -13,6 +13,7 @@ import '../../../model/index.dart';
 import '../../../util/number_formatter.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
+import '../../../controller/setting/view_mode_cubit.dart';
 import '../../../router/index.dart';
 
 /// 재료 메인 페이지
@@ -171,38 +172,65 @@ class _IngredientMainPageState extends State<IngredientMainPage>
             ),
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _filterOptions.map((filter) {
-                final isSelected = _selectedFilter == filter;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(localized[filter] ?? filter),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedFilter = filter;
-                      });
-                      _applyFilter(filter);
-                    },
-                    backgroundColor: colorScheme.surface,
-                    selectedColor: colorScheme.primary.withValues(alpha: 0.2),
-                    checkmarkColor: colorScheme.primary,
-                    labelStyle: AppTextStyles.bodySmall.copyWith(
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.onSurface.withValues(alpha: 0.6),
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w400,
-                    ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Row(
+                    children: _filterOptions.map((filter) {
+                      final isSelected = _selectedFilter == filter;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: Text(localized[filter] ?? filter),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedFilter = filter;
+                            });
+                            _applyFilter(filter);
+                          },
+                          backgroundColor: colorScheme.surface,
+                          selectedColor:
+                              colorScheme.primary.withValues(alpha: 0.2),
+                          checkmarkColor: colorScheme.primary,
+                          labelStyle: AppTextStyles.bodySmall.copyWith(
+                            color: isSelected
+                                ? colorScheme.primary
+                                : colorScheme.onSurface.withValues(alpha: 0.6),
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList(),
-            ),
+                ),
+              ),
+              BlocBuilder<ViewModeCubit, IngredientViewMode>(
+                builder: (context, viewMode) {
+                  final isCompact = viewMode == IngredientViewMode.compact;
+                  return IconButton(
+                    icon: Icon(
+                      isCompact ? Icons.grid_view : Icons.view_list,
+                      color: isCompact
+                          ? colorScheme.primary
+                          : colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                    tooltip: isCompact
+                        ? AppStrings.getSwitchToCard(currentLocale)
+                        : AppStrings.getSwitchToCompact(currentLocale),
+                    onPressed: () =>
+                        context.read<ViewModeCubit>().toggle(),
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ],
@@ -418,6 +446,16 @@ class _IngredientMainPageState extends State<IngredientMainPage>
         } else {
           return const IngredientEmptyState();
         }
+      }
+
+      final viewMode = context.watch<ViewModeCubit>().state;
+
+      if (viewMode == IngredientViewMode.compact) {
+        return IngredientCompactGrid(
+          ingredients: filteredIngredients,
+          onTap: _editIngredient,
+          onLongPress: _showIngredientDetailBottomSheet,
+        );
       }
 
       return ListView.builder(

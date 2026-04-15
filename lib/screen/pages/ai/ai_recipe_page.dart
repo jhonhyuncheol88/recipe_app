@@ -8,6 +8,7 @@ import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/recipe/recipe_state.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../model/ai_recipe.dart';
+import '../../widget/index.dart';
 
 /// AI 레시피 관리 페이지
 class AiRecipePage extends StatefulWidget {
@@ -172,251 +173,21 @@ class _AiRecipePageState extends State<AiRecipePage> {
 
   Widget _buildAiRecipeList(List<AiRecipe> aiRecipes, AppLocale locale) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       itemCount: aiRecipes.length,
       itemBuilder: (context, index) {
         final aiRecipe = aiRecipes[index];
-        return _buildAiRecipeCard(aiRecipe, locale);
-      },
-    );
-  }
-
-  Widget _buildAiRecipeCard(AiRecipe aiRecipe, AppLocale locale) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: () {
-        context.push('/ai/recipe/detail', extra: {'aiRecipeId': aiRecipe.id});
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colorScheme.outlineVariant, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          aiRecipe.recipeName,
-                          style: AppTextStyles.headline4.copyWith(
-                            color: colorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (aiRecipe.cuisineType != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            aiRecipe.cuisineType!,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    color: colorScheme.surface,
-                    onSelected: (value) =>
-                        _handleMenuAction(value, aiRecipe, locale),
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'convert',
-                        child: Row(
-                          children: [
-                            Icon(Icons.transform, color: colorScheme.primary),
-                            const SizedBox(width: 8),
-                            Text(AppStrings.getConvertToRecipe(locale),
-                                style: TextStyle(color: colorScheme.onSurface)),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, color: colorScheme.error),
-                            const SizedBox(width: 8),
-                            Text(AppStrings.getDelete(locale),
-                                style: TextStyle(color: colorScheme.error)),
-                          ],
-                        ),
-                      ),
-                    ],
-                    child: Icon(
-                      Icons.more_vert,
-                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    aiRecipe.description,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _buildInfoChip(
-                        Icons.people,
-                        '${aiRecipe.servings}${AppStrings.getPeople(locale)}',
-                        colorScheme.secondary,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildInfoChip(
-                        Icons.timer,
-                        '${aiRecipe.totalTimeMinutes}${AppStrings.getMinutes(locale)}',
-                        colorScheme.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildInfoChip(
-                        Icons.trending_up,
-                        aiRecipe.difficulty,
-                        Colors.green,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (aiRecipe.tags.isNotEmpty) ...[
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: aiRecipe.tags.take(3).map((tag) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: colorScheme.primary.withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            tag,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: colorScheme.primary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.schedule,
-                        size: 16,
-                        color: colorScheme.onSurface.withValues(alpha: 0.4),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _formatDate(aiRecipe.generatedAt, locale),
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: colorScheme.onSurface.withValues(alpha: 0.4),
-                        ),
-                      ),
-                      const Spacer(),
-                      if (aiRecipe.isConvertedToRecipe)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.green.withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            AppStrings.getConverted(locale),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: Colors.green,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(IconData icon, String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+        return AiRecipeCard(
+          aiRecipe: aiRecipe,
+          locale: locale,
+          onTap: () => context.push(
+            '/ai/recipe/detail',
+            extra: {'aiRecipeId': aiRecipe.id},
           ),
-        ],
-      ),
+          onConvert: () => _showConvertDialog(aiRecipe, locale),
+          onDelete: () => _showDeleteDialog(aiRecipe, locale),
+        );
+      },
     );
   }
 
@@ -452,17 +223,6 @@ class _AiRecipePageState extends State<AiRecipePage> {
         ),
       ),
     );
-  }
-
-  void _handleMenuAction(String action, AiRecipe aiRecipe, AppLocale locale) {
-    switch (action) {
-      case 'convert':
-        _showConvertDialog(aiRecipe, locale);
-        break;
-      case 'delete':
-        _showDeleteDialog(aiRecipe, locale);
-        break;
-    }
   }
 
   void _showConvertDialog(AiRecipe aiRecipe, AppLocale locale) {
@@ -527,18 +287,4 @@ class _AiRecipePageState extends State<AiRecipePage> {
     );
   }
 
-  String _formatDate(DateTime date, AppLocale locale) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return AppStrings.getToday(locale);
-    } else if (difference.inDays == 1) {
-      return AppStrings.getYesterday(locale);
-    } else if (difference.inDays < 7) {
-      return AppStrings.getDaysAgo(locale, difference.inDays);
-    } else {
-      return AppStrings.getMonthDay(locale, date.month, date.day);
-    }
-  }
 }

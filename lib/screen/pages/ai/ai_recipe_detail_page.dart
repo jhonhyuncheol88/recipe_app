@@ -330,31 +330,7 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
             ],
           ),
           const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colorScheme.secondary.withAlpha(25),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: colorScheme.secondary.withAlpha(76)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline,
-                    size: 16, color: colorScheme.secondary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '필요 없는 재료는 제거할 수 있습니다. 재료 옆의 - 버튼을 눌러 제거하세요.',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: colorScheme.secondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 4),
           if (_comparisonResults.isEmpty && !_isAnalyzing)
             _buildEmptyIngredientsState(locale)
           else
@@ -403,25 +379,32 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
     final isAvailable = result.isAvailable;
     final matchedIngredient = result.matchedIngredient;
     final colorScheme = Theme.of(context).colorScheme;
+    final formatStyle = context.watch<NumberFormatCubit>().state;
 
     return Card(
       color: colorScheme.surface,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: colorScheme.outlineVariant),
+        side: BorderSide(
+          color: isAvailable
+              ? colorScheme.outlineVariant
+              : Colors.orange.withAlpha(76),
+        ),
       ),
+      elevation: 0,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 재료명 행
             Row(
               children: [
                 Icon(
-                  isAvailable ? Icons.check_circle : Icons.warning,
+                  isAvailable ? Icons.check_circle_outline : Icons.warning_amber_outlined,
                   color: isAvailable ? Colors.green : Colors.orange,
-                  size: 20,
+                  size: 18,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -429,173 +412,111 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
                     result.aiIngredient.name,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isAvailable
-                          ? colorScheme.onSurface
-                          : colorScheme.onSurface.withAlpha(153),
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
-                if (isAvailable)
-                  Text(
-                    '${result.aiIngredient.quantity}${result.aiIngredient.unit}',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: colorScheme.onSurface.withAlpha(153),
-                    ),
+                Text(
+                  '${result.aiIngredient.quantity}${result.aiIngredient.unit}',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: colorScheme.onSurface.withAlpha(120),
                   ),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () => _showRemoveConfirmation(result, locale),
-                  icon: Icon(
-                    Icons.remove_circle_outline,
-                    color: colorScheme.error,
-                    size: 20,
-                  ),
-                  tooltip: '재료 제거',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 24,
-                    minHeight: 24,
+                ),
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () => _showRemoveConfirmation(result, locale),
+                  child: Icon(
+                    Icons.close,
+                    size: 18,
+                    color: colorScheme.onSurface.withAlpha(100),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            // 보유 재료 정보
             if (isAvailable && matchedIngredient != null) ...[
+              const SizedBox(height: 10),
               Row(
                 children: [
-                  Text(
-                    '보유: ${matchedIngredient.name}',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: Colors.green,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Text(
-                    '${NumberFormatter.formatCurrency(result.unitCost!, locale, context.watch<NumberFormatCubit>().state)}/${matchedIngredient.purchaseUnitId}',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: colorScheme.onSurface.withAlpha(153),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
+                  // 단가
                   Expanded(
-                    child: AppInputField(
-                      label: '투입량 (${matchedIngredient.purchaseUnitId})',
-                      hint: '0',
-                      keyboardType: TextInputType.number,
-                      controller: TextEditingController(
-                        text: _inputAmounts[result.aiIngredient.name]
-                                ?.toString() ??
-                            '',
+                    child: Text(
+                      '${matchedIngredient.name}  ·  ${NumberFormatter.formatCurrency(result.unitCost!, locale, formatStyle)}/${matchedIngredient.purchaseUnitId}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.green.shade700,
                       ),
-                      onChanged: (value) {
-                        final amount = double.tryParse(value) ?? 0.0;
-                        setState(() {
-                          _inputAmounts[result.aiIngredient.name] = amount;
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withAlpha(13),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: colorScheme.outlineVariant),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '원가',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: colorScheme.onSurface.withAlpha(153),
-                            ),
-                          ),
-                          Text(
-                            NumberFormatter.formatCurrency(
-                              _calculateIngredientCost(result),
-                              locale,
-                              NumberFormatStyle.defaultStyle,
-                            ),
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colorScheme.secondary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(6),
-                  border:
-                      Border.all(color: colorScheme.secondary.withAlpha(76)),
-                ),
+              // 투입량 + 원가 한 행
+              Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: AppInputField(
+                      label: '투입량 (${matchedIngredient.purchaseUnitId})',
+                      hint: '0',
+                      keyboardType: TextInputType.number,
+                      controller: TextEditingController(
+                        text: _inputAmounts[result.aiIngredient.name]?.toString() ?? '',
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _inputAmounts[result.aiIngredient.name] =
+                              double.tryParse(value) ?? 0.0;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '원가',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: colorScheme.onSurface.withAlpha(120),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          NumberFormatter.formatCurrency(
+                            _calculateIngredientCost(result),
+                            locale,
+                            NumberFormatStyle.defaultStyle,
+                          ),
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              // 미보유 재료 — 추가 유도
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => _goToAddIngredient(result.aiIngredient.name),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline,
-                        size: 16, color: colorScheme.secondary),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${AppStrings.getAiRecipeStandard(locale)}: ${result.aiIngredient.quantity}${result.aiIngredient.unit}',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: colorScheme.secondary,
-                          fontSize: 12,
-                        ),
+                    Icon(Icons.add_circle_outline,
+                        size: 15, color: Colors.orange),
+                    const SizedBox(width: 6),
+                    Text(
+                      AppStrings.getAddIngredientRequired(locale),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.orange,
                       ),
                     ),
                   ],
-                ),
-              ),
-            ] else ...[
-              InkWell(
-                onTap: () => _goToAddIngredient(result.aiIngredient.name),
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withAlpha(25),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.orange.withAlpha(76),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        color: Colors.orange,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          AppStrings.getAddIngredientRequired(locale),
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: Colors.orange,
-                          ),
-                        ),
-                      ),
-                      const Icon(
-                        Icons.add_circle_outline,
-                        color: Colors.orange,
-                        size: 16,
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],

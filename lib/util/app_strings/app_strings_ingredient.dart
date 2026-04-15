@@ -1260,4 +1260,40 @@ mixin AppStringsIngredient {
         return 'Số lượng nguyên liệu';
     }
   }
+
+  /// 간편 보기로 전환 툴팁
+  static String getSwitchToCompact(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '간편 보기';
+      case AppLocale.japan:
+        return 'コンパクト表示';
+      case AppLocale.china:
+        return '紧凑视图';
+      case AppLocale.usa:
+        return 'Compact View';
+      case AppLocale.euro:
+        return 'Compact View';
+      case AppLocale.vietnam:
+        return 'Chế độ thu gọn';
+    }
+  }
+
+  /// 카드 보기로 전환 툴팁
+  static String getSwitchToCard(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '카드 보기';
+      case AppLocale.japan:
+        return 'カード表示';
+      case AppLocale.china:
+        return '卡片视图';
+      case AppLocale.usa:
+        return 'Card View';
+      case AppLocale.euro:
+        return 'Card View';
+      case AppLocale.vietnam:
+        return 'Chế độ thẻ';
+    }
+  }
 }

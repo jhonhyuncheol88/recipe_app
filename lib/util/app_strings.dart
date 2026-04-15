@@ -459,6 +459,10 @@ class AppStrings {
       AppStringsIngredient.getIngredientCount(locale, count);
   static String getIngredientCountSimple(AppLocale locale) =>
       AppStringsIngredient.getIngredientCountSimple(locale);
+  static String getSwitchToCompact(AppLocale locale) =>
+      AppStringsIngredient.getSwitchToCompact(locale);
+  static String getSwitchToCard(AppLocale locale) =>
+      AppStringsIngredient.getSwitchToCard(locale);
   static String getIngredientDeleted(AppLocale locale) =>
       AppStringsRecipe.getIngredientDeleted(locale);
   static String getIngredientFallback(AppLocale locale) =>
@@ -808,6 +812,28 @@ class AppStrings {
       AppStringsRecipe.getSelectedIngredients(locale);
   static String getComplete(AppLocale locale) =>
       AppStringsRecipe.getComplete(locale);
+  static String getRecipeTagManagement(AppLocale locale) =>
+      AppStringsRecipe.getRecipeTagManagement(locale);
+  static String getRecipeTagManagementDescription(AppLocale locale) =>
+      AppStringsRecipe.getRecipeTagManagementDescription(locale);
+  static String getAddTag(AppLocale locale) =>
+      AppStringsRecipe.getAddTag(locale);
+  static String getEditTag(AppLocale locale) =>
+      AppStringsRecipe.getEditTag(locale);
+  static String getDeleteTag(AppLocale locale) =>
+      AppStringsRecipe.getDeleteTag(locale);
+  static String getDeleteTagConfirm(AppLocale locale, String name) =>
+      AppStringsRecipe.getDeleteTagConfirm(locale, name);
+  static String getTagName(AppLocale locale) =>
+      AppStringsRecipe.getTagName(locale);
+  static String getTagColor(AppLocale locale) =>
+      AppStringsRecipe.getTagColor(locale);
+  static String getNoTags(AppLocale locale) =>
+      AppStringsRecipe.getNoTags(locale);
+  static String getTagReorderHint(AppLocale locale) =>
+      AppStringsRecipe.getTagReorderHint(locale);
+  static String getTagUsageCount(AppLocale locale, int count) =>
+      AppStringsRecipe.getTagUsageCount(locale, count);
   static String getRecipes(AppLocale locale) =>
       AppStringsRecipe.getRecipes(locale);
   static String getRecognizedText(AppLocale locale) =>

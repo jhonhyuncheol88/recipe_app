@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../theme/app_text_styles.dart';
 import '../../util/app_strings.dart';
 import '../../util/app_locale.dart';
@@ -140,16 +141,19 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
             ),
             const SizedBox(height: 24),
 
-            // 배수 조정
-            _buildMultiplierSection(),
-            const SizedBox(height: 24),
-
             // 가격 표시
             _buildPriceSection(),
             const SizedBox(height: 24),
 
+            // 원가 비중 파이 차트
+            _buildCostPieChart(),
+
             // 레시피 메모
             _buildMemoSection(),
+            const SizedBox(height: 24),
+
+            // 배수 조정
+            _buildMultiplierSection(),
             const SizedBox(height: 24),
 
             // 재료 및 투입량
@@ -297,6 +301,123 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
     );
   }
 
+  /// 재료 수에 따라 파스텔 톤 색상 생성
+  List<Color> _generatePastelColors(int count) {
+    if (count == 0) return [];
+    // 재료 수 * 37도 오프셋으로 재료 수마다 다른 색상 팔레트
+    final hueOffset = (count * 37) % 360;
+    return List.generate(count, (i) {
+      final hue = (hueOffset + (360.0 / count) * i) % 360;
+      return HSLColor.fromAHSL(1.0, hue, 0.52, 0.78).toColor();
+    });
+  }
+
+  String _getCostChartTitle() {
+    switch (widget.locale.languageCode) {
+      case 'ko':
+        return '원가 비중';
+      case 'ja':
+        return '原価比率';
+      case 'zh':
+        return '成本比例';
+      default:
+        return 'Cost Breakdown';
+    }
+  }
+
+  /// 원가 비중 파이 차트 섹션
+  Widget _buildCostPieChart() {
+    final validIngredients = widget.recipe.ingredients
+        .where((ing) => ing.calculatedCost > 0)
+        .toList();
+
+    if (validIngredients.isEmpty) return const SizedBox.shrink();
+
+    final totalCost =
+        validIngredients.fold(0.0, (sum, ing) => sum + ing.calculatedCost);
+    if (totalCost <= 0) return const SizedBox.shrink();
+
+    final colors = _generatePastelColors(validIngredients.length);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final sections = validIngredients.asMap().entries.map((entry) {
+      final idx = entry.key;
+      final ingredient = entry.value;
+      final percentage = ingredient.calculatedCost / totalCost * 100;
+      final name = _ingredientNames[ingredient.ingredientId] ??
+          ingredient.ingredientId;
+      // 섹션 안에 표시할 재료명 (5자 초과 시 줄임)
+      final shortName = name.length > 5 ? '${name.substring(0, 4)}…' : name;
+
+      return PieChartSectionData(
+        color: colors[idx],
+        value: ingredient.calculatedCost * _multiplier,
+        // 섹션 내부: 재료명
+        title: shortName,
+        titleStyle: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+          shadows: const [Shadow(color: Colors.black26, blurRadius: 3)],
+        ),
+        titlePositionPercentageOffset: 0.6,
+        radius: 70,
+        // 섹션 외곽: 퍼센테이지 뱃지
+        badgeWidget: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          decoration: BoxDecoration(
+            color: colors[idx],
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: const [
+              BoxShadow(color: Colors.black12, blurRadius: 3, offset: Offset(0, 1)),
+            ],
+          ),
+          child: Text(
+            '${percentage.toStringAsFixed(1)}%',
+            style: const TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        badgePositionPercentageOffset: 1.45,
+      );
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _getCostChartTitle(),
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            letterSpacing: 0.3,
+          ),
+        ),
+        const SizedBox(height: 12),
+        // 차트: 전체 너비 사용, 높이 확대 (퍼센테이지 뱃지 공간 확보)
+        SizedBox(
+          height: 260,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: PieChart(
+              PieChartData(
+                sections: sections,
+                centerSpaceRadius: 32,
+                sectionsSpace: 2,
+                borderData: FlBorderData(show: false),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
   /// 가격 표시 섹션
   Widget _buildPriceSection() {
     final totalPrice = widget.recipe.totalCost * _multiplier;
@@ -440,6 +561,9 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
         else
           ...widget.recipe.ingredients.map((ingredient) {
             final adjustedAmount = ingredient.amount * _multiplier;
+            final formattedAmount = adjustedAmount % 1 == 0
+                ? adjustedAmount.toStringAsFixed(0)
+                : adjustedAmount.toStringAsFixed(1);
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(12),
@@ -492,7 +616,7 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
                   Expanded(
                     flex: 1,
                     child: Text(
-                      '${adjustedAmount.toStringAsFixed(1)} ${ingredient.unitId}',
+                      '$formattedAmount ${ingredient.unitId}',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: colorScheme.onSurface.withValues(alpha: 0.8),
                         fontWeight: FontWeight.w900, // w700 -> w900

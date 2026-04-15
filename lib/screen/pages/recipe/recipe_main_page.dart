@@ -12,6 +12,8 @@ import '../../../controller/recipe/recipe_state.dart';
 import '../../../model/recipe.dart';
 import '../../../model/tag.dart';
 import '../../../controller/setting/locale_cubit.dart';
+import '../../../controller/setting/recipe_view_mode_cubit.dart';
+import '../../../controller/setting/view_mode_cubit.dart';
 import '../../../util/app_locale.dart';
 import '../../../router/router_helper.dart';
 import '../../../data/ingredient_repository.dart';
@@ -191,42 +193,64 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
 
   Widget _buildFilterSection() {
     final currentLocale = context.watch<LocaleCubit>().state;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: _filterOptions.map((filter) {
-            final isSelected = _selectedFilter == filter;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: FilterChip(
-                label: Text(filter),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    _selectedFilter = filter;
-                  });
-                  _applyFilter(filter, currentLocale);
-                },
-                selectedColor: Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: 0.2),
-                checkmarkColor: Theme.of(context).colorScheme.primary,
-                labelStyle: AppTextStyles.bodySmall.copyWith(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(left: 8),
+              child: Row(
+                children: _filterOptions.map((filter) {
+                  final isSelected = _selectedFilter == filter;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(filter),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedFilter = filter;
+                        });
+                        _applyFilter(filter, currentLocale);
+                      },
+                      selectedColor:
+                          colorScheme.primary.withValues(alpha: 0.2),
+                      checkmarkColor: colorScheme.primary,
+                      labelStyle: AppTextStyles.bodySmall.copyWith(
+                        color: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.onSurface.withValues(alpha: 0.6),
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-            );
-          }).toList(),
-        ),
+            ),
+          ),
+          BlocBuilder<RecipeViewModeCubit, IngredientViewMode>(
+            builder: (context, viewMode) {
+              final isCompact = viewMode == IngredientViewMode.compact;
+              return IconButton(
+                icon: Icon(
+                  isCompact ? Icons.grid_view : Icons.view_list,
+                  color: isCompact
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+                tooltip: isCompact
+                    ? AppStrings.getSwitchToCard(currentLocale)
+                    : AppStrings.getSwitchToCompact(currentLocale),
+                onPressed: () =>
+                    context.read<RecipeViewModeCubit>().toggle(),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -343,6 +367,15 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
 
     if (recipes.isEmpty) {
       return const SizedBox(height: 200, child: RecipeEmptyState());
+    }
+
+    final viewMode = context.watch<RecipeViewModeCubit>().state;
+    if (viewMode == IngredientViewMode.compact) {
+      return RecipeCompactGrid(
+        recipes: recipes,
+        onTap: _editRecipe,
+        onLongPress: (recipe) => _toggleRecipeSelection(recipe.id),
+      );
     }
 
     return Container(

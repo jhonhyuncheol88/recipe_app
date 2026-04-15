@@ -7,7 +7,7 @@ import '../../../util/number_formatter.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
 
-/// AI 판매 분석 결과를 보여주는 위젯
+/// AI 판매 분석 결과를 섹션 카드별로 보여주는 위젯
 class AiSalesAnalysisWidget extends StatelessWidget {
   final Map<String, dynamic> analysisResult;
   final VoidCallback? onClose;
@@ -23,468 +23,336 @@ class AiSalesAnalysisWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 헤더
-          _buildHeader(context),
-          const SizedBox(height: 20),
-
-          // 최적 가격 분석
-          _buildOptimalPriceSection(context),
-          const SizedBox(height: 20),
-
-          // 마케팅 포인트
-          _buildMarketingPointsSection(context),
-          const SizedBox(height: 20),
-
-          // 서빙 가이드
-          _buildServingGuidanceSection(context),
-          const SizedBox(height: 20),
-
-          // 비즈니스 인사이트
-          _buildBusinessInsightsSection(context),
-
-          const SizedBox(height: 20),
-
-          // 닫기 버튼
-          if (onClose != null)
-            Center(
-              child: ElevatedButton(
-                onPressed: onClose,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
-                ),
-                child: Text(AppStrings.getClose(currentLocale)),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.analytics, color: colorScheme.secondary, size: 28),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            AppStrings.getAiSalesAnalysisTitle(locale),
-            style: AppTextStyles.headline4.copyWith(
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.bold,
+        _buildOptimalPriceCard(context),
+        const SizedBox(height: 12),
+        _buildMarketingPointsCard(context),
+        const SizedBox(height: 12),
+        _buildServingGuidanceCard(context),
+        const SizedBox(height: 12),
+        _buildBusinessInsightsCard(context),
+        if (onClose != null) ...[
+          const SizedBox(height: 20),
+          Center(
+            child: ElevatedButton(
+              onPressed: onClose,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              ),
+              child: Text(AppStrings.getClose(currentLocale)),
             ),
           ),
-        ),
-        if (onClose != null)
-          IconButton(
-            onPressed: onClose,
-            icon: const Icon(Icons.close),
-            color: colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
+        ],
       ],
     );
   }
 
-  Widget _buildOptimalPriceSection(BuildContext context) {
-    final optimalPrice =
-        analysisResult['optimal_price'] as Map<String, dynamic>?;
+  // ───────────────────────── 최적 가격 분석 ─────────────────────────
+
+  Widget _buildOptimalPriceCard(BuildContext context) {
+    final optimalPrice = analysisResult['optimal_price'] as Map<String, dynamic>?;
     if (optimalPrice == null) return const SizedBox.shrink();
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    return _buildSection(
-      context,
-      title: AppStrings.getOptimalPriceAnalysis(locale),
+    return _SectionCard(
       icon: Icons.attach_money,
+      accentColor: colorScheme.primary,
+      title: AppStrings.getOptimalPriceAnalysis(locale),
       children: [
-        _buildInfoRow(
-          context,
-          AppStrings.getRecommendedPrice(locale),
-          _formatPrice(optimalPrice['recommended_price'], context),
-        ),
-        _buildInfoRow(
-          context,
-          AppStrings.getTargetMarginRate(locale),
-          '${optimalPrice['cost_ratio']}%',
-        ),
-        _buildInfoRow(
-          context,
-          AppStrings.getProfitPerServing(locale),
-          _formatPrice(optimalPrice['profit_per_serving'], context),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colorScheme.primary.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            _formatAnalysisText(optimalPrice['price_analysis'] ?? '-', context),
-            style: AppTextStyles.bodySmall.copyWith(
-              color: colorScheme.onSurface,
+        // 핵심 수치 3개를 가로 카드로
+        Row(
+          children: [
+            _metricTile(
+              context,
+              label: AppStrings.getRecommendedPrice(locale),
+              value: _formatPrice(optimalPrice['recommended_price'], context),
+              color: colorScheme.primary,
             ),
-          ),
+            const SizedBox(width: 8),
+            _metricTile(
+              context,
+              label: AppStrings.getTargetMarginRate(locale),
+              value: '${optimalPrice['cost_ratio'] ?? '-'}%',
+              color: Colors.green.shade600,
+            ),
+            const SizedBox(width: 8),
+            _metricTile(
+              context,
+              label: AppStrings.getProfitPerServing(locale),
+              value: _formatPrice(optimalPrice['profit_per_serving'], context),
+              color: colorScheme.secondary,
+            ),
+          ],
         ),
+        if (optimalPrice['price_analysis'] != null) ...[
+          const SizedBox(height: 12),
+          _analysisTextBox(
+            context,
+            _formatAnalysisText(optimalPrice['price_analysis'], context),
+          ),
+        ],
       ],
     );
   }
 
-  Widget _buildMarketingPointsSection(BuildContext context) {
-    final marketingPoints =
-        analysisResult['marketing_points'] as Map<String, dynamic>?;
-    if (marketingPoints == null) return const SizedBox.shrink();
+  // ───────────────────────── 마케팅 포인트 ─────────────────────────
+
+  Widget _buildMarketingPointsCard(BuildContext context) {
+    final mp = analysisResult['marketing_points'] as Map<String, dynamic>?;
+    if (mp == null) return const SizedBox.shrink();
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    return _buildSection(
-      context,
-      title: AppStrings.getMarketingPoints(locale),
+    return _SectionCard(
       icon: Icons.campaign,
+      accentColor: Colors.orange,
+      title: AppStrings.getMarketingPoints(locale),
       children: [
-        _buildInfoRow(
-          context,
-          AppStrings.getTargetCustomers(locale),
-          marketingPoints['target_customers'] ?? '',
-        ),
-        _buildInfoRow(
-          context,
-          AppStrings.getOptimalSellingSeason(locale),
-          marketingPoints['seasonal_timing'] ?? '',
-        ),
-        const SizedBox(height: 8),
-
-        // 고유한 판매 포인트
-        if (marketingPoints['unique_selling_points'] != null) ...[
-          Text(
-            AppStrings.getUniqueSellingPoints(locale),
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          ...(marketingPoints['unique_selling_points'] as List<dynamic>).map(
-            (point) => Padding(
-              padding: const EdgeInsets.only(left: 16, bottom: 4),
-              child: Row(
-                children: [
-                  Icon(Icons.check_circle,
-                      color: colorScheme.secondary, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      point.toString(),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        _infoItem(context,
+            label: AppStrings.getTargetCustomers(locale),
+            value: mp['target_customers'] ?? '-'),
+        _infoItem(context,
+            label: AppStrings.getOptimalSellingSeason(locale),
+            value: mp['seasonal_timing'] ?? '-'),
+        if (mp['unique_selling_points'] != null) ...[
+          const SizedBox(height: 8),
+          _bulletList(
+            context,
+            title: AppStrings.getUniqueSellingPoints(locale),
+            icon: Icons.check_circle,
+            color: colorScheme.secondary,
+            items: List<String>.from(mp['unique_selling_points'] as List),
           ),
         ],
-
-        const SizedBox(height: 8),
-
-        // 경쟁 우위
-        if (marketingPoints['competitive_advantages'] != null) ...[
-          Text(
-            AppStrings.getCompetitiveAdvantages(locale),
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          ...(marketingPoints['competitive_advantages'] as List<dynamic>).map(
-            (advantage) => Padding(
-              padding: const EdgeInsets.only(left: 16, bottom: 4),
-              child: Row(
-                children: [
-                  Icon(Icons.star, color: colorScheme.secondary, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      advantage.toString(),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        if (mp['competitive_advantages'] != null) ...[
+          const SizedBox(height: 8),
+          _bulletList(
+            context,
+            title: AppStrings.getCompetitiveAdvantages(locale),
+            icon: Icons.star,
+            color: Colors.amber.shade600,
+            items: List<String>.from(mp['competitive_advantages'] as List),
           ),
         ],
       ],
     );
   }
 
-  Widget _buildServingGuidanceSection(BuildContext context) {
-    final servingGuidance =
-        analysisResult['serving_guidance'] as Map<String, dynamic>?;
-    if (servingGuidance == null) return const SizedBox.shrink();
+  // ───────────────────────── 서빙 가이드 ─────────────────────────
+
+  Widget _buildServingGuidanceCard(BuildContext context) {
+    final sg = analysisResult['serving_guidance'] as Map<String, dynamic>?;
+    if (sg == null) return const SizedBox.shrink();
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    return _buildSection(
-      context,
-      title: AppStrings.getServingGuidance(locale),
+    return _SectionCard(
       icon: Icons.restaurant,
+      accentColor: colorScheme.tertiary,
+      title: AppStrings.getServingGuidance(locale),
       children: [
-        _buildInfoRow(
-          context,
-          AppStrings.getOpeningScript(locale),
-          servingGuidance['opening_script'] ?? '',
-        ),
-        _buildInfoRow(
-          context,
-          AppStrings.getRecipeDescriptionScript(locale),
-          servingGuidance['description_script'] ?? '',
-        ),
-        _buildInfoRow(
-          context,
-          AppStrings.getPriceJustification(locale),
-          servingGuidance['price_justification'] ?? '',
-        ),
-
-        const SizedBox(height: 8),
-
-        // 추가 판매 팁
-        if (servingGuidance['upselling_tips'] != null) ...[
-          Text(
-            AppStrings.getUpsellingTips(locale),
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          ...(servingGuidance['upselling_tips'] as List<dynamic>).map(
-            (tip) => Padding(
-              padding: const EdgeInsets.only(left: 16, bottom: 4),
-              child: Row(
-                children: [
-                  Icon(Icons.lightbulb, color: colorScheme.secondary, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      tip.toString(),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        _infoItem(context,
+            label: AppStrings.getOpeningScript(locale),
+            value: sg['opening_script'] ?? '-'),
+        _infoItem(context,
+            label: AppStrings.getRecipeDescriptionScript(locale),
+            value: sg['description_script'] ?? '-'),
+        _infoItem(context,
+            label: AppStrings.getPriceJustification(locale),
+            value: sg['price_justification'] ?? '-'),
+        if (sg['upselling_tips'] != null) ...[
+          const SizedBox(height: 8),
+          _bulletList(
+            context,
+            title: AppStrings.getUpsellingTips(locale),
+            icon: Icons.lightbulb,
+            color: Colors.amber.shade600,
+            items: List<String>.from(sg['upselling_tips'] as List),
           ),
         ],
       ],
     );
   }
 
-  Widget _buildBusinessInsightsSection(BuildContext context) {
-    final businessInsights =
-        analysisResult['business_insights'] as Map<String, dynamic>?;
-    if (businessInsights == null) return const SizedBox.shrink();
+  // ───────────────────────── 비즈니스 인사이트 ─────────────────────────
 
-    return _buildSection(
-      context,
-      title: AppStrings.getBusinessInsights(locale),
+  Widget _buildBusinessInsightsCard(BuildContext context) {
+    final bi = analysisResult['business_insights'] as Map<String, dynamic>?;
+    if (bi == null) return const SizedBox.shrink();
+
+    return _SectionCard(
       icon: Icons.business,
+      accentColor: Colors.indigo,
+      title: AppStrings.getBusinessInsights(locale),
       children: [
-        _buildInfoRow(
-          context,
-          AppStrings.getCostEfficiency(locale),
-          businessInsights['cost_efficiency'] ?? '',
-        ),
-        _buildInfoRow(
-          context,
-          AppStrings.getProfitabilityTips(locale),
-          businessInsights['profitability_tips'] ?? '',
-        ),
-        _buildInfoRow(
-          context,
-          AppStrings.getRiskFactors(locale),
-          businessInsights['risk_factors'] ?? '',
-        ),
+        _infoItem(context,
+            label: AppStrings.getCostEfficiency(locale),
+            value: bi['cost_efficiency'] ?? '-'),
+        _infoItem(context,
+            label: AppStrings.getProfitabilityTips(locale),
+            value: bi['profitability_tips'] ?? '-'),
+        _infoItem(context,
+            label: AppStrings.getRiskFactors(locale),
+            value: bi['risk_factors'] ?? '-'),
       ],
     );
   }
 
-  Widget _buildSection(
+  // ───────────────────────── 공통 헬퍼 위젯 ─────────────────────────
+
+  /// 수치 하이라이트 타일 (3개 나란히)
+  Widget _metricTile(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                fontSize: 11,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 라벨 + 값 세로 배치 항목
+  Widget _infoItem(
+    BuildContext context, {
+    required String label,
+    required dynamic value,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final valueStr = value?.toString() ?? '-';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            valueStr.isEmpty ? '-' : valueStr,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 불릿 리스트 (제목 + 아이콘 항목들)
+  Widget _bulletList(
     BuildContext context, {
     required String title,
     required IconData icon,
-    required List<Widget> children,
+    required Color color,
+    required List<String> items,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(icon, color: colorScheme.secondary, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: AppTextStyles.headline4.copyWith(
-                color: colorScheme.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+        Text(
+          title,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: colorScheme.onSurface.withValues(alpha: 0.5),
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        const SizedBox(height: 12),
-        ...children,
+        const SizedBox(height: 6),
+        ...items.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, size: 15, color: color),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    item,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, String label, dynamic value) {
+  /// 분석 텍스트 박스
+  Widget _analysisTextBox(BuildContext context, String text) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.6),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(child: _buildValueWidget(context, value)),
-        ],
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: AppTextStyles.bodySmall.copyWith(color: colorScheme.onSurface),
       ),
     );
   }
 
-  /// 값의 타입에 따라 적절한 위젯을 반환하는 헬퍼 메서드
-  Widget _buildValueWidget(BuildContext context, dynamic value) {
-    final colorScheme = Theme.of(context).colorScheme;
-    if (value == null) {
-      return Text(
-        '-',
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: colorScheme.onSurface.withValues(alpha: 0.4),
-          fontStyle: FontStyle.italic,
-        ),
-      );
-    }
-
-    if (value is String) {
-      if (value.isEmpty) {
-        return Text(
-          '-',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.4),
-            fontStyle: FontStyle.italic,
-          ),
-        );
-      }
-      return Text(
-        value,
-        style: AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-      );
-    }
-
-    if (value is List) {
-      if (value.isEmpty) {
-        return Text(
-          '-',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.4),
-            fontStyle: FontStyle.italic,
-          ),
-        );
-      }
-      // 리스트의 첫 번째 항목만 표시하고 "외 N개" 형태로 표시
-      try {
-        final firstItem = value.first?.toString() ?? '';
-        final remainingCount = value.length - 1;
-        if (remainingCount > 0) {
-          return Text(
-            '$firstItem 외 $remainingCount개',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: colorScheme.onSurface,
-            ),
-          );
-        }
-        return Text(
-          firstItem,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: colorScheme.onSurface,
-          ),
-        );
-      } catch (e) {
-        // 리스트 처리 중 오류 발생 시 안전하게 처리
-        return Text(
-          '${value.length}개 항목',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.6),
-            fontStyle: FontStyle.italic,
-          ),
-        );
-      }
-    }
-
-    // 기타 타입은 문자열로 변환
-    return Text(
-      value.toString(),
-      style: AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-    );
-  }
-
-  /// 가격 포맷팅 (AI 전용 포맷터 사용)
   String _formatPrice(dynamic value, BuildContext context) {
     return NumberFormatter.formatAiPrice(
         value, locale, context.watch<NumberFormatCubit>().state);
   }
 
-  /// AI 분석 결과 텍스트에서 숫자 포맷팅 개선
   String _formatAnalysisText(dynamic text, BuildContext context) {
     if (text == null) return '';
-
     final textStr = text.toString();
     if (textStr.isEmpty) return textStr;
-
-    // 텍스트에서 숫자 패턴을 찾아서 천 단위 구분자 추가
-    return textStr.replaceAllMapped(RegExp(r'\b(\d{1,3}(,\d{3})*|\d+)\b'), (
-      match,
-    ) {
+    return textStr.replaceAllMapped(RegExp(r'\b(\d{1,3}(,\d{3})*|\d+)\b'),
+        (match) {
       final numberStr = match.group(0)?.replaceAll(',', '') ?? '';
       final number = int.tryParse(numberStr);
       if (number != null) {
@@ -493,5 +361,70 @@ class AiSalesAnalysisWidget extends StatelessWidget {
       }
       return match.group(0) ?? '';
     });
+  }
+}
+
+// ───────────────────────── 섹션 카드 ─────────────────────────
+
+class _SectionCard extends StatelessWidget {
+  final IconData icon;
+  final Color accentColor;
+  final String title;
+  final List<Widget> children;
+
+  const _SectionCard({
+    required this.icon,
+    required this.accentColor,
+    required this.title,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
+      color: colorScheme.surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 섹션 헤더
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.07),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, size: 18, color: accentColor),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 콘텐츠
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

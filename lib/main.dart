@@ -390,6 +390,12 @@ class MyApp extends StatelessWidget {
         // 테마 관련 BLoC
         BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
 
+        // 보기 모드 관련 Cubit
+        BlocProvider<ViewModeCubit>(create: (context) => ViewModeCubit()),
+        BlocProvider<RecipeViewModeCubit>(
+          create: (context) => RecipeViewModeCubit(),
+        ),
+
         // 백과사전 관련 Cubit
         BlocProvider<EncyclopediaCubit>(
           create: (context) => EncyclopediaCubit(
