@@ -26,56 +26,23 @@ class InAppReviewService {
   static const String _userReviewedKey = 'user_reviewed';
   static const String _userDeclinedKey = 'user_declined';
 
-  // 리뷰 요청 간격 (3일로 설정 - 더 자주 나타나도록)
-  static const Duration _reviewCooldown = Duration(days: 3);
-  
-  // 최대 리뷰 요청 횟수 (너무 자주 요청하지 않도록)
-  static const int _maxReviewRequests = 10;
-
-  /// 리뷰 요청 가능 여부 확인
+  /// 리뷰 요청 가능 여부 확인.
+  ///
+  /// 자체 쿨다운/횟수 제한은 두지 않고 OS 네이티브 rate limit 에 위임한다.
+  /// 사용자가 명시적으로 [markAsReviewed] / [markAsDeclined] 한 경우에만 스킵.
   Future<bool> canRequestReview() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
-      // 사용자가 이미 리뷰를 작성했거나 거부한 경우
+
       final userReviewed = prefs.getBool(_userReviewedKey) ?? false;
-      final userDeclined = prefs.getBool(_userDeclinedKey) ?? false;
-      
       if (userReviewed) {
         _logger.d('ℹ️ 사용자가 이미 리뷰를 작성했습니다.');
         return false;
       }
-      
+
+      final userDeclined = prefs.getBool(_userDeclinedKey) ?? false;
       if (userDeclined) {
-        // 거부한 경우에도 7일 후 다시 요청 가능하도록
-        final lastDeclinedTime = prefs.getInt('${_userDeclinedKey}_time') ?? 0;
-        final daysSinceDeclined = 
-            (DateTime.now().millisecondsSinceEpoch - lastDeclinedTime) ~/ 
-            (1000 * 60 * 60 * 24);
-        
-        if (daysSinceDeclined < 7) {
-          _logger.d('ℹ️ 사용자가 리뷰를 거부했습니다. 7일 후 다시 요청 가능.');
-          return false;
-        }
-      }
-
-      // 리뷰 요청 횟수 확인
-      final requestCount = prefs.getInt(_reviewRequestCountKey) ?? 0;
-      if (requestCount >= _maxReviewRequests) {
-        _logger.d('ℹ️ 최대 리뷰 요청 횟수에 도달했습니다.');
-        return false;
-      }
-
-      // 마지막 리뷰 요청 시간 확인
-      final lastRequestTime = prefs.getInt(_lastReviewRequestKey) ?? 0;
-      final currentTime = DateTime.now().millisecondsSinceEpoch;
-      final timeSinceLastRequest = currentTime - lastRequestTime;
-      
-      if (timeSinceLastRequest < _reviewCooldown.inMilliseconds) {
-        final daysRemaining = 
-            (_reviewCooldown.inMilliseconds - timeSinceLastRequest) ~/ 
-            (1000 * 60 * 60 * 24);
-        _logger.d('ℹ️ 리뷰 요청 쿨다운 중. ${daysRemaining + 1}일 후 다시 요청 가능.');
+        _logger.d('ℹ️ 사용자가 리뷰를 거부했습니다.');
         return false;
       }
 

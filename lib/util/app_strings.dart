@@ -10,6 +10,8 @@ import 'app_strings/app_strings_common.dart';
 import 'app_strings/app_strings_onboarding.dart';
 import 'app_strings/app_strings_ad.dart';
 import 'app_strings/app_strings_encyclopedia.dart';
+import 'app_strings/app_strings_report.dart';
+import 'app_strings/app_strings_premium.dart';
 
 import 'app_locale.dart';
 
@@ -145,6 +147,10 @@ class AppStrings {
       AppStringsCommon.getAppDescription(locale);
   static String getAppSettings(AppLocale locale) =>
       AppStringsSettings.getAppSettings(locale);
+  static String getDataManagement(AppLocale locale) =>
+      AppStringsSettings.getDataManagement(locale);
+  static String getOtherSettings(AppLocale locale) =>
+      AppStringsSettings.getOtherSettings(locale);
   static String getAppTitle(AppLocale locale) =>
       AppStringsBase.getAppTitle(locale);
   static String getBackToHome(AppLocale locale) =>
@@ -427,6 +433,22 @@ class AppStrings {
       AppStringsAuth.getGoogleAccountLogin(locale);
   static String getGoogleLoginButton(AppLocale locale) =>
       AppStringsAuth.getGoogleLoginButton(locale);
+  static String getAppleLoginButton(AppLocale locale) =>
+      AppStringsAuth.getAppleLoginButton(locale);
+  static String getLoginInProgress(AppLocale locale) =>
+      AppStringsAuth.getLoginInProgress(locale);
+  static String getSignInRequiredForFeature(AppLocale locale) =>
+      AppStringsAuth.getSignInRequiredForFeature(locale);
+  static String getDeleteAccount(AppLocale locale) =>
+      AppStringsAuth.getDeleteAccount(locale);
+  static String getDeleteAccountConfirmTitle(AppLocale locale) =>
+      AppStringsAuth.getDeleteAccountConfirmTitle(locale);
+  static String getDeleteAccountConfirmMessage(AppLocale locale) =>
+      AppStringsAuth.getDeleteAccountConfirmMessage(locale);
+  static String getDeleteAccountReauthRequired(AppLocale locale) =>
+      AppStringsAuth.getDeleteAccountReauthRequired(locale);
+  static String getDeleteAccountSuccess(AppLocale locale) =>
+      AppStringsAuth.getDeleteAccountSuccess(locale);
   static String getHomeSubtitle(AppLocale locale) =>
       AppStringsAuth.getHomeSubtitle(locale);
   static String getImageSelectError(AppLocale locale) =>
@@ -857,6 +879,98 @@ class AppStrings {
   static String getResetFailedMessage(AppLocale locale, String error) =>
       AppStringsSettings.getResetFailedMessage(locale, error);
   static String getRetry(AppLocale locale) => AppStringsCommon.getRetry(locale);
+  static String getRegister(AppLocale locale) =>
+      AppStringsCommon.getRegister(locale);
+  static String getDoRegister(AppLocale locale) =>
+      AppStringsCommon.getDoRegister(locale);
+  static String getSaveChanges(AppLocale locale) =>
+      AppStringsCommon.getSaveChanges(locale);
+  static String getTotal(AppLocale locale) => AppStringsCommon.getTotal(locale);
+  static String getSort(AppLocale locale) => AppStringsCommon.getSort(locale);
+  static String getSortBy(AppLocale locale) =>
+      AppStringsCommon.getSortBy(locale);
+  static String getSortExpirySoonest(AppLocale locale) =>
+      AppStringsCommon.getSortExpirySoonest(locale);
+  static String getSortNewest(AppLocale locale) =>
+      AppStringsCommon.getSortNewest(locale);
+  static String getSortPriceHigh(AppLocale locale) =>
+      AppStringsCommon.getSortPriceHigh(locale);
+  static String getSortPriceLow(AppLocale locale) =>
+      AppStringsCommon.getSortPriceLow(locale);
+  static String getSortNameAsc(AppLocale locale) =>
+      AppStringsCommon.getSortNameAsc(locale);
+  static String getNoSearchResults(AppLocale locale) =>
+      AppStringsCommon.getNoSearchResults(locale);
+  static String getTryDifferentKeyword(AppLocale locale) =>
+      AppStringsCommon.getTryDifferentKeyword(locale);
+  static String getCategory(AppLocale locale) =>
+      AppStringsCommon.getCategory(locale);
+  static String getUnitPrice(AppLocale locale) =>
+      AppStringsCommon.getUnitPrice(locale);
+  static String getCurrentStock(AppLocale locale) =>
+      AppStringsCommon.getCurrentStock(locale);
+  static String getStock(AppLocale locale) => AppStringsCommon.getStock(locale);
+  static String getPurchaseAmountShort(AppLocale locale) =>
+      AppStringsCommon.getPurchaseAmountShort(locale);
+  static String getUsedIn(AppLocale locale) =>
+      AppStringsCommon.getUsedIn(locale);
+  static String getUsedInSummary(
+    AppLocale locale,
+    int sauceCount,
+    int recipeCount,
+  ) =>
+      AppStringsCommon.getUsedInSummary(locale, sauceCount, recipeCount);
+  static String getNotUsedAnywhere(AppLocale locale) =>
+      AppStringsCommon.getNotUsedAnywhere(locale);
+  static String getUsesThisIngredient(AppLocale locale, String amount) =>
+      AppStringsCommon.getUsesThisIngredient(locale, amount);
+  static String getMarginRate(AppLocale locale) =>
+      AppStringsCommon.getMarginRate(locale);
+  static String getExpectedMargin(AppLocale locale) =>
+      AppStringsCommon.getExpectedMargin(locale);
+  static String getSellPrice(AppLocale locale) =>
+      AppStringsCommon.getSellPrice(locale);
+  static String getSell(AppLocale locale) => AppStringsCommon.getSell(locale);
+  static String getTotalCostLabel(AppLocale locale) =>
+      AppStringsCommon.getTotalCostLabel(locale);
+  static String getCostComposition(AppLocale locale) =>
+      AppStringsCommon.getCostComposition(locale);
+  static String getProfitPerOne(AppLocale locale) =>
+      AppStringsCommon.getProfitPerOne(locale);
+  static String getSellPriceSimulation(AppLocale locale) =>
+      AppStringsCommon.getSellPriceSimulation(locale);
+  static String getSelectIngredientSheet(AppLocale locale) =>
+      AppStringsCommon.getSelectIngredientSheet(locale);
+  static String getSelectSauceSheet(AppLocale locale) =>
+      AppStringsCommon.getSelectSauceSheet(locale);
+  static String getAddIngredientSection(AppLocale locale) =>
+      AppStringsCommon.getAddIngredientSection(locale);
+  static String getAddSauceSection(AppLocale locale) =>
+      AppStringsCommon.getAddSauceSection(locale);
+  static String getAddShort(AppLocale locale) =>
+      AppStringsCommon.getAddShort(locale);
+  static String getAtLeastOneIngredient(AppLocale locale) =>
+      AppStringsCommon.getAtLeastOneIngredient(locale);
+  static String getAddIngredientOrSauce(AppLocale locale) =>
+      AppStringsCommon.getAddIngredientOrSauce(locale);
+  static String getMakeSauceTitle(AppLocale locale) =>
+      AppStringsCommon.getMakeSauceTitle(locale);
+  static String getCompositionIngredients(AppLocale locale) =>
+      AppStringsCommon.getCompositionIngredients(locale);
+  static String getSauceName(AppLocale locale) =>
+      AppStringsCommon.getSauceName(locale);
+  static String getSauceNamePlaceholder(AppLocale locale) =>
+      AppStringsCommon.getSauceNamePlaceholder(locale);
+  static String getEditSauceTitle(AppLocale locale) =>
+      AppStringsCommon.getEditSauceTitle(locale);
+  static String getDeleteSauce(AppLocale locale) =>
+      AppStringsCommon.getDeleteSauce(locale);
+  static String getDeleteSauceConfirm(AppLocale locale, String name) =>
+      AppStringsCommon.getDeleteSauceConfirm(locale, name);
+  static String getSauceDeleted(AppLocale locale) =>
+      AppStringsCommon.getSauceDeleted(locale);
+  static String getSauceNameRequired(AppLocale locale) =>
+      AppStringsCommon.getSauceNameRequired(locale);
   static String getReviewError(AppLocale locale, String error) =>
       AppStringsSettings.getReviewError(locale, error);
   static String getRiskFactors(AppLocale locale) =>
@@ -1102,4 +1216,97 @@ class AppStrings {
       AppStringsEncyclopedia.getLoadRecipesFailed(locale);
   static String getNoCookingMethod(AppLocale locale) =>
       AppStringsEncyclopedia.getNoCookingMethod(locale);
+
+  // --- 리포트 관련 ---
+  static String getReport(AppLocale locale) =>
+      AppStringsReport.getReport(locale);
+  static String getReportSubtitle(AppLocale locale) =>
+      AppStringsReport.getReportSubtitle(locale);
+  static String getPeriodWeekly(AppLocale locale) =>
+      AppStringsReport.getPeriodWeekly(locale);
+  static String getPeriodMonthly(AppLocale locale) =>
+      AppStringsReport.getPeriodMonthly(locale);
+  static String getPeriodQuarterly(AppLocale locale) =>
+      AppStringsReport.getPeriodQuarterly(locale);
+  static String getAvgCostRatio(AppLocale locale) =>
+      AppStringsReport.getAvgCostRatio(locale);
+  static String getGoalAchieved(AppLocale locale, int target) =>
+      AppStringsReport.getGoalAchieved(locale, target);
+  static String getDeltaVsPrevPeriod(
+          AppLocale locale, ReportPeriodLabel period) =>
+      AppStringsReport.getDeltaVsPrevPeriod(locale, period);
+  static String getInventoryValue(AppLocale locale) =>
+      AppStringsReport.getInventoryValue(locale);
+  static String getInventorySubtitle(AppLocale locale) =>
+      AppStringsReport.getInventorySubtitle(locale);
+  static String getTotalInventory(AppLocale locale) =>
+      AppStringsReport.getTotalInventory(locale);
+  static String getUncategorized(AppLocale locale) =>
+      AppStringsReport.getUncategorized(locale);
+  static String getOtherCategories(AppLocale locale) =>
+      AppStringsReport.getOtherCategories(locale);
+  static String getMarginRanking(AppLocale locale) =>
+      AppStringsReport.getMarginRanking(locale);
+  static String getViewAll(AppLocale locale) =>
+      AppStringsReport.getViewAll(locale);
+  static String getExpensiveIngredientsTop5(AppLocale locale) =>
+      AppStringsReport.getExpensiveIngredientsTop5(locale);
+  static String getUnitPriceBasis(AppLocale locale) =>
+      AppStringsReport.getUnitPriceBasis(locale);
+  static String getEmptyHistoryPrompt(AppLocale locale) =>
+      AppStringsReport.getEmptyHistoryPrompt(locale);
+  static String getEmptyReportPrompt(AppLocale locale) =>
+      AppStringsReport.getEmptyReportPrompt(locale);
+
+  // 광고 제거 일회성 결제 (RevenueCat)
+  static String getPremiumMenuTitle(AppLocale locale) =>
+      AppStringsPremium.getPremiumMenuTitle(locale);
+  static String getPremiumMenuSubtitle(AppLocale locale) =>
+      AppStringsPremium.getPremiumMenuSubtitle(locale);
+  static String getPremiumPageTitle(AppLocale locale) =>
+      AppStringsPremium.getPremiumPageTitle(locale);
+  static String getPremiumBenefitNoAds(AppLocale locale) =>
+      AppStringsPremium.getPremiumBenefitNoAds(locale);
+  static String getPremiumBenefitForever(AppLocale locale) =>
+      AppStringsPremium.getPremiumBenefitForever(locale);
+  static String getPremiumBenefitFamilyShare(AppLocale locale) =>
+      AppStringsPremium.getPremiumBenefitFamilyShare(locale);
+  static String getPremiumLoadingPrice(AppLocale locale) =>
+      AppStringsPremium.getPremiumLoadingPrice(locale);
+  static String getPremiumPriceUnavailable(AppLocale locale) =>
+      AppStringsPremium.getPremiumPriceUnavailable(locale);
+  static String getPremiumPurchaseButton(AppLocale locale) =>
+      AppStringsPremium.getPremiumPurchaseButton(locale);
+  static String getPremiumRestoreButton(AppLocale locale) =>
+      AppStringsPremium.getPremiumRestoreButton(locale);
+  static String getPremiumPurchasing(AppLocale locale) =>
+      AppStringsPremium.getPremiumPurchasing(locale);
+  static String getPremiumRestoring(AppLocale locale) =>
+      AppStringsPremium.getPremiumRestoring(locale);
+  static String getPremiumAlreadyOwnedTitle(AppLocale locale) =>
+      AppStringsPremium.getPremiumAlreadyOwnedTitle(locale);
+  static String getPremiumAlreadyOwnedSubtitle(AppLocale locale) =>
+      AppStringsPremium.getPremiumAlreadyOwnedSubtitle(locale);
+  static String getPremiumPurchasedAt(AppLocale locale) =>
+      AppStringsPremium.getPremiumPurchasedAt(locale);
+  static String getPremiumLoginRequired(AppLocale locale) =>
+      AppStringsPremium.getPremiumLoginRequired(locale);
+  static String getPremiumErrorPending(AppLocale locale) =>
+      AppStringsPremium.getPremiumErrorPending(locale);
+  static String getPremiumErrorNetwork(AppLocale locale) =>
+      AppStringsPremium.getPremiumErrorNetwork(locale);
+  static String getPremiumErrorStore(AppLocale locale) =>
+      AppStringsPremium.getPremiumErrorStore(locale);
+  static String getPremiumErrorAlready(AppLocale locale) =>
+      AppStringsPremium.getPremiumErrorAlready(locale);
+  static String getPremiumErrorNotReady(AppLocale locale) =>
+      AppStringsPremium.getPremiumErrorNotReady(locale);
+  static String getPremiumErrorUnknown(AppLocale locale) =>
+      AppStringsPremium.getPremiumErrorUnknown(locale);
+  static String getPremiumRestoreSuccess(AppLocale locale) =>
+      AppStringsPremium.getPremiumRestoreSuccess(locale);
+  static String getPremiumRestoreNoPurchase(AppLocale locale) =>
+      AppStringsPremium.getPremiumRestoreNoPurchase(locale);
+  static String getPremiumTermsNotice(AppLocale locale) =>
+      AppStringsPremium.getPremiumTermsNotice(locale);
 }

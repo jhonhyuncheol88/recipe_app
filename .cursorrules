@@ -1,0 +1,502 @@
+# Wonkka (원까) — AI 기반 레스토랑 원가 계산기
+# Cursor Rules for Flutter Project
+
+## 프로젝트 개요
+- **앱 이름**: 원까 (Wonkka)
+- **설명**: 식당 경영자를 위한 AI 기반 원가 계산 앱 (재료 관리, 레시피 원가, 유통기한 알림, OCR 영수증 스캔)
+- **버전**: 1.0.16+38
+- **플랫폼**: Flutter (iOS, Android)
+- **Dart SDK**: ^3.7.0
+
+---
+
+## 아키텍처: Clean Architecture + BLoC
+
+### 계층 구조
+```
+lib/
+├── presentation/  → UI (pages/, widgets/) + BLoC/Cubit
+├── domain/        → 순수 비즈니스 로직 (entities/, repositories/, usecases/)
+├── data/          → 데이터 구현 (models/, repositories/, datasources/)
+├── controller/    → 기능별 Cubit/Bloc 모음
+├── service/       → 도메인 서비스 (비용 계산, 알림 등)
+├── screen/        → UI 페이지 및 위젯
+├── router/        → GoRouter 기반 네비게이션
+├── theme/         → 테마 시스템 (색상, 텍스트, 스타일)
+└── util/          → 유틸리티 (locale, strings, formatter)
+```
+
+### 계층 의존성 규칙 (엄격히 준수)
+- Presentation → Domain (OK), Presentation → Data (NEVER)
+- Domain → 외부 의존성 (NEVER) — 순수 Dart 코드만
+- Data → Domain (OK), Data → 외부 라이브러리 (OK)
+- UI 위젯은 Repository나 DataSource를 직접 호출하지 않는다
+
+---
+
+## 상태 관리: BLoC/Cubit 패턴
+
+### 기본 Cubit 구조
+```dart
+class FeatureCubit extends Cubit<FeatureState> {
+  final FeatureRepository _repository;
+
+  FeatureCubit(this._repository) : super(FeatureInitial());
+
+  Future<void> loadData() async {
+    emit(FeatureLoading());
+    try {
+      final result = await _repository.getData();
+      if (result.isEmpty) {
+        emit(FeatureEmpty());
+      } else {
+        emit(FeatureLoaded(result));
+      }
+    } catch (e) {
+      emit(FeatureError(e.toString()));
+    }
+  }
+}
+```
+
+### State 구조 (항상 Equatable 사용)
+```dart
+abstract class FeatureState extends Equatable {
+  @override
+  List<Object?> get props => [];
+}
+
+class FeatureInitial extends FeatureState {}
+class FeatureLoading extends FeatureState {}
+class FeatureLoaded extends FeatureState {
+  final List<Item> items;
+  const FeatureLoaded(this.items);
+  @override
+  List<Object?> get props => [items];
+}
+class FeatureEmpty extends FeatureState {}
+class FeatureError extends FeatureState {
+  final String message;
+  const FeatureError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+```
+
+### UI에서 BLoC 사용
+```dart
+// 상태 기반 UI 렌더링
+BlocBuilder<FeatureCubit, FeatureState>(
+  builder: (context, state) {
+    if (state is FeatureLoading) return const CircularProgressIndicator();
+    if (state is FeatureLoaded) return FeatureList(state.items);
+    if (state is FeatureEmpty) return const EmptyStateWidget();
+    if (state is FeatureError) return ErrorWidget(state.message);
+    return const SizedBox.shrink();
+  },
+)
+
+// 부수 효과 처리 (네비게이션, Snackbar)
+BlocListener<FeatureCubit, FeatureState>(
+  listener: (context, state) {
+    if (state is FeatureSaved) context.pop();
+    if (state is FeatureError) ScaffoldMessenger.of(context).showSnackBar(...);
+  },
+)
+```
+
+---
+
+## 현재 Cubit/Bloc 목록
+
+| Cubit/Bloc | 역할 |
+|---|---|
+| `IngredientCubit` | 식재료 CRUD |
+| `RecipeCubit` | 레시피 관리 + 원가 계산 |
+| `SauceCubit` | 소스 관리 |
+| `TagCubit` | 태그 관리 |
+| `AuthBloc` | Firebase 인증 |
+| `LocaleCubit` | 언어 전환 (6개 언어) |
+| `ThemeCubit` | 테마 전환 (4개 테마) |
+| `NumberFormatCubit` | 숫자 형식 설정 |
+| `OcrCubit` | 영수증 OCR 스캔 |
+| `ExpiryNotificationCubit` | 유통기한 알림 |
+| `OnboardingCubit` | 최초 온보딩 흐름 |
+| `EncyclopediaCubit` | 식재료 백과사전 |
+| `AdCubit` | AdMob 광고 관리 |
+
+---
+
+## 코딩 컨벤션
+
+### 파일 명명 규칙
+- 파일: `snake_case.dart`
+- 클래스: `PascalCase`
+- 변수/메서드: `camelCase`
+- 상수: `camelCase` (Dart 관례) 또는 `kConstantName`
+- Private 멤버: `_underscorePrefix`
+
+### 파일 길이 제한
+- **단일 Dart 파일은 1,500줄을 초과하면 안 된다**
+- 대형 위젯/로직은 별도 파일로 분리
+
+### 색상 처리 규칙
+```dart
+// NEVER — withOpacity 사용 금지
+color.withOpacity(0.1)
+
+// ALWAYS — withAlpha 사용
+color.withAlpha(25) // 0.1 * 255 ≈ 25
+color.withAlpha(128) // 0.5 * 255 ≈ 128
+```
+
+### ID 생성
+```dart
+// UUID 사용 (정수 autoincrement 사용 안 함)
+import 'package:uuid/uuid.dart';
+final id = const Uuid().v4();
+```
+
+### 로깅
+```dart
+import 'dart:developer' as developer;
+developer.log('message', name: 'FeatureName', error: e, stackTrace: st);
+```
+
+### 에러 처리
+```dart
+// BLoC 외부에서는 try-catch
+try {
+  await _repository.save(data);
+} catch (e, st) {
+  developer.log('Failed to save', error: e, stackTrace: st);
+  emit(FeatureError(e.toString()));
+}
+```
+
+---
+
+## 데이터베이스: SQLite (sqflite)
+
+### 패턴: Singleton DatabaseHelper
+```dart
+class DatabaseHelper {
+  static final DatabaseHelper instance = DatabaseHelper._init();
+  static Database? _database;
+
+  DatabaseHelper._init();
+
+  Future<Database> get database async {
+    _database ??= await _initDB();
+    return _database!;
+  }
+}
+```
+
+### SQL 보안 규칙
+```dart
+// NEVER — SQL 인젝션 위험
+db.query('WHERE name = "$name"');
+
+// ALWAYS — whereArgs 사용
+db.query(
+  'ingredients',
+  where: 'name = ?',
+  whereArgs: [name],
+);
+```
+
+### 데이터베이스 스키마 (핵심 테이블)
+```
+Ingredients: id(UUID), name, purchase_price, purchase_amount, purchase_unit_id, expiry_date, created_at
+Units: id(UUID), name, type(weight/volume/count), base_unit_id, conversion_factor
+Recipes: id(UUID), name, description, output_amount, output_unit, total_cost, image_path
+RecipeIngredients: id, recipe_id, ingredient_id, amount, unit_id
+Sauces: id, name, total_weight, total_cost, created_at
+SauceIngredients: id, sauce_id, ingredient_id, amount, unit_id
+RecipeSauces: id, recipe_id, sauce_id, amount, unit_id
+RecipePriceHistory: id, recipe_id, price, recorded_at
+Tags: id, name, color
+```
+
+---
+
+## 원가 계산 로직
+
+### 기본 단위당 가격 계산
+```
+g당 가격 = purchase_price / (purchase_amount × conversion_factor)
+재료 원가 = g당 가격 × (recipe_amount × unit_conversion_factor)
+```
+
+### 레시피 총원가
+```
+총원가 = Σ(재료 원가_i) + Σ(소스 원가_j)
+소스 원가_j = (소스 g당 가격) × (사용량 × 변환계수)
+```
+
+### 판매가 추천
+```
+추천 판매가 = 총원가 / (목표원가율 / 100)
+기본 목표 원가율: 30~40%
+```
+
+---
+
+## 다국어 지원 (i18n)
+
+### 지원 언어 (6개)
+```dart
+enum AppLocale {
+  ko, // 한국어 (기본)
+  ja, // 일본어
+  zhCN, // 중국어
+  en, // 영어
+  de, // 독일어
+  vi, // 베트남어
+}
+```
+
+### 문자열 사용 패턴
+```dart
+// 항상 AppStrings를 통해 접근
+final locale = context.read<LocaleCubit>().state.locale;
+Text(AppStrings.getAppTitle(locale))
+Text(AppStrings.ingredient.getName(locale))
+
+// 절대 하드코딩 금지
+Text('재료') // NEVER
+Text(AppStrings.ingredient.name(locale)) // ALWAYS
+```
+
+### 새 문자열 추가 시
+1. `lib/util/app_strings/app_strings_<domain>.dart`에 추가
+2. `lib/util/app_strings.dart`에서 export
+3. 6개 언어 모두 번역 제공
+
+---
+
+## 테마 시스템
+
+### 4가지 테마 타입
+```dart
+enum AppThemeType {
+  wonkkaSignature, // Soft purple-blue & dusty rose (기본)
+  minimalistMono,  // Clean black & grey
+  natureGreen,     // Forest green
+  oceanBlue,       // Sky blue
+}
+```
+
+### 테마 색상 접근
+```dart
+// Theme.of(context) 또는 커스텀 AppColors 사용
+final colors = Theme.of(context).colorScheme;
+final appColors = context.read<ThemeCubit>().state.colors;
+
+// 절대 하드코딩 금지
+Container(color: Color(0xFF1A237E)) // NEVER (단, AppColors 정의 파일 제외)
+Container(color: Theme.of(context).colorScheme.primary) // ALWAYS
+```
+
+### 다크 모드
+- 모든 색상은 light/dark 변형을 모두 정의해야 함
+- 배경: `#121212` (true black 금지)
+- 텍스트: `#EEEEEE` (off-white)
+- 카드: `#1E1E1E`
+
+---
+
+## 네비게이션: GoRouter
+
+### 라우트 정의 위치
+- `lib/router/app_router.dart`
+
+### 네비게이션 패턴
+```dart
+// GoRouter 사용
+context.go('/ingredient');
+context.push('/recipe/$recipeId');
+context.pop();
+
+// Router.of(context) 직접 사용 금지
+```
+
+---
+
+## UI 컴포넌트 가이드
+
+### 카드 컴포넌트
+- 최소화된 그림자, Flat 디자인 지향
+- 일관된 둥근 모서리 (`BorderRadius.circular(12)` 기본)
+- 얇은 테두리 또는 배경색 차이로 구분
+
+### 버튼 위계
+```dart
+// Primary 액션: FilledButton
+FilledButton(onPressed: ..., child: Text(...))
+
+// Secondary 액션: OutlinedButton
+OutlinedButton(onPressed: ..., child: Text(...))
+
+// Destructive 액션: TextButton (빨간색)
+TextButton(style: TextButton.styleFrom(foregroundColor: Colors.red), ...)
+```
+
+### 로딩 상태
+```dart
+// shimmer 패키지 사용 권장
+Shimmer.fromColors(
+  baseColor: Colors.grey.shade300,
+  highlightColor: Colors.grey.shade100,
+  child: SkeletonWidget(),
+)
+```
+
+### 빈 상태 (Empty State)
+- 일러스트레이션 + 안내 텍스트 + 액션 버튼 구조 유지
+- `AppStrings`에서 다국어 텍스트 사용
+
+---
+
+## Firebase 사용
+
+### 초기화 (이미 완료)
+- `lib/firebase_options.dart`에 설정 있음
+- API 키는 `.env` 파일에서 `flutter_dotenv`로 로드
+
+### Auth 패턴
+```dart
+// AuthBloc을 통해서만 접근
+context.read<AuthBloc>().add(LoginWithGoogleEvent());
+
+// FirebaseAuth.instance 직접 호출 금지 (UI에서)
+```
+
+### Firestore 사용 시
+```dart
+// Repository 패턴을 통해 접근
+// UI나 Cubit에서 직접 Firestore 호출 금지
+```
+
+---
+
+## AI 기능
+
+### Gemini API
+```dart
+// flutter_gemini 패키지 사용
+// 프롬프트는 구조화된 JSON 응답 강제
+// API 키: .env 파일에서 로드
+
+final response = await Gemini.instance.prompt(
+  parts: [Part.text(buildPrompt(ingredients))],
+);
+```
+
+### OCR (ML Kit)
+```dart
+// google_mlkit_text_recognition 사용
+// Human-in-the-loop 설계: 결과는 항상 사용자 확인 단계 거침
+// OcrCubit을 통해 상태 관리
+```
+
+---
+
+## 광고 (AdMob)
+
+- Android 전용 (`Platform.isAndroid` 확인 필수)
+- `AdCubit`을 통해 광고 상태 관리
+- 광고 로드 실패 시 앱 기능이 중단되면 안 됨
+
+---
+
+## 알림 시스템
+
+### 유통기한 상태 분류
+```dart
+// 4단계 상태 (색상 코드 일관 적용)
+정상: 7일+ (녹색)
+경고: 3-7일 (노란색)
+위험: 1-3일 (주황색)
+만료: 0일 이하 (빨간색)
+```
+
+### 알림 스케줄링
+```dart
+// ExpiryNotificationCubit을 통해 관리
+// flutter_local_notifications + flutter_timezone 사용
+// 알림: 3일 전, 1일 전, 당일
+```
+
+---
+
+## 금지 패턴 (Anti-Patterns)
+
+```dart
+// 1. UI에서 직접 DB 접근 금지
+final db = await DatabaseHelper.instance.database; // UI에서 NEVER
+
+// 2. Cubit에서 BuildContext 사용 금지
+class MyCubit extends Cubit<MyState> {
+  void doSomething(BuildContext context) { ... } // NEVER
+}
+
+// 3. StatefulWidget에서 BLoC 로직 직접 구현 금지
+setState(() { _items = await repository.getAll(); }); // NEVER
+
+// 4. 색상 하드코딩 금지 (AppColors 정의 파일 제외)
+Text('안녕', style: TextStyle(color: Color(0xFF1A237E))); // NEVER
+
+// 5. 문자열 하드코딩 금지
+Text('재료 추가'); // NEVER (AppStrings 사용)
+
+// 6. withOpacity 사용 금지
+color.withOpacity(0.5); // NEVER (withAlpha 사용)
+
+// 7. print 사용 금지
+print('debug'); // NEVER (developer.log 사용)
+```
+
+---
+
+## 코드 리뷰 체크리스트
+
+새 코드 추가 전 반드시 확인:
+
+- [ ] Clean Architecture 계층 규칙 준수?
+- [ ] BLoC 상태는 Equatable?
+- [ ] 모든 문자열 AppStrings 사용?
+- [ ] 색상 withAlpha() 사용?
+- [ ] SQL 파라미터 whereArgs 사용?
+- [ ] 파일 1,500줄 이하?
+- [ ] 6개 언어 번역 추가?
+- [ ] Android 전용 코드 Platform 체크?
+- [ ] UUID로 ID 생성?
+- [ ] 에러 상태 처리 있음?
+
+---
+
+## 프로젝트 특화 서비스
+
+| 서비스 클래스 | 역할 |
+|---|---|
+| `RecipeCostService` | 레시피 총원가 계산 |
+| `SauceCostService` | 소스 원가 계산 |
+| `SauceExpiryService` | 소스 유통기한 추적 |
+| `NotificationService` | 로컬 알림 발송 |
+| `EncyclopediaService` | 식재료 백과사전 데이터 |
+| `AiSalesAnalysisService` | AI 판매가 분석 |
+| `InAppReviewService` | 앱 리뷰 요청 (3회 실행 후) |
+
+---
+
+## 설계 문서 위치
+
+- `required/new_required.md` — 핵심 아키텍처 및 구현 가이드
+- `required/recipe.md` — 레시피 도메인 및 소스 모듈
+- `required/auth.md` — 인증 시스템
+- `required/onboarding.md` — 온보딩 플로우
+- `required/ocr.md` — OCR 영수증 스캔
+- `required/todo.md` — 기능 로드맵 (디자인 개편, 색상 시스템)
+- `UPDATE_NEWS.md` — 버전별 변경 이력 (6개 언어)

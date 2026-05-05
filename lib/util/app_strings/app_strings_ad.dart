@@ -13,7 +13,7 @@ mixin AppStringsAd {
         return '观看广告';
       case AppLocale.usa:
         return 'Watch Ad';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Watch Ad';
       case AppLocale.vietnam:
         return 'Xem quảng cáo';
@@ -30,7 +30,7 @@ mixin AppStringsAd {
         return '广告加载失败。请稍后再试。';
       case AppLocale.usa:
         return 'Failed to load ad. Please try again later.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Failed to load ad. Please try again later.';
       case AppLocale.vietnam:
         return 'Không thể tải quảng cáo. Vui lòng thử lại sau.';

@@ -76,8 +76,8 @@ class NumberFormatter {
         return '¥';
       case AppLocale.usa:
         return '\$';
-      case AppLocale.euro:
-        return '€';
+      case AppLocale.chinaTraditional:
+        return 'NT\$';
       case AppLocale.vietnam:
         return '₫';
     }
@@ -94,8 +94,8 @@ class NumberFormatter {
         return 2;
       case AppLocale.usa:
         return 2;
-      case AppLocale.euro:
-        return 2;
+      case AppLocale.chinaTraditional:
+        return 0;
       case AppLocale.vietnam:
         return 0;
     }
@@ -176,7 +176,7 @@ class NumberFormatter {
         return '$formattedNumber$unit';
       case AppLocale.usa:
         return '$formattedNumber $unit';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '$formattedNumber $unit';
       case AppLocale.vietnam:
         return '$formattedNumber$unit';
@@ -200,8 +200,8 @@ class NumberFormatter {
         return '${formattedNumber}个';
       case AppLocale.usa:
         return '$formattedNumber pcs';
-      case AppLocale.euro:
-        return '$formattedNumber Stk';
+      case AppLocale.chinaTraditional:
+        return '${formattedNumber}個';
       case AppLocale.vietnam:
         return '$formattedNumber cái';
     }
@@ -226,7 +226,7 @@ class NumberFormatter {
         return '$formattedValue$fromUnit → $formattedValue$toUnit';
       case AppLocale.usa:
         return '$formattedValue $fromUnit → $formattedValue $toUnit';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '$formattedValue $fromUnit → $formattedValue $toUnit';
       case AppLocale.vietnam:
         return '$formattedValue$fromUnit → $formattedValue$toUnit';
@@ -244,8 +244,8 @@ class NumberFormatter {
         return '¥';
       case AppLocale.usa:
         return '\$';
-      case AppLocale.euro:
-        return '€';
+      case AppLocale.chinaTraditional:
+        return 'NT\$';
       case AppLocale.vietnam:
         return '₫';
     }
@@ -262,8 +262,8 @@ class NumberFormatter {
         return '元';
       case AppLocale.usa:
         return 'Dollar';
-      case AppLocale.euro:
-        return 'Euro';
+      case AppLocale.chinaTraditional:
+        return '新台幣';
       case AppLocale.vietnam:
         return 'Đồng';
     }
@@ -316,7 +316,7 @@ class NumberFormatter {
     if (strValue.contains('₩') ||
         strValue.contains('¥') ||
         strValue.contains('\$') ||
-        strValue.contains('€') ||
+        strValue.contains('NT\$') ||
         strValue.contains('₫') ||
         strValue.contains('원')) {
       return strValue;

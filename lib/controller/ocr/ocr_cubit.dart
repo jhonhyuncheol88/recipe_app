@@ -279,8 +279,8 @@ class OcrCubit extends Cubit<OcrState> {
         return const Locale('zh', 'CN');
       case AppLocale.usa:
         return const Locale('en', 'US');
-      case AppLocale.euro:
-        return const Locale('en', 'EU');
+      case AppLocale.chinaTraditional:
+        return const Locale('zh', 'TW');
       case AppLocale.vietnam:
         return const Locale('vi', 'VN');
     }

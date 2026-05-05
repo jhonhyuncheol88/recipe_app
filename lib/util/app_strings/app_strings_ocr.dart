@@ -13,7 +13,7 @@ mixin AppStringsOcr {
         return '扫描收据';
       case AppLocale.usa:
         return 'Scan Receipt';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Scan Receipt';
       case AppLocale.vietnam:
         return 'Quét hóa đơn';
@@ -30,7 +30,7 @@ mixin AppStringsOcr {
         return '扫描收据';
       case AppLocale.usa:
         return 'Scan Receipt';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Scan Receipt';
       case AppLocale.vietnam:
         return 'Quét hóa đơn';
@@ -47,7 +47,7 @@ mixin AppStringsOcr {
         return '数据修正';
       case AppLocale.usa:
         return 'Correct Data';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Correct Data';
       case AppLocale.vietnam:
         return 'Sửa dữ liệu';
@@ -65,7 +65,7 @@ mixin AppStringsOcr {
         return '拍摄收据，轻松添加材料';
       case AppLocale.usa:
         return 'Take a photo of your receipt to easily add ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Fotografieren Sie Ihren Beleg, um Zutaten einfach hinzuzufügen';
       case AppLocale.vietnam:
         return 'Chụp ảnh hóa đơn để dễ dàng thêm nguyên liệu';
@@ -82,7 +82,7 @@ mixin AppStringsOcr {
         return '选择收据照片';
       case AppLocale.usa:
         return 'Select Receipt Photo';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Kassenbon-Foto auswählen';
       case AppLocale.vietnam:
         return 'Chọn ảnh hóa đơn';
@@ -99,7 +99,7 @@ mixin AppStringsOcr {
         return '收据分析中...';
       case AppLocale.usa:
         return 'Analyzing receipt...';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Beleg wird analysiert...';
       case AppLocale.vietnam:
         return 'Đang phân tích hóa đơn...';
@@ -116,7 +116,7 @@ mixin AppStringsOcr {
         return '自动识别收据中的材料';
       case AppLocale.usa:
         return 'Automatically recognizes ingredients from your receipt';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Erkennt automatisch Zutaten aus Ihrem Beleg';
       case AppLocale.vietnam:
         return 'Tự động nhận diện nguyên liệu từ hóa đơn';
@@ -133,7 +133,7 @@ mixin AppStringsOcr {
         return 'OCR失败';
       case AppLocale.usa:
         return 'OCR Failed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'OCR Failed';
       case AppLocale.vietnam:
         return 'OCR thất bại';
@@ -150,7 +150,7 @@ mixin AppStringsOcr {
         return '文本识别失败，请重试。';
       case AppLocale.usa:
         return 'Text recognition failed. Please try again.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Text recognition failed. Please try again.';
       case AppLocale.vietnam:
         return 'Nhận dạng văn bản thất bại. Vui lòng thử lại.';
@@ -168,7 +168,7 @@ mixin AppStringsOcr {
         return '识别的文本';
       case AppLocale.usa:
         return 'Recognized Text';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recognized Text';
       case AppLocale.vietnam:
         return 'Văn bản đã nhận dạng';
@@ -185,7 +185,7 @@ mixin AppStringsOcr {
         return '解析的材料';
       case AppLocale.usa:
         return 'Parsed Ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Parsed Ingredients';
       case AppLocale.vietnam:
         return 'Nguyên liệu đã phân tích';
@@ -202,7 +202,7 @@ mixin AppStringsOcr {
         return '确认并保存';
       case AppLocale.usa:
         return 'Confirm & Save';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Confirm & Save';
       case AppLocale.vietnam:
         return 'Confirm & Save';
@@ -219,7 +219,7 @@ mixin AppStringsOcr {
         return '保存材料';
       case AppLocale.usa:
         return 'Save Ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Save Ingredients';
       case AppLocale.vietnam:
         return 'Lưu nguyên liệu';
@@ -236,7 +236,7 @@ mixin AppStringsOcr {
         return '材料已保存';
       case AppLocale.usa:
         return 'Ingredients saved successfully';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Ingredients saved successfully';
       case AppLocale.vietnam:
         return 'Ingredients saved successfully';
@@ -253,7 +253,7 @@ mixin AppStringsOcr {
         return '保存失败';
       case AppLocale.usa:
         return 'Save Failed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Save Failed';
       case AppLocale.vietnam:
         return 'Lưu thất bại';
@@ -270,7 +270,7 @@ mixin AppStringsOcr {
         return '保存材料失败，请重试。';
       case AppLocale.usa:
         return 'Failed to save ingredients. Please try again.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Failed to save ingredients. Please try again.';
       case AppLocale.vietnam:
         return 'Failed to save ingredients. Please try again.';
@@ -288,7 +288,7 @@ mixin AppStringsOcr {
         return '需要相册访问权限';
       case AppLocale.usa:
         return 'Gallery access permission required';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Gallery access permission required';
       case AppLocale.vietnam:
         return 'Gallery access permission required';
@@ -305,7 +305,7 @@ mixin AppStringsOcr {
         return '权限被拒绝';
       case AppLocale.usa:
         return 'Permission denied';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Permission denied';
       case AppLocale.vietnam:
         return 'Permission denied';
@@ -322,7 +322,7 @@ mixin AppStringsOcr {
         return '打开设置';
       case AppLocale.usa:
         return 'Open Settings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Open Settings';
       case AppLocale.vietnam:
         return 'Mở cài đặt';
@@ -340,7 +340,7 @@ mixin AppStringsOcr {
         return '使用方法';
       case AppLocale.usa:
         return 'How It Works';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'So funktioniert es';
       case AppLocale.vietnam:
         return 'Cách hoạt động';
@@ -357,7 +357,7 @@ mixin AppStringsOcr {
         return '总项目数';
       case AppLocale.usa:
         return 'Total Items';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Total Items';
       case AppLocale.vietnam:
         return 'Tổng số mục';
@@ -374,7 +374,7 @@ mixin AppStringsOcr {
         return '总价格';
       case AppLocale.usa:
         return 'Total Price';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Total Price';
       case AppLocale.vietnam:
         return 'Tổng giá';
@@ -391,7 +391,7 @@ mixin AppStringsOcr {
         return '无价格信息项目';
       case AppLocale.usa:
         return 'Items without Price';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Items without Price';
       case AppLocale.vietnam:
         return 'Items without Price';
@@ -408,7 +408,7 @@ mixin AppStringsOcr {
         return '编辑材料信息';
       case AppLocale.usa:
         return 'Edit Ingredient Info';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Edit Ingredient Info';
       case AppLocale.vietnam:
         return 'Chỉnh sửa thông tin nguyên liệu';
@@ -425,7 +425,7 @@ mixin AppStringsOcr {
         return '没有识别到材料';
       case AppLocale.usa:
         return 'No ingredients found';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'No ingredients found';
       case AppLocale.vietnam:
         return 'No ingredients found';
@@ -442,7 +442,7 @@ mixin AppStringsOcr {
         return '请尝试其他图片';
       case AppLocale.usa:
         return 'Try a different image';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Try a different image';
       case AppLocale.vietnam:
         return 'Try a different image';
@@ -459,7 +459,7 @@ mixin AppStringsOcr {
         return '选择图像时发生错误';
       case AppLocale.usa:
         return 'An error occurred while selecting image';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'An error occurred while selecting image';
       case AppLocale.vietnam:
         return 'An error occurred while selecting image';
@@ -476,7 +476,7 @@ mixin AppStringsOcr {
         return 'OCR处理时发生错误';
       case AppLocale.usa:
         return 'An error occurred while processing OCR';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'An error occurred while processing OCR';
       case AppLocale.vietnam:
         return 'An error occurred while processing OCR';
@@ -493,7 +493,7 @@ mixin AppStringsOcr {
         return 'OCR结果未生成，无法开始Gemini分析';
       case AppLocale.usa:
         return 'Cannot start Gemini analysis without OCR result';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Cannot start Gemini analysis without OCR result';
       case AppLocale.vietnam:
         return 'Cannot start Gemini analysis without OCR result';

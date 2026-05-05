@@ -1,40 +1,18 @@
 name: recipe_app
 description: "A new Flutter project."
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none'
 
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-# In Windows, build-name is used as the major, minor, and patch parts
-# of the product and file versions while build-number is used as the build suffix.
-version: 1.0.16+38
+version: 1.0.18+40
 
 environment:
   sdk: ^3.7.0
 
-# Dependencies specify other packages that your package needs in order to work.
-# To automatically upgrade your package dependencies to the latest versions
-# consider running `flutter pub upgrade --major-versions`. Alternatively,
-# dependencies can be manually updated by changing the version numbers below to
-# the latest version available on pub.dev. To see which dependencies have newer
-# versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   
   # 상태 관리
@@ -45,9 +23,9 @@ dependencies:
   sqflite: ^2.3.2
   path: ^1.9.0
   
-  # 알림
-  flutter_local_notifications: ^19.4.0
-  flutter_timezone: ^5.0.1
+  # 알림 (19.x → 17.x 안정 버전으로 다운그레이드)
+  flutter_local_notifications: ^17.2.4
+  flutter_timezone: ^4.1.0
   
   # UI 컴포넌트
   flutter_slidable: ^3.0.1
@@ -60,117 +38,118 @@ dependencies:
   google_fonts: ^6.3.2
   
   # 유틸리티
+  intl: ^0.20.2
   uuid: ^4.3.3
   shared_preferences: ^2.2.2
   path_provider: ^2.1.4
   share_plus: ^10.1.3
   file_picker: ^8.1.2
   permission_handler: ^11.3.1
-  timezone: ^0.10.1
-  app_settings: ^5.1.1
+  timezone: ^0.9.4
   fluttertoast: ^8.2.8
   logger: ^2.0.2+1
   url_launcher: ^6.3.0
-  flutter_email_sender: ^8.0.0
+  flutter_email_sender: ^6.0.3
   fl_chart: ^0.69.0
-  in_app_review: ^2.0.11
+  in_app_review: ^2.0.10
   
   # 환경 변수 관리
   flutter_dotenv: ^5.1.0
   
   # 라우팅
-  go_router: ^15.1.3
-  firebase_core: ^4.0.0
-  firebase_analytics: ^12.0.0
+  go_router: ^14.6.2
+  
+  # ============================================
+  # Firebase (4.x → 3.x 라인 다운그레이드)
+  # iOS 빌드 시스템 안정성을 위해 검증된 버전 사용
+  # ============================================
+  firebase_core: ^3.10.1
+  firebase_analytics: ^11.4.4
+  firebase_auth: ^5.4.0
+  cloud_firestore: ^5.6.2
+  
   change_app_package_name: ^1.5.0
   
-  # Firebase 인증
-  firebase_auth: ^6.0.1
+  # ============================================
+  # Google 인증 (7.x → 6.x 다운그레이드)
+  # API 안정성 + Firebase 3.x 호환
+  # ============================================
+  google_sign_in: ^6.2.2
   
-  # Cloud Firestore
-  cloud_firestore: ^6.0.0
-  in_app_purchase: ^3.1.13 
-  
-  # AI 및 ML
-  flutter_gemini: ^2.0.5
-  google_generative_ai: ^0.4.7
-  google_mlkit_text_recognition: ^0.15.0
-  image_picker: ^1.2.0
-  
-  # 광고
-  google_mobile_ads: ^6.0.0
+  # Apple 로그인 (SPM 충돌 회피용 7.0.1 핀 유지)
+  sign_in_with_apple: 6.1.4
+  crypto: ^3.0.6
 
+  # 결제 (RevenueCat)
+  purchases_flutter: ^8.1.2
+  
+  # ============================================
+  # AI - google_generative_ai만 사용 (중복 제거)
+  # flutter_gemini와 기능 중복이라 하나만 유지
+  # ============================================
+  google_generative_ai: ^0.4.7
+  
+  # ML Kit
+  google_mlkit_text_recognition: ^0.14.0
+  image_picker: ^1.1.2
+  
+  # ============================================
+  # 광고 (6.x → 5.x 다운그레이드)
+  # iOS 빌드 안정성 + Flutter 호환 검증
+  # ============================================
+  google_mobile_ads: ^5.3.1
 
   flutter_launcher_icons: ^0.14.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
   flutter_lints: ^5.0.0
- 
-  
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
 flutter:
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
     - .env
     - assets/png/
     - assets/images/
     - assets/json/korea_recipe.json
 
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/to/asset-from-package
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Pretendard-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Pretendard-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Pretendard-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Pretendard-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Pretendard-Black.ttf
+          weight: 900
 
 flutter_launcher_icons:
   android: true
   ios: true
-  adaptive_icon_background: "#43C7A7"
+  adaptive_icon_background: "#0066FF"
   image_path: "assets/images/appIcon.png"
   min_sdk_android: 21
   remove_alpha_ios: true
   web:
     generate: true
     image_path: "assets/images/appIcon.png"
-    background_color: "#43C7A7"
-    theme_color: "#43C7A7"
+    background_color: "#0066FF"
+    theme_color: "#0066FF"
   macos:
     generate: true
     image_path: "assets/images/appIcon.png"

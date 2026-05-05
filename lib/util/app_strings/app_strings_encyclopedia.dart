@@ -13,7 +13,7 @@ mixin AppStringsEncyclopedia {
         return '韩国厨师食谱';
       case AppLocale.usa:
         return "Korean Chef's Recipes";
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Rezepte koreanischer Köche';
       case AppLocale.vietnam:
         return 'Công thức của đầu bếp Hàn Quốc';
@@ -36,7 +36,7 @@ mixin AppStringsEncyclopedia {
         return '搜索食谱...';
       case AppLocale.usa:
         return 'Search recipes...';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Rezepte suchen...';
       case AppLocale.vietnam:
         return 'Tìm kiếm công thức...';
@@ -54,7 +54,7 @@ mixin AppStringsEncyclopedia {
         return '添加所有材料';
       case AppLocale.usa:
         return 'Add All Ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Alle Zutaten hinzufügen';
       case AppLocale.vietnam:
         return 'Thêm tất cả nguyên liệu';
@@ -72,7 +72,7 @@ mixin AppStringsEncyclopedia {
         return '添加所有调料';
       case AppLocale.usa:
         return 'Add All Sauces';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Alle Gewürze hinzufügen';
       case AppLocale.vietnam:
         return 'Thêm tất cả gia vị';
@@ -90,7 +90,7 @@ mixin AppStringsEncyclopedia {
         return '添加所有材料和调料';
       case AppLocale.usa:
         return 'Add All Ingredients & Sauces';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Alle Zutaten und Gewürze hinzufügen';
       case AppLocale.vietnam:
         return 'Thêm tất cả nguyên liệu và gia vị';
@@ -108,7 +108,7 @@ mixin AppStringsEncyclopedia {
         return '添加';
       case AppLocale.usa:
         return 'Add';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Hinzufügen';
       case AppLocale.vietnam:
         return 'Thêm';
@@ -126,7 +126,7 @@ mixin AppStringsEncyclopedia {
         return '食谱信息';
       case AppLocale.usa:
         return 'Recipe Info';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Rezeptinformationen';
       case AppLocale.vietnam:
         return 'Thông tin công thức';
@@ -144,7 +144,7 @@ mixin AppStringsEncyclopedia {
         return '材料列表';
       case AppLocale.usa:
         return 'Ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Zutaten';
       case AppLocale.vietnam:
         return 'Nguyên liệu';
@@ -162,7 +162,7 @@ mixin AppStringsEncyclopedia {
         return '调料列表';
       case AppLocale.usa:
         return 'Sauces';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Gewürze';
       case AppLocale.vietnam:
         return 'Gia vị';
@@ -180,7 +180,7 @@ mixin AppStringsEncyclopedia {
         return '烹饪方法';
       case AppLocale.usa:
         return 'Cooking Method';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Kochmethode';
       case AppLocale.vietnam:
         return 'Phương pháp nấu';
@@ -198,7 +198,7 @@ mixin AppStringsEncyclopedia {
         return '食谱编号';
       case AppLocale.usa:
         return 'Recipe Number';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Rezeptnummer';
       case AppLocale.vietnam:
         return 'Số công thức';
@@ -216,7 +216,7 @@ mixin AppStringsEncyclopedia {
         return '页面';
       case AppLocale.usa:
         return 'Page';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Seite';
       case AppLocale.vietnam:
         return 'Trang';
@@ -234,7 +234,7 @@ mixin AppStringsEncyclopedia {
         return '没有食谱';
       case AppLocale.usa:
         return 'No recipes found';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Keine Rezepte gefunden';
       case AppLocale.vietnam:
         return 'Không tìm thấy công thức';
@@ -252,7 +252,7 @@ mixin AppStringsEncyclopedia {
         return '正在加载食谱...';
       case AppLocale.usa:
         return 'Loading recipes...';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Rezepte werden geladen...';
       case AppLocale.vietnam:
         return 'Đang tải công thức...';
@@ -270,7 +270,7 @@ mixin AppStringsEncyclopedia {
         return '加载食谱失败';
       case AppLocale.usa:
         return 'Failed to load recipes';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Rezepte konnten nicht geladen werden';
       case AppLocale.vietnam:
         return 'Không thể tải công thức';
@@ -288,7 +288,7 @@ mixin AppStringsEncyclopedia {
         return '没有烹饪方法';
       case AppLocale.usa:
         return 'No cooking method available';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Keine Kochmethode verfügbar';
       case AppLocale.vietnam:
         return 'Không có phương pháp nấu';
@@ -306,7 +306,7 @@ mixin AppStringsEncyclopedia {
         return '查看更多10条';
       case AppLocale.usa:
         return 'Load 10 More';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '10 weitere laden';
       case AppLocale.vietnam:
         return 'Xem thêm 10';
@@ -324,8 +324,8 @@ mixin AppStringsEncyclopedia {
         return '翻译';
       case AppLocale.usa:
         return 'Translate';
-      case AppLocale.euro:
-        return 'Übersetzen';
+      case AppLocale.chinaTraditional:
+        return '翻譯';
       case AppLocale.vietnam:
         return 'Dịch';
     }
@@ -342,7 +342,7 @@ mixin AppStringsEncyclopedia {
         return '查看原文';
       case AppLocale.usa:
         return 'Show Original';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Original anzeigen';
       case AppLocale.vietnam:
         return 'Xem bản gốc';
@@ -360,7 +360,7 @@ mixin AppStringsEncyclopedia {
         return '翻译中...';
       case AppLocale.usa:
         return 'Translating...';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Wird übersetzt...';
       case AppLocale.vietnam:
         return 'Đang dịch...';

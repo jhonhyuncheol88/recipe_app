@@ -7,7 +7,7 @@ import '../../../controller/tag/tag_cubit.dart';
 import '../../../controller/tag/tag_state.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../model/tag.dart';
-import '../../../theme/app_text_styles.dart';
+import '../../../theme/tokens/tokens.dart';
 import '../../../util/app_strings.dart';
 
 /// 레시피 메뉴 태그 관리 페이지
@@ -92,7 +92,7 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
   /// 추가 / 수정 다이얼로그
   Future<void> _showEditDialog({Tag? existing}) async {
     final locale = context.read<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = AppColorTokens.of(context);
     final nameController =
         TextEditingController(text: existing?.name ?? '');
     Color selectedColor = existing != null
@@ -104,13 +104,13 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
-            backgroundColor: colorScheme.surface,
+            backgroundColor: tokens.bgBase,
             title: Text(
               existing == null
                   ? AppStrings.getAddTag(locale)
                   : AppStrings.getEditTag(locale),
-              style: AppTextStyles.headline4
-                  .copyWith(color: colorScheme.onSurface),
+              style: AppTypography.heading2
+                  .copyWith(color: tokens.fgDefault),
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -119,31 +119,30 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
                 // 태그명 입력
                 TextField(
                   controller: nameController,
-                  style: TextStyle(color: colorScheme.onSurface),
+                  style: TextStyle(color: tokens.fgDefault),
                   decoration: InputDecoration(
                     labelText: AppStrings.getTagName(locale),
-                    labelStyle: TextStyle(
-                        color: colorScheme.onSurface.withValues(alpha: 0.6)),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                    labelStyle: TextStyle(color: tokens.fgSecondary),
+                    border: const OutlineInputBorder(
+                        borderRadius: AppRadius.brR8),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadius.brR8,
                       borderSide:
-                          BorderSide(color: colorScheme.primary, width: 2),
+                          BorderSide(color: tokens.primary, width: 2),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.s16),
                 // 색상 팔레트
                 Text(
                   AppStrings.getTagColor(locale),
-                  style: AppTextStyles.bodySmall.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.7)),
+                  style: AppTypography.caption1.copyWith(
+                      color: tokens.fgSecondary),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.s8),
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: AppSpacing.s8,
+                  runSpacing: AppSpacing.s8,
                   children: _palette.map((color) {
                     final isSelected = selectedColor == color;
                     return GestureDetector(
@@ -156,7 +155,7 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isSelected
-                                ? colorScheme.onSurface
+                                ? tokens.fgDefault
                                 : Colors.transparent,
                             width: 2.5,
                           ),
@@ -214,21 +213,21 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
 
   Future<void> _confirmDelete(Tag tag) async {
     final locale = context.read<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = AppColorTokens.of(context);
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: colorScheme.surface,
+        backgroundColor: tokens.bgBase,
         title: Text(
           AppStrings.getDeleteTag(locale),
           style:
-              AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
+              AppTypography.heading2.copyWith(color: tokens.fgDefault),
         ),
         content: Text(
           AppStrings.getDeleteTagConfirm(locale, tag.name),
-          style: AppTextStyles.bodyMedium
-              .copyWith(color: colorScheme.onSurface),
+          style: AppTypography.body2
+              .copyWith(color: tokens.fgDefault),
         ),
         actions: [
           TextButton(
@@ -236,7 +235,7 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
             child: Text(AppStrings.getCancel(locale)),
           ),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: colorScheme.error),
+            style: TextButton.styleFrom(foregroundColor: tokens.negative),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(AppStrings.getDelete(locale)),
           ),
@@ -255,17 +254,17 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
   @override
   Widget build(BuildContext context) {
     final locale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = AppColorTokens.of(context);
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: tokens.bgBase,
       appBar: AppBar(
         title: Text(
           AppStrings.getRecipeTagManagement(locale),
           style:
-              AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
+              AppTypography.heading2.copyWith(color: tokens.fgDefault),
         ),
-        backgroundColor: colorScheme.surface,
+        backgroundColor: tokens.bgBase,
         elevation: 0,
       ),
       body: BlocConsumer<TagCubit, TagState>(
@@ -293,12 +292,12 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
                 children: [
                   Icon(Icons.label_off_outlined,
                       size: 64,
-                      color: colorScheme.onSurface.withValues(alpha: 0.3)),
-                  const SizedBox(height: 16),
+                      color: tokens.fgTertiary),
+                  const SizedBox(height: AppSpacing.s16),
                   Text(
                     AppStrings.getNoTags(locale),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                    style: AppTypography.body2.copyWith(
+                        color: tokens.fgSecondary),
                   ),
                 ],
               ),
@@ -309,24 +308,24 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
             children: [
               // 안내 문구
               Container(
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
+                padding: const EdgeInsets.all(AppSpacing.s12),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
+                  color: tokens.primarySoft,
+                  borderRadius: AppRadius.brR10,
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.drag_indicator,
                         size: 18,
-                        color: colorScheme.primary.withValues(alpha: 0.7)),
-                    const SizedBox(width: 8),
+                        color: tokens.primary),
+                    const SizedBox(width: AppSpacing.s8),
                     Expanded(
                       child: Text(
                         AppStrings.getTagReorderHint(locale),
-                        style: AppTextStyles.bodySmall.copyWith(
-                            color: colorScheme.primary.withValues(alpha: 0.8)),
+                        style: AppTypography.caption1.copyWith(
+                            color: tokens.primary),
                       ),
                     ),
                   ],
@@ -334,7 +333,8 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
               ),
               Expanded(
                 child: ReorderableListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.s16),
                   itemCount: _orderedTags.length,
                   onReorder: _onReorder,
                   itemBuilder: (context, index) {
@@ -342,20 +342,19 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
                     return ListTile(
                       key: ValueKey(tag.id),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 2),
+                          horizontal: AppSpacing.s4, vertical: AppSpacing.s2),
                       leading: Icon(Icons.drag_indicator,
-                          color: colorScheme.onSurface.withValues(alpha: 0.3)),
+                          color: tokens.fgTertiary),
                       title: Text(
                         tag.name,
-                        style: AppTextStyles.bodyMedium
-                            .copyWith(color: colorScheme.onSurface),
+                        style: AppTypography.body2
+                            .copyWith(color: tokens.fgDefault),
                       ),
                       subtitle: tag.usageCount > 0
                           ? Text(
                               AppStrings.getTagUsageCount(locale, tag.usageCount),
-                              style: AppTextStyles.bodySmall.copyWith(
-                                  color: colorScheme.onSurface
-                                      .withValues(alpha: 0.5)),
+                              style: AppTypography.caption1.copyWith(
+                                  color: tokens.fgTertiary),
                             )
                           : null,
                       trailing: Row(
@@ -365,8 +364,7 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
                           IconButton(
                             icon: Icon(Icons.edit_outlined,
                                 size: 20,
-                                color: colorScheme.primary
-                                    .withValues(alpha: 0.7)),
+                                color: tokens.primary),
                             onPressed: () =>
                                 _showEditDialog(existing: tag),
                           ),
@@ -374,8 +372,7 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
                           IconButton(
                             icon: Icon(Icons.delete_outline,
                                 size: 20,
-                                color: colorScheme.error
-                                    .withValues(alpha: 0.7)),
+                                color: tokens.negative),
                             onPressed: () => _confirmDelete(tag),
                           ),
                         ],
@@ -391,8 +388,8 @@ class _RecipeTagManagementPageState extends State<RecipeTagManagementPage> {
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'recipe_tag_add',
         onPressed: () => _showEditDialog(),
-        backgroundColor: colorScheme.primaryContainer,
-        foregroundColor: colorScheme.onPrimaryContainer,
+        backgroundColor: tokens.primarySoft,
+        foregroundColor: tokens.primary,
         icon: const Icon(Icons.add),
         label: Text(AppStrings.getAddTag(locale)),
       ),

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +17,10 @@ import 'service/sauce_cost_service.dart';
 import 'service/recipe_cost_service.dart';
 import 'service/sauce_expiry_service.dart';
 import 'service/admob_forward.dart';
+import 'service/app_open_ad_service.dart';
 import 'service/initial_data_service.dart';
-import 'service/in_app_review_service.dart';
+import 'service/purchase_history_service.dart';
+import 'service/revenue_cat_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -27,7 +32,12 @@ import 'service/encyclopedia_service.dart';
 import 'package:logger/logger.dart';
 import 'dart:io' show Platform;
 import 'controller/setting/theme_cubit.dart';
+import 'controller/report/report_cubit.dart';
 import 'firebase_options.dart';
+
+/// 알림 권한 단계가 끝났음을 부팅 시퀀서에 알리기 위한 게이트.
+/// [PermissionRequester._initializeNotificationService] 가 종료될 때 complete.
+final Completer<void> _notificationReadyCompleter = Completer<void>();
 
 void main() async {
   final logger = Logger(
@@ -62,9 +72,8 @@ void main() async {
   // 타임존 초기화 (zonedSchedule 전 반드시 필요)
   try {
     tz.initializeTimeZones();
-    final tzInfo = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
-    logger.i('✅ 타임존 초기화 완료: ${tzInfo.identifier}');
+    final tzName = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(tzName));
   } catch (e) {
     tz.setLocalLocation(tz.getLocation('UTC'));
     logger.w('⚠️ 타임존 초기화 실패, UTC 사용: $e');
@@ -74,12 +83,44 @@ void main() async {
   runApp(const MyApp());
   logger.i('✅ 앱 실행 완료');
 
-  // 프레임 이후(위젯 트리 준비 후) 추가 초기화 수행
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
-    await _postAppInitialization(logger);
-    await _initializeInitialData(logger);
-    await _checkAndRequestReview(logger);
+  // 프레임 이후(위젯 트리 준비 후) 부팅 시퀀스를 단일 흐름으로 실행
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_runStartupSequence(logger));
   });
+}
+
+/// 부팅 후 사용자에게 노출되는 단계들을 직렬화한다.
+/// 1) 알림 권한 → 2) 온보딩 완료 → 3) 초기 데이터 → 4) 앱 열기 광고
+/// 인앱 리뷰는 부팅 흐름에서 제거 — 재료/레시피가 실제로 추가된 시점에
+/// 각 cubit 에서 [InAppReviewService.requestReview] 를 호출한다.
+Future<void> _runStartupSequence(Logger logger) async {
+  try {
+    logger.i('🚦 [Startup] 1) 알림 권한 단계 대기');
+    await _notificationReadyCompleter.future;
+
+    logger.i('🚦 [Startup] 2) 온보딩 완료 대기');
+    await _waitUntilOnboardingCompleted();
+
+    logger.i('🚦 [Startup] 3) 초기 데이터');
+    await _initializeInitialData(logger);
+
+    logger.i('🚦 [Startup] 4) 앱 열기 광고');
+    await _postAppInitialization(logger);
+
+    logger.i('🚦 [Startup] 완료');
+  } catch (e, st) {
+    logger.e('⚠️ [Startup] 시퀀스 오류 (무시): $e\n$st');
+  }
+}
+
+/// `onboarding_completed` prefs 가 true 가 될 때까지 1초 간격으로 polling.
+/// 이미 완료된 사용자는 즉시 통과.
+Future<void> _waitUntilOnboardingCompleted() async {
+  final prefs = await SharedPreferences.getInstance();
+  while (true) {
+    if (prefs.getBool('onboarding_completed') ?? false) return;
+    await Future.delayed(const Duration(seconds: 1));
+  }
 }
 
 Future<void> _safePreRunInitialization(Logger logger) async {
@@ -113,58 +154,65 @@ Future<void> _safePreRunInitialization(Logger logger) async {
   } catch (e) {
     logger.e('⚠️ Analytics 설정 실패(무시): $e');
   }
-}
 
-Future<void> _postAppInitialization(Logger logger) async {
-  // Android에서만 AdMob 초기화(실패 무시)
-  if (Platform.isAndroid) {
-    logger.i('📱 AdMob 초기화 시도 (Android, post-frame)');
-    try {
-      await AdMobForwardService.instance.initialize();
-      logger.i('✅ AdMob 초기화 완료 (광고 미리 로드 시작됨)');
-
-      // 앱 실행 시 광고 표시 (10분 쿨다운)
-      await _showAppOpenAdWithCooldown(logger);
-    } catch (e) {
-      logger.e('⚠️ AdMob 초기화 실패(무시): $e');
-    }
-  } else {
-    logger.i('ℹ️ iOS에서는 AdMob을 초기화하지 않습니다');
+  // RevenueCat 초기화. Firebase Auth cached uid 로 race 없이 시작.
+  try {
+    logger.i('💳 RevenueCat 초기화 시작');
+    final cachedUid = FirebaseAuth.instance.currentUser?.uid;
+    await RevenueCatService.instance.initialize(initialAppUserId: cachedUid);
+  } catch (e) {
+    logger.e('⚠️ RevenueCat 초기화 실패(무시): $e');
   }
 }
 
-/// 앱 실행 시 광고 표시 (10분 쿨다운)
+Future<void> _postAppInitialization(Logger logger) async {
+  logger.i('📱 AdMob 초기화 시도 (${Platform.operatingSystem}, post-frame)');
+  try {
+    await AdMobForwardService.instance.initialize();
+    logger.i('✅ AdMob 초기화 완료 (광고 미리 로드 시작됨)');
+
+    // preload 는 백그라운드 fire-and-forget — main 이벤트 루프를 길게 잡지 않는다.
+    // _showAppOpenAdWithCooldown 안에서 showIfAvailable() 가 호출되면 같은
+    // _loadCompleter 를 공유해 결과를 받기 때문에 race 가 없다.
+    unawaited(AppOpenAdService.instance.preload());
+    await _showAppOpenAdWithCooldown(logger);
+  } catch (e) {
+    logger.e('⚠️ AdMob 초기화 실패(무시): $e');
+  }
+}
+
+/// 앱 cold start 시 [AppOpenAdService] 로 앱 오픈 광고 1회 노출.
+/// 10분 쿨다운: 빠른 재실행 시 중복 노출 방지.
+/// resume(다른 앱에서 복귀) 에서는 호출하지 않으므로 별도 가드 불필요.
 Future<void> _showAppOpenAdWithCooldown(Logger logger) async {
   try {
     final prefs = await SharedPreferences.getInstance();
     const String lastAdShownKey = 'last_ad_shown_time_millis';
 
-    // 마지막으로 광고를 본 시간 가져오기
     final lastAdShownTimeMillis = prefs.getInt(lastAdShownKey) ?? 0;
     final currentTimeMillis = DateTime.now().millisecondsSinceEpoch;
-    const tenMinutesInMillis = 10 * 60 * 1000; // 10분
+    const tenMinutesInMillis = 10 * 60 * 1000;
 
     if (currentTimeMillis - lastAdShownTimeMillis < tenMinutesInMillis) {
       final remainingMinutes =
           (tenMinutesInMillis - (currentTimeMillis - lastAdShownTimeMillis)) ~/
               (60 * 1000);
-      logger.d('ℹ️ 광고 쿨다운 중. ${remainingMinutes + 1}분 후 다시 표시 가능.');
+      logger.d('ℹ️ App Open 광고 쿨다운 중. ${remainingMinutes + 1}분 후 다시 표시 가능.');
       return;
     }
 
     logger.i('📺 앱 오픈 광고 표시 시도');
 
-    // 광고가 로드될 때까지 잠시 대기
+    // 광고가 로드될 시간을 잠시 확보
     await Future.delayed(const Duration(seconds: 2));
 
     try {
-      final shown = await AdMobForwardService.instance.showInterstitialAd();
+      final shown = await AppOpenAdService.instance.showIfAvailable();
       if (shown) {
-        // 광고가 성공적으로 표시되었으면 현재 시간 기록
         await prefs.setInt(lastAdShownKey, currentTimeMillis);
         logger.i('✅ 앱 오픈 광고 표시 완료 (10분 후 다시 표시 가능)');
       } else {
-        logger.w('⚠️ 앱 오픈 광고 표시 실패 (광고 로드 실패)');
+        logger.w('⚠️ 앱 오픈 광고 표시 실패 (광고 미준비)');
       }
     } catch (e) {
       logger.w('⚠️ 앱 오픈 광고 표시 중 오류: $e');
@@ -221,58 +269,6 @@ Future<void> _initializeInitialData(Logger logger) async {
   }
 }
 
-/// 인앱 리뷰 요청 체크 및 실행
-Future<void> _checkAndRequestReview(Logger logger) async {
-  try {
-    logger.i('⭐ 인앱 리뷰 체크 시작');
-
-    // 온보딩이 완료되지 않았으면 리뷰 요청하지 않음
-    final prefs = await SharedPreferences.getInstance();
-    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
-    
-    if (!onboardingCompleted) {
-      logger.i('⏳ 온보딩 완료 대기 중 - 리뷰 요청 스킵');
-      return;
-    }
-
-    // 앱 실행 횟수 추적
-    const String appLaunchCountKey = 'app_launch_count';
-    final launchCount = prefs.getInt(appLaunchCountKey) ?? 0;
-    await prefs.setInt(appLaunchCountKey, launchCount + 1);
-
-    // 최소 3회 이상 실행된 경우에만 리뷰 요청
-    if (launchCount < 2) {
-      logger.i('ℹ️ 앱 실행 횟수 부족 (${launchCount + 1}회) - 리뷰 요청 스킵');
-      return;
-    }
-
-    // 리뷰 서비스 인스턴스 가져오기
-    final reviewService = InAppReviewService();
-
-    // 리뷰 요청 가능 여부 확인
-    final canRequest = await reviewService.canRequestReview();
-    
-    if (canRequest) {
-      // 앱이 완전히 로드된 후 3초 대기 (사용자 경험 개선)
-      await Future.delayed(const Duration(seconds: 3));
-      
-      logger.i('⭐ 인앱 리뷰 요청 시작');
-      final requested = await reviewService.requestReview();
-      
-      if (requested) {
-        logger.i('✅ 인앱 리뷰 요청 완료');
-      } else {
-        logger.d('ℹ️ 인앱 리뷰 요청 실패 또는 스킵');
-      }
-    } else {
-      logger.d('ℹ️ 인앱 리뷰 요청 조건 미충족');
-    }
-  } catch (e) {
-    logger.e('⚠️ 인앱 리뷰 체크 중 오류 (무시): $e');
-    // 실패해도 앱 실행은 계속
-  }
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -290,6 +286,9 @@ class MyApp extends StatelessWidget {
         ),
         RepositoryProvider<RecipeRepository>(
           create: (context) => RecipeRepository(),
+        ),
+        RepositoryProvider<RecipePriceHistoryRepository>(
+          create: (context) => RecipePriceHistoryRepository(),
         ),
         RepositoryProvider<TagRepository>(create: (context) => TagRepository()),
         RepositoryProvider<UnitRepository>(
@@ -364,20 +363,35 @@ class MyApp extends StatelessWidget {
           create: (_) => NotificationPermissionCubit()..refresh(),
         ),
 
-        // 재료 관련 BLoC (알림 Cubit 이후 생성하여 주입 가능)
+        // 재료 관련 BLoC (알림/레시피/소스 Cubit 이후 생성하여 주입 가능)
         BlocProvider<IngredientCubit>(
           create: (context) => IngredientCubit(
             ingredientRepository: context.read<IngredientRepository>(),
             tagRepository: context.read<TagRepository>(),
             expiryNotificationCubit: context.read<ExpiryNotificationCubit>(),
+            recipeCubit: context.read<RecipeCubit>(),
+            sauceCubit: context.read<SauceCubit>(),
           ),
         ),
 
         // 온보딩 관련 Cubit (라우터에서 사용되므로 먼저 초기화)
         BlocProvider<OnboardingCubit>(create: (context) => OnboardingCubit()),
 
-        // 로케일 관련 BLoC
+        // 로케일 관련 BLoC (ReportCubit 이 의존하므로 먼저 생성)
         BlocProvider<LocaleCubit>(create: (context) => LocaleCubit()),
+
+        // 리포트 관련 Cubit (IngredientCubit + RecipeCubit + LocaleCubit 이후 생성)
+        BlocProvider<ReportCubit>(
+          create: (context) => ReportCubit(
+            recipeRepository: context.read<RecipeRepository>(),
+            ingredientRepository: context.read<IngredientRepository>(),
+            historyRepository: context.read<RecipePriceHistoryRepository>(),
+            unitRepository: context.read<UnitRepository>(),
+            recipeCubit: context.read<RecipeCubit>(),
+            ingredientCubit: context.read<IngredientCubit>(),
+            localeCubit: context.read<LocaleCubit>(),
+          )..refresh(),
+        ),
 
         // 숫자 포맷팅 관련 Cubit
         BlocProvider<NumberFormatCubit>(
@@ -408,34 +422,96 @@ class MyApp extends StatelessWidget {
           create: (context) =>
               AuthBloc(authRepository: AuthRepository())..add(AppStarted()),
         ),
+
+        // 결제 이력 적재용 Firestore service.
+        RepositoryProvider<PurchaseHistoryService>(
+          create: (_) => PurchaseHistoryService(),
+        ),
+
+        // 광고 제거(RevenueCat) entitlement 상태.
+        // lazy:false 로 즉시 생성 — admob_forward 의 premium gate 가 광고 호출
+        // 전에 등록되어야 한다. 부팅 직후의 앱 오픈 광고도 게이팅 적용 받음.
+        BlocProvider<PremiumCubit>(
+          lazy: false,
+          create: (ctx) {
+            final cubit = PremiumCubit(
+              rc: RevenueCatService.instance,
+              history: ctx.read<PurchaseHistoryService>(),
+            )..bootstrap();
+            AdMobForwardService.instance
+                .setPremiumGate(() => cubit.state.isPremium);
+            AppOpenAdService.instance
+                .setPremiumGate(() => cubit.state.isPremium);
+            return cubit;
+          },
+        ),
       ],
-      child: BlocBuilder<ThemeCubit, ThemeState>(
-        builder: (context, themeState) {
-          return BlocBuilder<LocaleCubit, AppLocale>(
-            builder: (context, currentLocale) {
-              return PermissionRequester(
-                child: MaterialApp.router(
-                  title: AppStrings.getAppTitle(currentLocale),
-                  theme: AppTheme.getTheme(
-                    themeState.themeType,
-                    themeState.brightness,
+      child: BlocListener<AuthBloc, AuthState>(
+        listenWhen: (prev, curr) =>
+            curr is Authenticated || curr is Unauthenticated,
+        listener: _onAuthStateChanged,
+        child: BlocBuilder<ThemeCubit, ThemeState>(
+          builder: (context, themeState) {
+            return BlocBuilder<LocaleCubit, AppLocale>(
+              builder: (context, currentLocale) {
+                return PermissionRequester(
+                  child: MaterialApp.router(
+                    title: AppStrings.getAppTitle(currentLocale),
+                    theme: AppTheme.light,
+                    darkTheme: AppTheme.dark,
+                    themeMode:
+                        themeState.isDark ? ThemeMode.dark : ThemeMode.light,
+                    routerConfig: AppRouter.router,
+                    debugShowCheckedModeBanner: false,
+                    locale: currentLocale.locale,
+                    supportedLocales: AppLocale.supportedLocales,
+                    localizationsDelegates: const [
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                    ],
                   ),
-                  routerConfig: AppRouter.router,
-                  debugShowCheckedModeBanner: false,
-                  locale: currentLocale.locale,
-                  supportedLocales: AppLocale.supportedLocales,
-                  localizationsDelegates: const [
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                  ],
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
+  }
+
+  /// 로그인/로그아웃 변화에 맞춰 RevenueCat App User ID 를 동기화.
+  /// SDK 가 ready 상태일 때만 호출 — initialize 가 실패했으면 silent skip.
+  void _onAuthStateChanged(BuildContext context, AuthState state) {
+    if (state is Authenticated) {
+      _syncRevenueCatLogin(context, state.user.uid);
+    } else if (state is Unauthenticated) {
+      _syncRevenueCatLogout(context);
+    }
+  }
+
+  Future<void> _syncRevenueCatLogin(BuildContext context, String uid) async {
+    final rc = RevenueCatService.instance;
+    if (!rc.isReady) return;
+    try {
+      await rc.identify(uid);
+      if (!context.mounted) return;
+      await context.read<PremiumCubit>().refreshFromStore();
+    } catch (e) {
+      debugPrint('[RevenueCat] identify failed: $e');
+    }
+  }
+
+  Future<void> _syncRevenueCatLogout(BuildContext context) async {
+    final rc = RevenueCatService.instance;
+    if (!rc.isReady) return;
+    try {
+      await rc.logout();
+      if (!context.mounted) return;
+      await context.read<PremiumCubit>().refreshFromStore();
+    } catch (e) {
+      debugPrint('[RevenueCat] logout failed: $e');
+    }
   }
 }
 
@@ -482,6 +558,12 @@ class _PermissionRequesterState extends State<PermissionRequester> {
     } catch (e) {
       // 초기화 실패를 조용히 무시 (디버그 모드에서만 로그)
       debugPrint('Notification service initialization failed: $e');
+    } finally {
+      // 부팅 시퀀서가 다음 단계(온보딩/광고/리뷰)로 진행하도록 게이트 해제.
+      // 실패 경로에서도 반드시 풀어주어야 영원히 대기하지 않는다.
+      if (!_notificationReadyCompleter.isCompleted) {
+        _notificationReadyCompleter.complete();
+      }
     }
   }
 }

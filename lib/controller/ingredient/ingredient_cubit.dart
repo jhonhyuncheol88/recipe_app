@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/index.dart';
 import '../recipe/recipe_cubit.dart';
+import '../sauce/sauce_cubit.dart';
 import '../../model/index.dart';
 import '../../model/ocr_result.dart';
+import '../../service/in_app_review_service.dart';
 import '../notification/expiry_notification_cubit.dart';
 
 import 'ingredient_state.dart';
@@ -15,14 +18,22 @@ class IngredientCubit extends Cubit<IngredientState> {
   final TagRepository _tagRepository;
   final Uuid _uuid = const Uuid();
   final ExpiryNotificationCubit? _expiryNotificationCubit;
+  // 재료 변경이 소스/레시피 원가에 cascading 영향 → 앱 전역 인스턴스에
+  // 직접 refresh 신호를 보내기 위해 주입.
+  final RecipeCubit? _recipeCubit;
+  final SauceCubit? _sauceCubit;
 
   IngredientCubit({
     required IngredientRepository ingredientRepository,
     required TagRepository tagRepository,
     ExpiryNotificationCubit? expiryNotificationCubit,
+    RecipeCubit? recipeCubit,
+    SauceCubit? sauceCubit,
   })  : _ingredientRepository = ingredientRepository,
         _tagRepository = tagRepository,
         _expiryNotificationCubit = expiryNotificationCubit,
+        _recipeCubit = recipeCubit,
+        _sauceCubit = sauceCubit,
         super(const IngredientInitial());
 
   // 재료 목록 로드
@@ -142,6 +153,9 @@ class IngredientCubit extends Cubit<IngredientState> {
           parameters: {'count': 1},
         );
       } catch (_) {}
+      // 재료 생성 시점에 OS 인앱 리뷰 다이얼로그 요청.
+      // canRequestReview 가 사용자 거부/완료 상태면 스킵하고, 표시 빈도는 OS rate limit 에 위임.
+      unawaited(InAppReviewService().requestReview());
       developer.log('재료 추가 완료', name: 'IngredientCubit');
     } catch (e) {
       developer.log('재료 추가 실패: $e', name: 'IngredientCubit');
@@ -158,21 +172,12 @@ class IngredientCubit extends Cubit<IngredientState> {
       developer.log('재료 수정 후 목록 다시 로드 (유통기한 순으로 정렬)', name: 'IngredientCubit');
       final ingredients = await _ingredientRepository.getAllIngredients();
 
-      // 재료 변경이 소스/레시피 비용에 영향 → 관련 레시피들 재계산
+      // 재료 변경 → 소스/레시피 원가 cascading 갱신.
+      // 순서 중요: 소스 먼저 재계산해야 그 소스를 쓰는 레시피의 totalCost 가
+      // 최신 sauce.totalCost 를 반영함.
       try {
-        final recipeRepo = RecipeRepository();
-        final recipeCubit = RecipeCubit(
-          recipeRepository: recipeRepo,
-          ingredientRepository: _ingredientRepository,
-          unitRepository: UnitRepository(),
-          tagRepository: _tagRepository,
-        );
-        final affectedRecipes = await recipeRepo.getRecipesByIngredient(
-          ingredient.id,
-        );
-        for (final r in affectedRecipes) {
-          await recipeCubit.recalculateRecipeCost(r.id);
-        }
+        await _sauceCubit?.refreshAffectedByIngredient(ingredient.id);
+        await _recipeCubit?.refreshAffectedByIngredient(ingredient.id);
       } catch (_) {}
 
       emit(IngredientLoaded(ingredients: ingredients));
@@ -208,20 +213,16 @@ class IngredientCubit extends Cubit<IngredientState> {
 
       await _ingredientRepository.deleteIngredient(id);
 
-      // 관련 레시피에서 해당 재료 항목 제거 후 재계산
+      // 관련 레시피에서 해당 재료 항목 제거.
       try {
         final recipeRepo = RecipeRepository();
         await recipeRepo.removeRecipeIngredientsByIngredientId(id);
-        final recipes = await recipeRepo.getAllRecipes();
-        final recipeCubit = RecipeCubit(
-          recipeRepository: recipeRepo,
-          ingredientRepository: _ingredientRepository,
-          unitRepository: UnitRepository(),
-          tagRepository: _tagRepository,
-        );
-        for (final r in recipes) {
-          await recipeCubit.recalculateRecipeCost(r.id);
-        }
+      } catch (_) {}
+
+      // 재료 삭제 → 소스/레시피 원가 cascading 갱신 (앱 전역 cubit 인스턴스).
+      try {
+        await _sauceCubit?.refreshAffectedByIngredient(id);
+        await _recipeCubit?.refreshAffectedByIngredient(id);
       } catch (_) {}
 
       developer.log('재료 삭제 후 목록 다시 로드 (유통기한 순으로 정렬)', name: 'IngredientCubit');

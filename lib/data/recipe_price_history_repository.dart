@@ -66,6 +66,21 @@ class RecipePriceHistoryRepository {
     return RecipePriceHistory.fromJson(maps.first);
   }
 
+  // 특정 날짜 이후 모든 레시피의 가격 히스토리 조회 (리포트용)
+  Future<List<RecipePriceHistory>> getAllPriceHistorySince(
+    DateTime since,
+  ) async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'recipe_price_history',
+      where: 'recorded_at >= ?',
+      whereArgs: [since.toIso8601String()],
+      orderBy: 'recorded_at ASC',
+    );
+
+    return maps.map((map) => RecipePriceHistory.fromJson(map)).toList();
+  }
+
   // 레시피의 가격 히스토리 삭제 (레시피 삭제 시)
   Future<void> deletePriceHistoryByRecipeId(String recipeId) async {
     final db = await _databaseHelper.database;

@@ -39,3 +39,11 @@ export 'auth/auth_bloc.dart';
 
 // 광고 관련
 export 'ad/ad_cubit.dart';
+
+// 리포트 관련
+export 'report/report_cubit.dart';
+export 'report/report_state.dart';
+
+// 광고 제거 (RevenueCat) 관련
+export 'premium/premium_cubit.dart';
+export 'premium/premium_state.dart';

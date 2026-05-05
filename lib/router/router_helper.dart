@@ -37,6 +37,12 @@ class RouterHelper {
     context.go(AppRouter.accountInfo);
   }
 
+  /// 광고 제거 결제 페이지로 이동 (RevenueCat).
+  /// 비로그인이면 PremiumPage 자체 가드가 /login 으로 redirect 한다.
+  static void goToPremium(BuildContext context) {
+    context.go(AppRouter.premium);
+  }
+
   /// AI 페이지로 이동 (탭바 페이지)
   static void goToAi(BuildContext context) {
     context.go(AppRouter.ai);

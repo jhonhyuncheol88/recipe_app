@@ -2,26 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:recipe_app/router/router_helper.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../util/app_strings.dart';
-import '../../../util/number_formatter.dart';
 
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/ingredient/ingredient_state.dart';
-import '../../../controller/recipe/recipe_cubit.dart' as rc;
-
-import '../../../model/index.dart';
-
-import 'package:uuid/uuid.dart';
-import '../../widget/index.dart';
-import '../../../data/index.dart';
-import '../../../service/sauce_cost_service.dart';
-import '../../../util/unit_converter.dart' as uc;
+import '../../../controller/recipe/recipe_cubit.dart';
+import '../../../controller/sauce/sauce_cubit.dart';
+import '../../../controller/sauce/sauce_state.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
+import '../../../model/ingredient.dart';
+import '../../../model/recipe.dart';
+import '../../../model/recipe_ingredient.dart';
+import '../../../model/recipe_sauce.dart';
+import '../../../model/sauce.dart';
+import '../../../theme/tokens/tokens.dart';
+import '../../../util/app_locale.dart';
+import '../../../util/app_strings.dart';
+import '../../../util/number_format_style.dart';
+import '../../../util/number_formatter.dart';
+import '../../../util/recipe_margin.dart';
+import '../../widget/ingredient_picker_sheet.dart';
+import '../../widget/sauce_picker_sheet.dart';
 
-/// 레시피 수정 페이지
+/// 레시피 수정 페이지 — screens.jsx 1361~ (RecipeNew) 디자인 1:1 이식.
 class RecipeEditPage extends StatefulWidget {
   final Recipe recipe;
 
@@ -31,1195 +34,1072 @@ class RecipeEditPage extends StatefulWidget {
   State<RecipeEditPage> createState() => _RecipeEditPageState();
 }
 
-class _RecipeEditPageState extends State<RecipeEditPage> {
-  final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameController;
-  late final TextEditingController _descriptionController;
+class _IngredientLine {
+  final Ingredient ingredient;
+  final TextEditingController qtyController;
 
-  String _selectedTagId = '';
-  List<Tag> _availableTags = [];
-  List<Unit> _availableUnits = [];
-  List<Ingredient> _selectedIngredients = [];
-  List<Ingredient> _availableIngredients = [];
-  Map<String, double> _ingredientAmounts = {}; // 재료별 투입량
-  Map<String, double> _ingredientCosts = {}; // 재료별 원가
-  Map<String, String> _ingredientUnitIds = {}; // 재료별 선택 단위
-  double _totalCost = 0.0; // 총 원가
-  bool _isLoading = false;
-  final Map<String, TextEditingController> _sauceAmountControllers = {};
+  _IngredientLine({required this.ingredient, required double initialQty})
+      : qtyController = TextEditingController(text: _formatQty(initialQty));
+
+  double get qty {
+    final raw = qtyController.text.replaceAll(RegExp(r'[^\d.]'), '');
+    return double.tryParse(raw) ?? 0;
+  }
+
+  double get pricePerInputUnit {
+    if (ingredient.purchaseAmount <= 0) return 0;
+    return ingredient.purchasePrice / ingredient.purchaseAmount;
+  }
+
+  double get lineCost => pricePerInputUnit * qty;
+
+  void dispose() => qtyController.dispose();
+
+  static String _formatQty(double v) {
+    if (v == v.roundToDouble()) return v.toInt().toString();
+    return v.toString();
+  }
+}
+
+class _SauceLine {
+  final Sauce sauce;
+  final TextEditingController qtyController;
+
+  /// [initialQty] 는 g 단위 사용량.
+  _SauceLine({required this.sauce, required double initialQty})
+      : qtyController = TextEditingController(text: _formatQty(initialQty));
+
+  /// 사용량(g).
+  double get qty {
+    final raw = qtyController.text.replaceAll(RegExp(r'[^\d.]'), '');
+    return double.tryParse(raw) ?? 0;
+  }
+
+  /// 라인 원가 = (g당 단가) × (입력 g).
+  double get lineCost => sauce.unitCost * qty;
+
+  void dispose() => qtyController.dispose();
+
+  static String _formatQty(double v) {
+    if (v == v.roundToDouble()) return v.toInt().toString();
+    return v.toString();
+  }
+}
+
+class _RecipeEditPageState extends State<RecipeEditPage> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _sellPriceController;
+
+  final List<_IngredientLine> _ingredients = [];
+  final List<_SauceLine> _sauces = [];
+
+  bool _isSaving = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeControllers();
-    _loadInitialData();
-  }
-
-  void _initializeControllers() {
     _nameController = TextEditingController(text: widget.recipe.name);
-    _descriptionController = TextEditingController(
-      text: widget.recipe.description,
+    _sellPriceController = TextEditingController(
+      text: widget.recipe.sellPrice > 0
+          ? _formatNumber(widget.recipe.sellPrice)
+          : '',
     );
-    _selectedTagId =
-        widget.recipe.tagIds.isNotEmpty ? widget.recipe.tagIds.first : '';
+    _sellPriceController.addListener(_onChanged);
+    _hydrateLines();
+  }
 
-    // 레시피 재료들을 초기화
-    _selectedIngredients = [];
-    _ingredientAmounts = {};
-    _ingredientUnitIds = {};
-    _ingredientCosts = {};
+  static String _formatNumber(double v) {
+    if (v == v.roundToDouble()) return v.toInt().toString();
+    return v.toString();
+  }
 
-    // 기존 재료 정보 복원
+  void _hydrateLines() {
+    final ingState = context.read<IngredientCubit>().state;
+    final sauceState = context.read<SauceCubit>().state;
+    final allIngredients = _ingredientsOf(ingState);
+    final allSauces = _saucesOf(sauceState);
+
     for (final ri in widget.recipe.ingredients) {
-      _ingredientAmounts[ri.ingredientId] = ri.amount;
-      _ingredientUnitIds[ri.ingredientId] = ri.unitId;
-      _ingredientCosts[ri.ingredientId] = ri.calculatedCost;
-    }
-  }
-
-  void _loadInitialData() {
-    _loadTags();
-    _loadUnits();
-    _loadIngredients();
-  }
-
-  void _loadTags() {
-    final locale = context.read<LocaleCubit>().state;
-    setState(() {
-      _availableTags = DefaultTags.recipeTagsFor(locale);
-    });
-  }
-
-  void _loadUnits() {
-    setState(() {
-      _availableUnits = [
-        Unit(id: '개', name: '개', type: 'count', conversionFactor: 1.0),
-        Unit(id: '인분', name: '인분', type: 'count', conversionFactor: 1.0),
-        Unit(id: '조각', name: '조각', type: 'count', conversionFactor: 1.0),
-        Unit(id: 'g', name: 'g', type: 'weight', conversionFactor: 1.0),
-        Unit(id: 'kg', name: 'kg', type: 'weight', conversionFactor: 1000.0),
-        Unit(id: 'ml', name: 'ml', type: 'volume', conversionFactor: 1.0),
-        Unit(id: 'L', name: 'L', type: 'volume', conversionFactor: 1000.0),
-      ];
-    });
-  }
-
-  void _loadIngredients() async {
-    final currentState = context.read<IngredientCubit>().state;
-    if (currentState is IngredientLoaded) {
-      final available = currentState.ingredients;
-      List<Ingredient> selected = _selectedIngredients;
-      final Map<String, double> amounts = {..._ingredientAmounts};
-      final Map<String, String> unitIds = {..._ingredientUnitIds};
-      final Map<String, double> costs = {..._ingredientCosts};
-
-      if (selected.isEmpty && widget.recipe.ingredients.isNotEmpty) {
-        selected = [];
-        for (final ri in widget.recipe.ingredients) {
-          Ingredient ing;
-          try {
-            ing = available.firstWhere((i) => i.id == ri.ingredientId);
-          } catch (_) {
-            final repo = context.read<IngredientRepository>();
-            final fetched = await repo.getIngredientById(ri.ingredientId);
-            ing = fetched ??
-                Ingredient(
-                  id: ri.ingredientId,
-                  name: '재료',
-                  purchasePrice: 0,
-                  purchaseAmount: 1,
-                  purchaseUnitId: ri.unitId,
-                  createdAt: DateTime.now(),
-                );
-          }
-          selected.add(ing);
-          amounts[ri.ingredientId] = ri.amount;
-          unitIds[ri.ingredientId] = ri.unitId;
-          costs[ri.ingredientId] = ri.calculatedCost;
+      Ingredient? ing;
+      for (final i in allIngredients) {
+        if (i.id == ri.ingredientId) {
+          ing = i;
+          break;
         }
       }
-
-      setState(() {
-        _availableIngredients = available;
-        _selectedIngredients = selected;
-        _ingredientAmounts = amounts;
-        _ingredientUnitIds = unitIds;
-        _ingredientCosts = costs;
-        _calculateTotalCost();
-      });
+      if (ing == null) continue;
+      final line = _IngredientLine(ingredient: ing, initialQty: ri.amount);
+      line.qtyController.addListener(_onChanged);
+      _ingredients.add(line);
     }
+
+    for (final rs in widget.recipe.sauces) {
+      Sauce? sauce;
+      for (final s in allSauces) {
+        if (s.id == rs.sauceId) {
+          sauce = s;
+          break;
+        }
+      }
+      if (sauce == null) continue;
+      final line = _SauceLine(sauce: sauce, initialQty: rs.amount);
+      line.qtyController.addListener(_onChanged);
+      _sauces.add(line);
+    }
+    if (mounted) setState(() {});
   }
 
-  double _calculateUnitPrice(Ingredient ingredient) {
-    return ingredient.purchasePrice / ingredient.purchaseAmount;
+  List<Ingredient> _ingredientsOf(IngredientState state) {
+    if (state is IngredientLoaded) return state.ingredients;
+    if (state is IngredientFilteredByTag) return state.ingredients;
+    if (state is IngredientFilteredByTags) return state.ingredients;
+    if (state is IngredientFilteredByExpiry) return state.ingredients;
+    if (state is IngredientSearchResult) return state.ingredients;
+    if (state is IngredientAdded) return state.ingredients;
+    if (state is IngredientUpdated) return state.ingredients;
+    if (state is IngredientDeleted) return state.ingredients;
+    return const [];
   }
 
-  void _calculateIngredientCost(String ingredientId, double amount) {
-    final ingredient = _selectedIngredients.firstWhere(
-      (i) => i.id == ingredientId,
-    );
-    final purchaseBase = uc.UnitConverter.toBaseUnit(
-      ingredient.purchaseAmount,
-      ingredient.purchaseUnitId,
-    );
-    final baseUnitPrice =
-        purchaseBase > 0 ? ingredient.purchasePrice / purchaseBase : 0.0;
-    final selectedUnitId =
-        _ingredientUnitIds[ingredientId] ?? ingredient.purchaseUnitId;
-    final baseUsage = uc.UnitConverter.toBaseUnit(amount, selectedUnitId);
-    final cost = baseUnitPrice * baseUsage;
+  List<Sauce> _saucesOf(SauceState state) {
+    if (state is SauceLoaded) return state.sauces;
+    if (state is SauceAdded) return state.sauces;
+    if (state is SauceUpdatedState) return state.sauces;
+    if (state is SauceDeleted) return state.sauces;
+    return const [];
+  }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _sellPriceController.dispose();
+    for (final l in _ingredients) {
+      l.dispose();
+    }
+    for (final l in _sauces) {
+      l.dispose();
+    }
+    super.dispose();
+  }
+
+  void _onChanged() {
+    if (mounted) setState(() {});
+  }
+
+  double get _totalCost {
+    final ic =
+        _ingredients.fold<double>(0, (sum, l) => sum + l.lineCost);
+    final sc = _sauces.fold<double>(0, (sum, l) => sum + l.lineCost);
+    return ic + sc;
+  }
+
+  double _parseSellPrice() {
+    final raw =
+        _sellPriceController.text.replaceAll(RegExp(r'[^\d.]'), '');
+    return double.tryParse(raw) ?? 0;
+  }
+
+  Future<void> _pickIngredient() async {
+    final picked = await showIngredientPickerSheet(
+      context,
+      excludeIds: _ingredients.map((l) => l.ingredient.id).toList(),
+    );
+    if (picked == null) return;
+    final line = _IngredientLine(ingredient: picked, initialQty: 100);
+    line.qtyController.addListener(_onChanged);
+    setState(() => _ingredients.add(line));
+  }
+
+  Future<void> _pickSauce() async {
+    final picked = await showSaucePickerSheet(
+      context,
+      excludeIds: _sauces.map((l) => l.sauce.id).toList(),
+    );
+    if (picked == null) return;
+    final line = _SauceLine(
+      sauce: picked,
+      initialQty: picked.totalWeight > 0
+          ? picked.totalWeight.roundToDouble()
+          : 0,
+    );
+    line.qtyController.addListener(_onChanged);
+    setState(() => _sauces.add(line));
+  }
+
+  void _removeIngredient(int index) {
     setState(() {
-      _ingredientAmounts[ingredientId] = amount;
-      _ingredientCosts[ingredientId] = cost;
-      _ingredientUnitIds[ingredientId] = selectedUnitId;
-      _calculateTotalCost();
+      final line = _ingredients.removeAt(index);
+      line.dispose();
     });
   }
 
-  void _calculateTotalCost() {
-    _totalCost = _ingredientCosts.values.fold(0.0, (sum, cost) => sum + cost);
+  void _removeSauce(int index) {
+    setState(() {
+      final line = _sauces.removeAt(index);
+      line.dispose();
+    });
   }
 
-  int _extractNumberFromText(String text) {
-    final cleanText = text.replaceAll(',', '');
-    return int.tryParse(cleanText) ?? 0;
+  Future<void> _save() async {
+    final locale = context.read<LocaleCubit>().state;
+    final tokens = AppColorTokens.of(context);
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: tokens.negative,
+          content: Text(AppStrings.getRecipeNameRequired(locale)),
+        ),
+      );
+      return;
+    }
+    if (_ingredients.isEmpty && _sauces.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: tokens.negative,
+          content: Text(AppStrings.getAddIngredientOrSauce(locale)),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      final sellPrice = _parseSellPrice();
+
+      final newIngredients = _ingredients
+          .map(
+            (l) => RecipeIngredient(
+              id: '',
+              recipeId: widget.recipe.id,
+              ingredientId: l.ingredient.id,
+              amount: l.qty,
+              unitId: l.ingredient.purchaseUnitId,
+              calculatedCost: 0,
+            ),
+          )
+          .toList();
+      final newSauces = _sauces
+          .map(
+            (l) => RecipeSauce(
+              id: '',
+              recipeId: widget.recipe.id,
+              sauceId: l.sauce.id,
+              amount: l.qty,
+              // 소스 단위는 항상 g 기준으로 저장 (UnitConverter 가 인식 가능한
+              // 실제 unitId 여야 함).
+              unitId: 'g',
+            ),
+          )
+          .toList();
+
+      final updated = widget.recipe.copyWith(
+        name: name,
+        sellPrice: sellPrice,
+        ingredients: newIngredients,
+        sauces: newSauces,
+        updatedAt: DateTime.now(),
+      );
+
+      await context.read<RecipeCubit>().updateRecipe(updated);
+      if (!mounted) return;
+      context.pop(true);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: tokens.negative,
+          content: Text(AppStrings.getRecipeUpdateError(locale)),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _confirmDelete() async {
+    final locale = context.read<LocaleCubit>().state;
+    final tokens = AppColorTokens.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) {
+        return AlertDialog(
+          backgroundColor: tokens.bgBase,
+          title: Text(
+            AppStrings.getDeleteRecipe(locale),
+            style: AppTypography.heading2.copyWith(color: tokens.fgStrong),
+          ),
+          content: Text(
+            AppStrings.getDeleteRecipeConfirm(locale),
+            style: AppTypography.body1.copyWith(color: tokens.fgDefault),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(false),
+              child: Text(
+                AppStrings.getCancel(locale),
+                style: AppTypography.label1.copyWith(
+                  color: tokens.fgSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: tokens.negative,
+                foregroundColor: tokens.fgOnPrimary,
+              ),
+              child: Text(
+                AppStrings.getDelete(locale),
+                style: AppTypography.label1.copyWith(
+                  color: tokens.fgOnPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _isDeleting = true);
+    try {
+      await context.read<RecipeCubit>().deleteRecipe(widget.recipe.id);
+      if (!mounted) return;
+      context.pop(true);
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = AppColorTokens.of(context);
+    final locale = context.watch<LocaleCubit>().state;
+    final formatStyle = context.watch<NumberFormatCubit>().state;
+    final busy = _isSaving || _isDeleting;
+
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: tokens.bgElev2,
       appBar: AppBar(
-        title: Text(
-          AppStrings.getEditRecipe(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
-        ),
-        backgroundColor: colorScheme.surface,
+        backgroundColor: tokens.bgBase,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
-          onPressed: () => context.pop(),
-          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
+          onPressed: busy ? null : () => context.pop(),
+          icon: Icon(Icons.arrow_back, color: tokens.fgStrong),
         ),
+        title: Text(
+          AppStrings.getEditRecipe(locale),
+          style: AppTypography.heading2.copyWith(color: tokens.fgStrong),
+        ),
+        centerTitle: true,
         actions: [
-          TextButton(
-            onPressed: _isLoading
-                ? null
-                : () {
-                    _saveRecipe();
-                  },
-            child: Text(
-              AppStrings.getSave(currentLocale),
-              style: AppTextStyles.buttonMedium.copyWith(
-                color: _isLoading
-                    ? colorScheme.onSurface.withValues(alpha: 0.3)
-                    : colorScheme.primary,
-              ),
-            ),
+          IconButton(
+            onPressed: busy ? null : _confirmDelete,
+            icon: Icon(Icons.delete_outline, color: tokens.negative),
+            tooltip: AppStrings.getDelete(locale),
           ),
+          const SizedBox(width: AppSpacing.s4),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSpacing.s16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildBasicInfoSection(),
-                    const SizedBox(height: 24),
-                    _buildIngredientsSection(),
-                    const SizedBox(height: 24),
-                    _buildSaucesSection(),
-                    const SizedBox(height: 24),
-                    _buildTagsSection(),
-                    const SizedBox(height: 24),
-                    _buildCostSection(),
-                    const SizedBox(height: 32),
-                    _buildSaveButton(),
-                  ],
-                ),
-              ),
-            ),
-    );
-  }
-
-  Widget _buildBasicInfoSection() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppStrings.getBasicInfo(currentLocale),
-            style: AppTextStyles.headline4.copyWith(
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          AppInputField(
-            label: AppStrings.getRecipeName(currentLocale),
-            hint: AppStrings.getRecipeNameHint(currentLocale),
-            controller: _nameController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return AppStrings.getRecipeNameRequired(currentLocale);
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          AppInputField(
-            label: AppStrings.getRecipeDescription(currentLocale),
-            hint: AppStrings.getRecipeDescriptionHint(currentLocale),
-            controller: _descriptionController,
-            maxLines: 3,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIngredientsSection() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                AppStrings.getRecipeIngredients(currentLocale),
-                style: AppTextStyles.headline4.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: _addIngredient,
-                icon: const Icon(Icons.add, size: 16),
-                label: Text(AppStrings.getAddIngredient(currentLocale)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (_selectedIngredients.isEmpty)
-            Container(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.inventory_2_outlined,
-                    size: 48,
-                    color: colorScheme.onSurface.withValues(alpha: 0.1),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    AppStrings.getNoIngredientsSelected(currentLocale),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                    _BasicInfoCard(
+                      nameController: _nameController,
+                      sellPriceController: _sellPriceController,
+                      locale: locale,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _selectedIngredients.length,
-              itemBuilder: (context, index) {
-                final ingredient = _selectedIngredients[index];
-                final unitPrice = _calculateUnitPrice(ingredient);
-                final amount = _ingredientAmounts[ingredient.id] ?? 0.0;
-                final recipeEntry = widget.recipe.ingredients.firstWhere(
-                  (ri) => ri.ingredientId == ingredient.id,
-                  orElse: () => RecipeIngredient(
-                    id: '',
-                    recipeId: widget.recipe.id,
-                    ingredientId: ingredient.id,
-                    amount: 0,
-                    unitId: ingredient.purchaseUnitId,
-                    calculatedCost: 0,
-                  ),
-                );
-                final unitId =
-                    _ingredientUnitIds[ingredient.id] ?? recipeEntry.unitId;
-                if (!_ingredientUnitIds.containsKey(ingredient.id)) {
-                  _ingredientUnitIds[ingredient.id] = unitId;
-                }
-                final cost = _ingredientCosts[ingredient.id] ?? 0.0;
-
-                return Card(
-                  color: colorScheme.surface,
-                  margin: const EdgeInsets.only(bottom: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: colorScheme.outlineVariant),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor:
-                                  colorScheme.primary.withValues(alpha: 0.1),
-                              child: Text(
-                                ingredient.name.isNotEmpty
-                                    ? ingredient.name[0]
-                                    : 'I',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    ingredient.name,
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      color: colorScheme.onSurface,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    '1${_getUnitName(ingredient.purchaseUnitId)}당 ${NumberFormatter.formatCurrency(unitPrice, currentLocale, context.watch<NumberFormatCubit>().state)}',
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: colorScheme.onSurface
-                                          .withValues(alpha: 0.6),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () => _editIngredient(ingredient),
-                              icon: Icon(
-                                Icons.edit,
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () => _removeIngredient(ingredient),
-                              icon: Icon(
-                                Icons.delete,
-                                color: colorScheme.error,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DropdownButton<String>(
-                              value: unitId,
-                              dropdownColor: colorScheme.surface,
-                              style: TextStyle(color: colorScheme.onSurface),
-                              items: [
-                                if (uc.UnitConverter.getUnitType(
-                                      ingredient.purchaseUnitId,
-                                    ) ==
-                                    uc.UnitType.weight)
-                                  const DropdownMenuItem(
-                                    value: 'g',
-                                    child: Text('g'),
-                                  ),
-                                if (uc.UnitConverter.getUnitType(
-                                      ingredient.purchaseUnitId,
-                                    ) ==
-                                    uc.UnitType.weight)
-                                  const DropdownMenuItem(
-                                    value: 'kg',
-                                    child: Text('kg'),
-                                  ),
-                                if (uc.UnitConverter.getUnitType(
-                                      ingredient.purchaseUnitId,
-                                    ) ==
-                                    uc.UnitType.volume)
-                                  const DropdownMenuItem(
-                                    value: 'ml',
-                                    child: Text('ml'),
-                                  ),
-                                if (uc.UnitConverter.getUnitType(
-                                      ingredient.purchaseUnitId,
-                                    ) ==
-                                    uc.UnitType.volume)
-                                  const DropdownMenuItem(
-                                    value: 'L',
-                                    child: Text('L'),
-                                  ),
-                                if (uc.UnitConverter.getUnitType(
-                                      ingredient.purchaseUnitId,
-                                    ) ==
-                                    uc.UnitType.count)
-                                  const DropdownMenuItem(
-                                    value: '개',
-                                    child: Text('개'),
-                                  ),
-                              ],
-                              onChanged: (v) async {
-                                if (v == null) return;
-                                final prevUnitId =
-                                    _ingredientUnitIds[ingredient.id] ??
-                                        ingredient.purchaseUnitId;
-                                final currentAmount =
-                                    _ingredientAmounts[ingredient.id] ?? 0.0;
-                                final baseUsage = uc.UnitConverter.toBaseUnit(
-                                  currentAmount,
-                                  prevUnitId,
-                                );
-                                final converted =
-                                    uc.UnitConverter.fromBaseUnit(baseUsage, v);
-                                setState(() {
-                                  _ingredientUnitIds[ingredient.id] = v;
-                                  _ingredientAmounts[ingredient.id] = converted;
-                                });
-                                _calculateIngredientCost(
-                                  ingredient.id,
-                                  converted,
-                                );
-                                await context
-                                    .read<rc.RecipeCubit>()
-                                    .updateRecipeIngredientUnitAndAmount(
-                                      recipeId: widget.recipe.id,
-                                      ingredientId: ingredient.id,
-                                      newUnitId: v,
-                                      newAmount: converted,
-                                    );
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            AppInputField(
-                              label: AppStrings.getInputAmount(currentLocale),
-                              hint: '0',
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                ThousandsSeparatorInputFormatter(),
-                              ],
-                              initialValue: amount > 0
-                                  ? NumberFormatter.formatNumber(
-                                      amount.toInt(),
-                                      context.watch<NumberFormatCubit>().state,
-                                    )
-                                  : null,
-                              onChanged: (value) async {
-                                final newAmount = _extractNumberFromText(
-                                  value,
-                                ).toDouble();
-                                _calculateIngredientCost(
-                                  ingredient.id,
-                                  newAmount,
-                                );
-                                final unitForIngredient =
-                                    _ingredientUnitIds[ingredient.id] ??
-                                        ingredient.purchaseUnitId;
-                                await context
-                                    .read<rc.RecipeCubit>()
-                                    .updateRecipeIngredientUnitAndAmount(
-                                      recipeId: widget.recipe.id,
-                                      ingredientId: ingredient.id,
-                                      newUnitId: unitForIngredient,
-                                      newAmount: newAmount,
-                                    );
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: colorScheme.surfaceContainerHighest
-                                    .withValues(alpha: 0.3),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                    color: colorScheme.outlineVariant),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    AppStrings.getCost(currentLocale),
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: colorScheme.onSurface
-                                          .withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      NumberFormatter.formatCurrency(
-                                        cost,
-                                        currentLocale,
-                                        context
-                                            .watch<NumberFormatCubit>()
-                                            .state,
-                                      ),
-                                      style: AppTextStyles.headline4.copyWith(
-                                        color: colorScheme.primary,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                    const SizedBox(height: AppSpacing.s12),
+                    _IngredientsCard(
+                      lines: _ingredients,
+                      locale: locale,
+                      formatStyle: formatStyle,
+                      onAdd: _pickIngredient,
+                      onRemove: _removeIngredient,
                     ),
-                  ),
-                );
-              },
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSaucesSection() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                AppStrings.getSauces(currentLocale),
-                style: AppTextStyles.headline4.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: _addSauce,
-                icon: const Icon(Icons.add, size: 16),
-                label: Text(AppStrings.getAddSauce(currentLocale)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          FutureBuilder<List<_RecipeSauceDisplay>>(
-            future: _fetchRecipeSauceDisplays(),
-            builder: (context, snapshot) {
-              final items = snapshot.data ?? const <_RecipeSauceDisplay>[];
-              if (items.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    AppStrings.getNoRecipeSauces(currentLocale),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    const SizedBox(height: AppSpacing.s12),
+                    _SaucesCard(
+                      lines: _sauces,
+                      locale: locale,
+                      formatStyle: formatStyle,
+                      onAdd: _pickSauce,
+                      onRemove: _removeSauce,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                );
-              }
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final display = items[index];
-                  final entry = display.entry;
-                  final controller = _sauceAmountControllers.putIfAbsent(
-                    entry.sauceId,
-                    () => TextEditingController(
-                      text: entry.amount > 0
-                          ? NumberFormatter.formatNumber(
-                              entry.amount.toInt(),
-                              context.watch<NumberFormatCubit>().state,
-                            )
-                          : '',
-                    ),
-                  );
-                  return Card(
-                    color: colorScheme.surface,
-                    margin: const EdgeInsets.only(bottom: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: colorScheme.outlineVariant),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      display.sauceName,
-                                      style: AppTextStyles.bodyMedium.copyWith(
-                                        color: colorScheme.onSurface,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    FutureBuilder<SauceAggregation>(
-                                      future: context
-                                          .read<SauceCostService>()
-                                          .aggregateSauce(entry.sauceId),
-                                      builder: (context, snapAgg) {
-                                        final agg = snapAgg.data;
-                                        if (agg == null ||
-                                            agg.totalBaseAmount <= 0) {
-                                          return const SizedBox.shrink();
-                                        }
-                                        final unitCost =
-                                            agg.totalCost / agg.totalBaseAmount;
-                                        final unitId = agg.unitType ==
-                                                uc.UnitType.weight
-                                            ? 'g'
-                                            : agg.unitType == uc.UnitType.volume
-                                                ? 'ml'
-                                                : '개';
-                                        return Text(
-                                          '1$unitId당 ${NumberFormatter.formatCurrency(unitCost, currentLocale, context.watch<NumberFormatCubit>().state)}',
-                                          style:
-                                              AppTextStyles.bodySmall.copyWith(
-                                            color: colorScheme.onSurface
-                                                .withValues(alpha: 0.6),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () =>
-                                    _removeSauceEntry(entry.sauceId),
-                                icon: Icon(
-                                  Icons.delete,
-                                  color: colorScheme.error,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: AppInputField(
-                                  label:
-                                      '${AppStrings.getInputAmount(currentLocale)} (${entry.unitId})',
-                                  hint: '0',
-                                  controller: controller,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    ThousandsSeparatorInputFormatter(),
-                                  ],
-                                  onChanged: (val) async {
-                                    final amt =
-                                        _extractNumberFromText(val).toDouble();
-                                    await context
-                                        .read<rc.RecipeCubit>()
-                                        .updateRecipeSauceAmount(
-                                          recipeId: widget.recipe.id,
-                                          sauceId: entry.sauceId,
-                                          newAmount: amt,
-                                        );
-                                    setState(() {});
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.surfaceContainerHighest
-                                        .withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                        color: colorScheme.outlineVariant),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        AppStrings.getCost(currentLocale),
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: colorScheme.onSurface
-                                              .withValues(alpha: 0.5),
-                                        ),
-                                      ),
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          NumberFormatter.formatCurrency(
-                                            display.cost,
-                                            currentLocale,
-                                            context
-                                                .watch<NumberFormatCubit>()
-                                                .state,
-                                          ),
-                                          style:
-                                              AppTextStyles.bodyMedium.copyWith(
-                                            color: colorScheme.primary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    if (_ingredients.isNotEmpty || _sauces.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.s12),
+                      _CostPreviewCard(
+                        cost: _totalCost,
+                        sellPrice: _parseSellPrice(),
+                        locale: locale,
+                        formatStyle: formatStyle,
                       ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTagsSection() {
-    final colorScheme = Theme.of(context).colorScheme;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppStrings.getRecipeTags(context.watch<LocaleCubit>().state),
-            style: AppTextStyles.headline4.copyWith(
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _availableTags.map((tag) {
-                final isSelected = _selectedTagId == tag.id;
-                return FilterChip(
-                  label: Text(tag.name),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      _selectedTagId = selected ? tag.id : '';
-                    });
-                  },
-                  selectedColor: colorScheme.primary.withValues(alpha: 0.2),
-                  checkmarkColor: colorScheme.primary,
-                  labelStyle: AppTextStyles.bodySmall.copyWith(
-                    color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.onSurface.withValues(alpha: 0.6),
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCostSection() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppStrings.getCostInfo(currentLocale),
-            style: AppTextStyles.headline4.copyWith(
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          FutureBuilder<double>(
-            future: _computeTotalSauceCost(),
-            builder: (context, snapshot) {
-              final sauceSum = snapshot.data ?? 0.0;
-              final ingredientSum = _totalCost;
-              final total = ingredientSum + sauceSum;
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: colorScheme.primary.withValues(alpha: 0.2)),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            AppStrings.getIngredientCostLabel(currentLocale),
-                            style: TextStyle(color: colorScheme.onSurface),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            NumberFormatter.formatCurrency(
-                              ingredientSum,
-                              currentLocale,
-                              context.watch<NumberFormatCubit>().state,
-                            ),
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            AppStrings.getSauceCostLabel(currentLocale),
-                            style: TextStyle(color: colorScheme.onSurface),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            NumberFormatter.formatCurrency(
-                              sauceSum,
-                              currentLocale,
-                              context.watch<NumberFormatCubit>().state,
-                            ),
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Divider(height: 20, color: colorScheme.outlineVariant),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            AppStrings.getTotalCost(currentLocale),
-                            style: AppTextStyles.bodyLarge.copyWith(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            NumberFormatter.formatCurrency(total, currentLocale,
-                                context.watch<NumberFormatCubit>().state),
-                            style: AppTextStyles.headline4.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
+                    const SizedBox(height: AppSpacing.s24),
                   ],
                 ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSaveButton() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    return SizedBox(
-      width: double.infinity,
-      child: AppButton(
-        text: AppStrings.getSaveRecipe(currentLocale),
-        type: AppButtonType.primary,
-        size: AppButtonSize.large,
-        isFullWidth: true,
-        onPressed: _saveRecipe,
-        isLoading: _isLoading,
-      ),
-    );
-  }
-
-  String _getUnitName(String unitId) {
-    final unit = _availableUnits.firstWhere(
-      (unit) => unit.id == unitId,
-      orElse: () =>
-          Unit(id: unitId, name: unitId, type: 'count', conversionFactor: 1.0),
-    );
-    return unit.name;
-  }
-
-  void _addIngredient() async {
-    final result = await RouterHelper.goToRecipeIngredientSelect(
-      context,
-      currentSelectedIngredients: _selectedIngredients,
-      currentIngredientAmounts: _ingredientAmounts,
-      currentIngredientUnitIds: _ingredientUnitIds,
-    );
-
-    if (result != null && mounted) {
-      final selectedIngredients = result['ingredients'] as List<Ingredient>?;
-      final amounts = result['amounts'] as Map<String, double>?;
-      final unitIds = result['unitIds'] as Map<String, String>?;
-
-      if (selectedIngredients != null) {
-        setState(() {
-          _selectedIngredients = selectedIngredients;
-          if (amounts != null) {
-            for (var key in amounts.keys) {
-              _ingredientAmounts[key] = amounts[key]!;
-            }
-          }
-          if (unitIds != null) {
-            for (var key in unitIds.keys) {
-              _ingredientUnitIds[key] = unitIds[key]!;
-            }
-          }
-
-          for (final ing in _selectedIngredients) {
-            final amount = _ingredientAmounts[ing.id] ?? 0.0;
-            if (amount > 0) {
-              final selectedUnitId =
-                  _ingredientUnitIds[ing.id] ?? ing.purchaseUnitId;
-              final basePurchase = uc.UnitConverter.toBaseUnit(
-                ing.purchaseAmount,
-                ing.purchaseUnitId,
-              );
-              final unitPrice = ing.purchasePrice / basePurchase;
-              final baseUsage = uc.UnitConverter.toBaseUnit(
-                amount,
-                selectedUnitId,
-              );
-              _ingredientCosts[ing.id] = unitPrice * baseUsage;
-            }
-          }
-          _calculateTotalCost();
-        });
-      }
-    }
-  }
-
-  void _editIngredient(Ingredient ingredient) {
-    // 인라인 편집 기능을 제공하므로 별도 다이얼로그는 불필요할 수 있음
-  }
-
-  void _removeIngredient(Ingredient ingredient) {
-    setState(() {
-      _selectedIngredients.removeWhere((i) => i.id == ingredient.id);
-      _ingredientAmounts.remove(ingredient.id);
-      _ingredientUnitIds.remove(ingredient.id);
-      _ingredientCosts.remove(ingredient.id);
-      _calculateTotalCost();
-    });
-  }
-
-  void _addSauce() async {
-    final currentLocale = context.read<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    final sauceRepo = context.read<SauceRepository>();
-    final sauces = await sauceRepo.getAllSauces();
-    Sauce? selected;
-    String unitId = 'g';
-    final amountController = TextEditingController(text: '0');
-    if (!mounted) return;
-    await showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: colorScheme.surface,
-          title: Text(AppStrings.getSelectSauce(currentLocale)),
-          content: Container(
-            width: double.maxFinite,
-            height: 300,
-            child: ListView.builder(
-              itemCount: sauces.length,
-              itemBuilder: (context, index) {
-                final s = sauces[index];
-                final isSelected = selected?.id == s.id;
-                return ListTile(
-                  selected: isSelected,
-                  title: Text(s.name,
-                      style: TextStyle(color: colorScheme.onSurface)),
-                  onTap: () => setDialogState(() => selected = s),
-                );
-              },
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(AppStrings.getCancel(currentLocale)),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (selected != null) {
-                  await context.read<rc.RecipeCubit>().addSauceToRecipe(
-                        recipeId: widget.recipe.id,
-                        sauceId: selected!.id,
-                        amount: 0,
-                        unitId: 'g',
-                      );
-                  if (mounted) Navigator.pop(context);
-                  setState(() {});
-                }
-              },
-              child: Text(AppStrings.getAdd(currentLocale)),
+            _BottomActionButton(
+              label: AppStrings.getSaveChanges(locale),
+              isLoading: _isSaving,
+              onPressed: busy ? null : _save,
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  void _removeSauceEntry(String sauceId) async {
-    await context.read<rc.RecipeCubit>().removeSauceFromRecipe(
-          recipeId: widget.recipe.id,
-          sauceId: sauceId,
-        );
-    setState(() {});
-  }
+// ------------------------------------------------------------ Basic info card
 
-  Future<double> _computeTotalSauceCost() async {
-    final displays = await _fetchRecipeSauceDisplays();
-    double sum = 0;
-    for (final d in displays) sum += d.cost;
-    return sum;
-  }
+class _BasicInfoCard extends StatelessWidget {
+  final TextEditingController nameController;
+  final TextEditingController sellPriceController;
+  final AppLocale locale;
 
-  Future<List<_RecipeSauceDisplay>> _fetchRecipeSauceDisplays() async {
-    final sauceRepo = context.read<SauceRepository>();
-    final sauceCostService = context.read<SauceCostService>();
-    final currentRecipe = await context
-        .read<rc.RecipeCubit>()
-        .recipeRepo
-        .getRecipeById(widget.recipe.id);
-    if (currentRecipe == null) return [];
-    final list = <_RecipeSauceDisplay>[];
-    for (final rs in currentRecipe.sauces) {
-      final s = await sauceRepo.getSauceById(rs.sauceId);
-      final unitCost = await sauceCostService.getSauceUnitCost(rs.sauceId);
-      final baseUsage = uc.UnitConverter.toBaseUnit(rs.amount, rs.unitId);
-      list.add(
-        _RecipeSauceDisplay(
-          entry: rs,
-          sauceName: s?.name ?? '소스(${rs.sauceId})',
-          cost: unitCost * baseUsage,
-        ),
-      );
-    }
-    return list;
-  }
+  const _BasicInfoCard({
+    required this.nameController,
+    required this.sellPriceController,
+    required this.locale,
+  });
 
-  void _saveRecipe() async {
-    final currentLocale = context.read<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-    try {
-      final currentRecipe = await context
-          .read<rc.RecipeCubit>()
-          .recipeRepo
-          .getRecipeById(widget.recipe.id);
-      if (currentRecipe == null) return;
-
-      final updatedIngredients = <RecipeIngredient>[];
-      for (final ing in _selectedIngredients) {
-        final amount = _ingredientAmounts[ing.id] ?? 0.0;
-        final unitId = _ingredientUnitIds[ing.id] ?? ing.purchaseUnitId;
-        updatedIngredients.add(RecipeIngredient(
-          id: const Uuid().v4(),
-          recipeId: widget.recipe.id,
-          ingredientId: ing.id,
-          amount: amount,
-          unitId: unitId,
-          calculatedCost: _ingredientCosts[ing.id] ?? 0.0,
-        ));
-      }
-
-      final updatedRecipe = currentRecipe.copyWith(
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-        tagIds: _selectedTagId.isNotEmpty ? [_selectedTagId] : [],
-        ingredients: updatedIngredients,
-      );
-
-      await context.read<rc.RecipeCubit>().updateRecipe(updatedRecipe);
-      if (mounted) context.pop();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                AppStrings.getRecipeUpdateError(currentLocale, e.toString())),
-            backgroundColor: colorScheme.error,
+  @override
+  Widget build(BuildContext context) {
+    return _Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _FieldLabel(text: AppStrings.getRecipeName(locale)),
+          const SizedBox(height: AppSpacing.s8),
+          _OutlinedTextField(
+            controller: nameController,
+            hint: AppStrings.getRecipeNameHint(locale),
           ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+          const SizedBox(height: AppSpacing.s16),
+          _FieldLabel(text: AppStrings.getSellPrice(locale)),
+          const SizedBox(height: AppSpacing.s8),
+          _OutlinedTextField(
+            controller: sellPriceController,
+            hint: '0',
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
+            ],
+            suffixText: NumberFormatter.getCurrencyName(locale),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-class _RecipeSauceDisplay {
-  final RecipeSauce entry;
-  final String sauceName;
-  final double cost;
-  _RecipeSauceDisplay({
-    required this.entry,
-    required this.sauceName,
-    required this.cost,
+// ------------------------------------------------------------ Section cards
+
+class _IngredientsCard extends StatelessWidget {
+  final List<_IngredientLine> lines;
+  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
+  final Future<void> Function() onAdd;
+  final void Function(int index) onRemove;
+
+  const _IngredientsCard({
+    required this.lines,
+    required this.locale,
+    required this.formatStyle,
+    required this.onAdd,
+    required this.onRemove,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: tokens.bgBase,
+        borderRadius: AppRadius.brR16,
+        border: Border.all(color: tokens.borderSubtle, width: 1),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          _SectionHeader(
+            label: AppStrings.getIngredients(locale),
+            count: lines.length,
+            onAdd: onAdd,
+            locale: locale,
+          ),
+          for (int i = 0; i < lines.length; i++)
+            Container(
+              decoration: BoxDecoration(
+                border: i < lines.length - 1
+                    ? Border(
+                        bottom: BorderSide(
+                          color: tokens.borderSubtle,
+                          width: 1,
+                        ),
+                      )
+                    : null,
+              ),
+              child: _IngredientRow(
+                line: lines[i],
+                locale: locale,
+                formatStyle: formatStyle,
+                onRemove: () => onRemove(i),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SaucesCard extends StatelessWidget {
+  final List<_SauceLine> lines;
+  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
+  final Future<void> Function() onAdd;
+  final void Function(int index) onRemove;
+
+  const _SaucesCard({
+    required this.lines,
+    required this.locale,
+    required this.formatStyle,
+    required this.onAdd,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: tokens.bgBase,
+        borderRadius: AppRadius.brR16,
+        border: Border.all(color: tokens.borderSubtle, width: 1),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          _SectionHeader(
+            label: AppStrings.getSauces(locale),
+            count: lines.length,
+            onAdd: onAdd,
+            locale: locale,
+          ),
+          for (int i = 0; i < lines.length; i++)
+            Container(
+              decoration: BoxDecoration(
+                border: i < lines.length - 1
+                    ? Border(
+                        bottom: BorderSide(
+                          color: tokens.borderSubtle,
+                          width: 1,
+                        ),
+                      )
+                    : null,
+              ),
+              child: _SauceRow(
+                line: lines[i],
+                locale: locale,
+                formatStyle: formatStyle,
+                onRemove: () => onRemove(i),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String label;
+  final int count;
+  final Future<void> Function() onAdd;
+  final AppLocale locale;
+
+  const _SectionHeader({
+    required this.label,
+    required this.count,
+    required this.onAdd,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s16,
+        AppSpacing.s12,
+        AppSpacing.s8,
+        AppSpacing.s12,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Flexible(
+                  child: Text(
+                    label,
+                    style: AppTypography.heading2.copyWith(
+                      color: tokens.fgStrong,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                if (count > 0) ...[
+                  const SizedBox(width: AppSpacing.s6),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Text(
+                      '$count',
+                      style: AppTypography.label2.copyWith(
+                        color: tokens.fgTertiary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          OutlinedButton.icon(
+            onPressed: onAdd,
+            icon: const Icon(Icons.add, size: 16),
+            label: Text(AppStrings.getAddShort(locale)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: tokens.fgDefault,
+              side: BorderSide(color: tokens.borderDefault, width: 1),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.s12,
+                vertical: AppSpacing.s6,
+              ),
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              textStyle: AppTypography.label1.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+              shape: const RoundedRectangleBorder(
+                borderRadius: AppRadius.brR8,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IngredientRow extends StatelessWidget {
+  final _IngredientLine line;
+  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
+  final VoidCallback onRemove;
+
+  const _IngredientRow({
+    required this.line,
+    required this.locale,
+    required this.formatStyle,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s16,
+        vertical: AppSpacing.s12,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  line.ingredient.name,
+                  style: AppTypography.headline2.copyWith(
+                    color: tokens.fgStrong,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  NumberFormatter.formatCurrency(
+                    line.lineCost,
+                    locale,
+                    formatStyle,
+                  ),
+                  style: AppTypography.label2.copyWith(
+                    color: tokens.fgTertiary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.s8),
+          SizedBox(
+            width: 90,
+            child: _OutlinedTextField(
+              controller: line.qtyController,
+              hint: '0',
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
+              ],
+              suffixText: line.ingredient.purchaseUnitId,
+              dense: true,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.s4),
+          IconButton(
+            onPressed: onRemove,
+            icon: Icon(Icons.close, size: 18, color: tokens.fgTertiary),
+            visualDensity: VisualDensity.compact,
+            tooltip: AppStrings.getDelete(locale),
+            padding: const EdgeInsets.all(AppSpacing.s6),
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SauceRow extends StatelessWidget {
+  final _SauceLine line;
+  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
+  final VoidCallback onRemove;
+
+  const _SauceRow({
+    required this.line,
+    required this.locale,
+    required this.formatStyle,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s16,
+        vertical: AppSpacing.s12,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(Icons.blender_outlined, size: 18, color: tokens.positive),
+          const SizedBox(width: AppSpacing.s8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  line.sauce.name,
+                  style: AppTypography.headline2.copyWith(
+                    color: tokens.fgStrong,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${NumberFormatter.formatCurrency(line.sauce.unitCost, locale, formatStyle)}/g · '
+                  '${NumberFormatter.formatCurrency(line.lineCost, locale, formatStyle)}',
+                  style: AppTypography.label2.copyWith(
+                    color: tokens.fgTertiary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.s8),
+          SizedBox(
+            width: 80,
+            child: _OutlinedTextField(
+              controller: line.qtyController,
+              hint: '0',
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
+              ],
+              suffixText: 'g',
+              dense: true,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.s4),
+          IconButton(
+            onPressed: onRemove,
+            icon: Icon(Icons.close, size: 18, color: tokens.fgTertiary),
+            visualDensity: VisualDensity.compact,
+            tooltip: AppStrings.getDelete(locale),
+            padding: const EdgeInsets.all(AppSpacing.s6),
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ------------------------------------------------------------ Cost preview
+
+class _CostPreviewCard extends StatelessWidget {
+  final double cost;
+  final double sellPrice;
+  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
+
+  const _CostPreviewCard({
+    required this.cost,
+    required this.sellPrice,
+    required this.locale,
+    required this.formatStyle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    final showMargin = sellPrice > 0;
+    final marginPct = RecipeMargin.percent(sellPrice, cost);
+    final marginColor = RecipeMargin.color(marginPct, tokens);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: tokens.primarySoft,
+        borderRadius: AppRadius.brR16,
+      ),
+      padding: const EdgeInsets.all(AppSpacing.s16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppStrings.getTotalCostLabel(locale),
+                style: AppTypography.label1.copyWith(
+                  color: tokens.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                NumberFormatter.formatCurrency(cost, locale, formatStyle),
+                style: AppTypography.heading2.copyWith(
+                  color: tokens.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          if (showMargin) ...[
+            const SizedBox(height: AppSpacing.s8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  AppStrings.getExpectedMargin(locale),
+                  style: AppTypography.label1.copyWith(
+                    color: tokens.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  '${marginPct.toStringAsFixed(1)}%',
+                  style: AppTypography.heading2.copyWith(
+                    color: marginColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ------------------------------------------------------------ Shared atoms
+
+class _Card extends StatelessWidget {
+  final Widget child;
+  const _Card({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: tokens.bgBase,
+        borderRadius: AppRadius.brR16,
+        border: Border.all(color: tokens.borderSubtle, width: 1),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.s16),
+      child: child,
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String text;
+  const _FieldLabel({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Text(
+      text,
+      style: AppTypography.label1.copyWith(
+        color: tokens.fgDefault,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}
+
+class _OutlinedTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hint;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+  final String? suffixText;
+  final bool dense;
+
+  const _OutlinedTextField({
+    required this.controller,
+    required this.hint,
+    this.keyboardType,
+    this.inputFormatters,
+    this.suffixText,
+    this.dense = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      style: AppTypography.body1.copyWith(color: tokens.fgDefault),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: AppTypography.body1.copyWith(color: tokens.fgTertiary),
+        suffixText: suffixText,
+        suffixStyle: AppTypography.label2.copyWith(color: tokens.fgTertiary),
+        isDense: dense,
+        filled: true,
+        fillColor: tokens.bgBase,
+        contentPadding: dense
+            ? const EdgeInsets.symmetric(
+                horizontal: AppSpacing.s8,
+                vertical: AppSpacing.s8,
+              )
+            : const EdgeInsets.symmetric(
+                horizontal: AppSpacing.s16,
+                vertical: AppSpacing.s12,
+              ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: AppRadius.brR12,
+          borderSide: BorderSide(color: tokens.borderSubtle, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppRadius.brR12,
+          borderSide: BorderSide(color: tokens.primary, width: 1.5),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: AppRadius.brR12,
+          borderSide: BorderSide(color: tokens.borderSubtle, width: 1),
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomActionButton extends StatelessWidget {
+  final String label;
+  final bool isLoading;
+  final VoidCallback? onPressed;
+
+  const _BottomActionButton({
+    required this.label,
+    required this.isLoading,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Container(
+      width: double.infinity,
+      color: tokens.bgElev2,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s16,
+        AppSpacing.s8,
+        AppSpacing.s16,
+        AppSpacing.s16,
+      ),
+      child: SizedBox(
+        height: 56,
+        child: FilledButton(
+          onPressed: isLoading ? null : onPressed,
+          style: FilledButton.styleFrom(
+            backgroundColor: tokens.primary,
+            foregroundColor: tokens.fgOnPrimary,
+            shape: const RoundedRectangleBorder(
+              borderRadius: AppRadius.brR12,
+            ),
+          ),
+          child: isLoading
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: tokens.fgOnPrimary,
+                  ),
+                )
+              : Text(
+                  label,
+                  style: AppTypography.headline2.copyWith(
+                    color: tokens.fgOnPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
 }

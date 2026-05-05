@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../util/app_strings.dart';
-import '../../../util/number_formatter.dart';
-import 'package:intl/intl.dart';
+
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
 import '../../../model/ingredient.dart';
-import '../../../model/tag.dart';
-import '../../../model/unit.dart';
-import '../../widget/index.dart';
+import '../../../theme/tokens/tokens.dart';
+import '../../../util/app_locale.dart';
+import '../../../util/app_strings.dart';
+import '../../../util/number_format_style.dart';
+import '../../../util/number_formatter.dart';
+import 'ingredient_form_card.dart';
 
-/// 재료 수정 페이지
+/// 재료 수정 페이지 — 등록 페이지와 동일한 폼 카드 디자인 (이미지 2).
 class IngredientEditPage extends StatefulWidget {
   final Ingredient ingredient;
 
@@ -29,71 +29,36 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   late final TextEditingController _priceController;
   late final TextEditingController _amountController;
 
+  late String _selectedTagId;
   late String _selectedUnitId;
   DateTime? _expiryDate;
-  String _selectedTagId = '';
-  List<Tag> _availableTags = [];
-  List<Unit> _availableUnits = [];
-  bool _isLoading = false;
+  bool _isSaving = false;
+  bool _priceInitialized = false;
+
+  static const _availableUnits = <String>[
+    'g',
+    'kg',
+    'ml',
+    'L',
+    '개',
+    '마리',
+    '장',
+    '인분',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _initializeControllers();
-    _loadInitialData();
-  }
-
-  void _initializeControllers() {
     _nameController = TextEditingController(text: widget.ingredient.name);
     _priceController = TextEditingController();
     _amountController = TextEditingController(
-      text: NumberFormat(
-        '#,##0',
-        'en_US',
-      ).format(widget.ingredient.purchaseAmount),
+      text: widget.ingredient.purchaseAmount.toStringAsFixed(0),
     );
     _selectedUnitId = widget.ingredient.purchaseUnitId;
-    _expiryDate = widget.ingredient.expiryDate;
     _selectedTagId = widget.ingredient.tagIds.isNotEmpty
         ? widget.ingredient.tagIds.first
         : '';
-  }
-
-  void _initializePriceController(BuildContext context) {
-    if (_priceController.text.isEmpty) {
-      _priceController.text = NumberFormatter.formatCurrency(
-        widget.ingredient.purchasePrice,
-        context.watch<LocaleCubit>().state,
-        context.watch<NumberFormatCubit>().state,
-      );
-    }
-  }
-
-  void _loadInitialData() {
-    _loadTags();
-    _loadUnits();
-  }
-
-  void _loadTags() {
-    final locale = context.read<LocaleCubit>().state;
-    setState(() {
-      _availableTags = DefaultTags.ingredientTagsFor(locale);
-    });
-  }
-
-  void _loadUnits() {
-    setState(() {
-      _availableUnits = [
-        Unit(id: 'g', name: 'g', type: 'weight', conversionFactor: 1.0),
-        Unit(id: 'kg', name: 'kg', type: 'weight', conversionFactor: 1000.0),
-        Unit(id: 'ml', name: 'ml', type: 'volume', conversionFactor: 1.0),
-        Unit(id: 'L', name: 'L', type: 'volume', conversionFactor: 1000.0),
-        Unit(id: '개', name: '개', type: 'count', conversionFactor: 1.0),
-        Unit(id: '마리', name: '마리', type: 'count', conversionFactor: 1.0),
-        Unit(id: '장', name: '장', type: 'count', conversionFactor: 1.0),
-        Unit(id: '인분', name: '인분', type: 'count', conversionFactor: 1.0),
-      ];
-    });
+    _expiryDate = widget.ingredient.expiryDate;
   }
 
   @override
@@ -104,457 +69,238 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    _initializePriceController(context);
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Text(
-          AppStrings.getEditIngredient(currentLocale),
-          style: AppTextStyles.headline4.copyWith(color: colorScheme.onSurface),
-        ),
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => context.pop(),
-          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
-        ),
-        actions: [
-          IconButton(
-            onPressed: _isLoading ? null : _confirmDeleteIngredient,
-            icon: Icon(Icons.delete, color: colorScheme.error),
-            tooltip: AppStrings.getDelete(currentLocale),
-          ),
-          TextButton(
-            onPressed: _isLoading ? null : _updateIngredient,
-            child: Text(
-              AppStrings.getSave(currentLocale),
-              style: AppTextStyles.buttonMedium.copyWith(
-                color: _isLoading
-                    ? colorScheme.onSurface.withValues(alpha: 0.3)
-                    : colorScheme.primary,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildBasicInfoSection(),
-                    const SizedBox(height: 24),
-                    _buildTagSelectionSection(),
-                    const SizedBox(height: 24),
-                    _buildExpiryDateSection(),
-                    const SizedBox(height: 32),
-                    _buildUpdateButton(),
-                  ],
-                ),
-              ),
-            ),
+  void _initPriceIfNeeded(NumberFormatStyle style, AppLocale locale) {
+    if (_priceInitialized) return;
+    _priceController.text = NumberFormatter.formatNumber(
+      widget.ingredient.purchasePrice.round(),
+      style,
     );
+    _priceInitialized = true;
   }
 
-  Widget _buildBasicInfoSection() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AppStrings.getBasicInformation(currentLocale),
-          style: AppTextStyles.headline4.copyWith(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 16),
-        AppInputField(
-          controller: _nameController,
-          label: AppStrings.getIngredientName(currentLocale),
-          hint: AppStrings.getEnterIngredientName(currentLocale),
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return AppStrings.getIngredientNameRequired(currentLocale);
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-        CurrencyInputField(
-          label: AppStrings.getPurchasePrice(currentLocale),
-          hint: AppStrings.getEnterPrice(currentLocale),
-          controller: _priceController,
-          locale: currentLocale,
-          onChanged: (price) {},
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return AppStrings.getPriceRequired(currentLocale);
-            }
-            final price = _parseFormattedPrice(value);
-            if (price == null || price <= 0) {
-              return AppStrings.getValidPriceRequired(currentLocale);
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            NumberInputField(
-              label: AppStrings.getPurchaseAmount(currentLocale),
-              hint: AppStrings.getEnterAmount(currentLocale),
-              controller: _amountController,
-              onChanged: (amount) {},
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return AppStrings.getAmountRequired(currentLocale);
-                }
-                final cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
-                final amount = double.tryParse(cleanValue);
-                if (amount == null || amount <= 0) {
-                  return AppStrings.getValidAmountRequired(currentLocale);
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedUnitId.isNotEmpty &&
-                      _availableUnits.any((unit) => unit.id == _selectedUnitId)
-                  ? _selectedUnitId
-                  : null,
-              dropdownColor: colorScheme.surface,
-              style: TextStyle(color: colorScheme.onSurface),
-              decoration: InputDecoration(
-                labelText: AppStrings.getUnit(currentLocale),
-                labelStyle: TextStyle(
-                    color: colorScheme.onSurface.withValues(alpha: 0.6)),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.outlineVariant),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.outlineVariant),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-              items: _availableUnits.map((unit) {
-                return DropdownMenuItem(value: unit.id, child: Text(unit.name));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedUnitId = value ?? '';
-                });
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return AppStrings.getUnitRequired(currentLocale);
-                }
-                return null;
-              },
-            ),
-          ],
-        ),
-      ],
-    );
+  double? _parseNumber(String s) {
+    if (s.isEmpty) return null;
+    final clean = s.replaceAll(RegExp(r'[^\d.]'), '');
+    return double.tryParse(clean);
   }
 
-  Widget _buildTagSelectionSection() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AppStrings.getTags(currentLocale),
-          style: AppTextStyles.headline4.copyWith(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
+  Future<void> _save() async {
+    final locale = context.read<LocaleCubit>().state;
+    final tokens = AppColorTokens.of(context);
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final updated = widget.ingredient.copyWith(
+        name: _nameController.text.trim(),
+        purchasePrice: _parseNumber(_priceController.text) ?? 0,
+        purchaseAmount: _parseNumber(_amountController.text) ?? 0,
+        purchaseUnitId: _selectedUnitId,
+        expiryDate: _expiryDate,
+        tagIds: _selectedTagId.isEmpty ? const [] : [_selectedTagId],
+      );
+      await context.read<IngredientCubit>().updateIngredient(updated);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppStrings.getIngredientUpdatedSuccessfully(locale),
           ),
+          backgroundColor: tokens.primary,
         ),
-        const SizedBox(height: 8),
-        Text(
-          AppStrings.getSelectTagsDescription(currentLocale),
-          style: AppTextStyles.bodySmall.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
+      );
+      context.pop();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.getIngredientUpdateFailed(locale)),
         ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _availableTags.map((tag) {
-            final isSelected = _selectedTagId == tag.id;
-            return FilterChip(
-              label: Text(tag.name),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedTagId = tag.id;
-                  } else {
-                    _selectedTagId = '';
-                  }
-                });
-              },
-              backgroundColor: colorScheme.surface,
-              selectedColor: colorScheme.primary.withValues(alpha: 0.2),
-              checkmarkColor: colorScheme.primary,
-              labelStyle: AppTextStyles.bodySmall.copyWith(
-                color: isSelected
-                    ? colorScheme.primary
-                    : colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
-  Widget _buildExpiryDateSection() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AppStrings.getExpiryDate(currentLocale),
-          style: AppTextStyles.headline4.copyWith(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          AppStrings.getExpiryDateDescription(currentLocale),
-          style: AppTextStyles.bodySmall.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-        ),
-        const SizedBox(height: 12),
-        InkWell(
-          onTap: _selectExpiryDate,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border.all(color: colorScheme.outlineVariant),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  color: colorScheme.onSurface.withValues(alpha: 0.4),
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _expiryDate != null
-                        ? AppStrings.formatDate(_expiryDate!, currentLocale)
-                        : AppStrings.getSelectExpiryDate(currentLocale),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: _expiryDate != null
-                          ? colorScheme.onSurface
-                          : colorScheme.onSurface.withOpacity(0.4),
-                    ),
-                  ),
-                ),
-                if (_expiryDate != null)
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _expiryDate = null;
-                      });
-                    },
-                    icon: Icon(Icons.clear,
-                        size: 20,
-                        color: colorScheme.onSurface.withValues(alpha: 0.4)),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUpdateButton() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    return SizedBox(
-      width: double.infinity,
-      child: AppButton(
-        text: AppStrings.getUpdateIngredient(currentLocale),
-        type: AppButtonType.primary,
-        size: AppButtonSize.large,
-        onPressed: _updateIngredient,
-      ),
-    );
-  }
-
-  void _selectExpiryDate() async {
+  Future<void> _selectExpiry() async {
     final now = DateTime.now();
     final firstDate = now;
     final lastDate = now.add(const Duration(days: 365));
-    DateTime initialDate = _expiryDate ?? now.add(const Duration(days: 7));
-    if (initialDate.isBefore(firstDate)) {
-      initialDate = firstDate;
-    } else if (initialDate.isAfter(lastDate)) {
-      initialDate = lastDate;
-    }
-
-    final colorScheme = Theme.of(context).colorScheme;
-    final selectedDate = await showDatePicker(
+    DateTime initial = _expiryDate ?? now.add(const Duration(days: 7));
+    if (initial.isBefore(firstDate)) initial = firstDate;
+    if (initial.isAfter(lastDate)) initial = lastDate;
+    final picked = await showDatePicker(
       context: context,
-      initialDate: initialDate,
+      initialDate: initial,
       firstDate: firstDate,
       lastDate: lastDate,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: colorScheme,
-          ),
-          child: child!,
-        );
-      },
     );
-
-    if (selectedDate != null) {
-      setState(() {
-        _expiryDate = selectedDate;
-      });
-    }
+    if (picked != null) setState(() => _expiryDate = picked);
   }
 
-  double? _parseFormattedPrice(String value) {
-    if (value.isEmpty) return null;
-    final cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
-    return double.tryParse(cleanValue);
-  }
-
-  double? _parseFormattedAmount(String value) {
-    if (value.isEmpty) return null;
-    final numbers = value.replaceAll(RegExp(r'[^\d.]'), '');
-    return double.tryParse(numbers);
-  }
-
-  void _updateIngredient() async {
-    final currentLocale = context.read<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    if (_selectedUnitId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppStrings.getUnitRequired(currentLocale)),
-          backgroundColor: colorScheme.error,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final parsedPrice = _parseFormattedPrice(_priceController.text) ?? 0.0;
-      final parsedAmount = _parseFormattedAmount(_amountController.text) ?? 0.0;
-
-      final updatedIngredient = widget.ingredient.copyWith(
-        name: _nameController.text.trim(),
-        purchasePrice: parsedPrice,
-        purchaseAmount: parsedAmount,
-        purchaseUnitId: _selectedUnitId,
-        expiryDate: _expiryDate,
-        tagIds: _selectedTagId.isNotEmpty ? [_selectedTagId] : [],
-      );
-
-      context.read<IngredientCubit>().updateIngredient(updatedIngredient);
-
-      if (mounted) {
-        context.pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppStrings.getIngredientUpdatedSuccessfully(currentLocale),
-            ),
-            backgroundColor: colorScheme.primary,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.getIngredientUpdateFailed(currentLocale)),
-            backgroundColor: colorScheme.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _confirmDeleteIngredient() async {
-    final currentLocale = context.read<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    final confirmed = await showDialog<bool>(
+  Future<void> _confirmDelete(AppLocale locale) async {
+    final tokens = AppColorTokens.of(context);
+    final ok = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: colorScheme.surface,
-        title: Text(AppStrings.getDelete(currentLocale),
-            style: TextStyle(color: colorScheme.onSurface)),
+      builder: (ctx) => AlertDialog(
+        title: Text(AppStrings.getDelete(locale)),
         content: Text(
-          '${widget.ingredient.name} ${AppStrings.getDeleteRecipeConfirm(currentLocale)}',
-          style: TextStyle(color: colorScheme.onSurface),
+          '${widget.ingredient.name}${AppStrings.getDeleteRecipeConfirm(locale)}',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(AppStrings.getCancel(currentLocale)),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(AppStrings.getCancel(locale)),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: colorScheme.error),
-            child: Text(AppStrings.getDelete(currentLocale)),
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: tokens.negative),
+            child: Text(AppStrings.getDelete(locale)),
           ),
         ],
       ),
     );
-    if (confirmed == true) {
-      await context.read<IngredientCubit>().deleteIngredient(
-            widget.ingredient.id,
-          );
-      if (!mounted) return;
-      context.pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.getIngredientDeleted(currentLocale))),
-      );
-    }
+    if (ok != true) return;
+    if (!mounted) return;
+    await context.read<IngredientCubit>().deleteIngredient(
+          widget.ingredient.id,
+        );
+    if (!mounted) return;
+    context.pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppStrings.getIngredientDeleted(locale))),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    final locale = context.watch<LocaleCubit>().state;
+    final formatStyle = context.watch<NumberFormatCubit>().state;
+    _initPriceIfNeeded(formatStyle, locale);
+
+    return Scaffold(
+      backgroundColor: tokens.bgElev2,
+      appBar: AppBar(
+        backgroundColor: tokens.bgBase,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          onPressed: () => context.pop(),
+          icon: Icon(Icons.arrow_back, color: tokens.fgStrong),
+        ),
+        title: Text(
+          AppStrings.getEditIngredient(locale),
+          style: AppTypography.heading2.copyWith(color: tokens.fgStrong),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: _isSaving ? null : () => _confirmDelete(locale),
+            icon: Icon(Icons.delete_outline, color: tokens.fgStrong),
+            tooltip: AppStrings.getDelete(locale),
+          ),
+          const SizedBox(width: AppSpacing.s4),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.s16,
+                  AppSpacing.s16,
+                  AppSpacing.s16,
+                  AppSpacing.s16,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: IngredientFormCard(
+                    nameController: _nameController,
+                    priceController: _priceController,
+                    amountController: _amountController,
+                    selectedTagId: _selectedTagId,
+                    selectedUnitId: _selectedUnitId,
+                    availableUnits: _availableUnits,
+                    expiryDate: _expiryDate,
+                    locale: locale,
+                    formatStyle: formatStyle,
+                    onTagChanged: (id) =>
+                        setState(() => _selectedTagId = id),
+                    onUnitChanged: (id) =>
+                        setState(() => _selectedUnitId = id),
+                    onPickExpiry: _selectExpiry,
+                    onClearExpiry: () => setState(() => _expiryDate = null),
+                  ),
+                ),
+              ),
+            ),
+            _BottomActionButton(
+              label: AppStrings.getSaveChanges(locale),
+              isLoading: _isSaving,
+              onPressed: _save,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomActionButton extends StatelessWidget {
+  final String label;
+  final bool isLoading;
+  final VoidCallback? onPressed;
+
+  const _BottomActionButton({
+    required this.label,
+    required this.isLoading,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Container(
+      width: double.infinity,
+      color: tokens.bgElev2,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s16,
+        AppSpacing.s8,
+        AppSpacing.s16,
+        AppSpacing.s16,
+      ),
+      child: SizedBox(
+        height: 56,
+        child: FilledButton(
+          onPressed: isLoading ? null : onPressed,
+          style: FilledButton.styleFrom(
+            backgroundColor: tokens.primary,
+            foregroundColor: tokens.fgOnPrimary,
+            shape: const RoundedRectangleBorder(
+              borderRadius: AppRadius.brR12,
+            ),
+          ),
+          child: isLoading
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: tokens.fgOnPrimary,
+                  ),
+                )
+              : Text(
+                  label,
+                  style: AppTypography.headline2.copyWith(
+                    color: tokens.fgOnPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+        ),
+      ),
+    );
   }
 }

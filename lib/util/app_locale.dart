@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 enum AppLocale {
   korea('ko', 'KR', '한국어', '🇰🇷'),
   japan('ja', 'JP', '日本語', '🇯🇵'),
-  china('zh', 'CN', '中文', '🇨🇳'),
+  china('zh', 'CN', '中文（简体）', '🇨🇳'),
+  chinaTraditional('zh', 'TW', '中文（繁體）', '🇹🇼'),
   usa('en', 'US', 'English', '🇺🇸'),
-  euro('de', 'DE', 'Deutsch', '🇪🇺'),
   vietnam('vi', 'VN', 'Tiếng Việt', '🇻🇳');
 
   const AppLocale(
@@ -29,11 +29,11 @@ enum AppLocale {
       case AppLocale.japan:
         return '日本語';
       case AppLocale.china:
-        return '中文';
+        return '中文（简体）';
+      case AppLocale.chinaTraditional:
+        return '中文（繁體）';
       case AppLocale.usa:
         return 'English';
-      case AppLocale.euro:
-        return 'Deutsch';
       case AppLocale.vietnam:
         return 'Tiếng Việt';
     }
@@ -54,6 +54,9 @@ enum AppLocale {
 
   /// 로케일 코드로 AppLocale 찾기
   static AppLocale? fromLocaleCode(String localeCode) {
+    if (localeCode == 'de_DE') {
+      return AppLocale.usa;
+    }
     try {
       return values.firstWhere((locale) => locale.localeString == localeCode);
     } catch (e) {
@@ -61,8 +64,9 @@ enum AppLocale {
     }
   }
 
-  /// 언어 코드로 AppLocale 찾기
+  /// 언어 코드로 AppLocale 찾기（`zh`는 CN/TW 구분 불가 → null）
   static AppLocale? fromLanguageCode(String languageCode) {
+    if (languageCode == 'zh') return null;
     try {
       return values.firstWhere((locale) => locale.languageCode == languageCode);
     } catch (e) {

@@ -10,7 +10,7 @@ class Recipe extends Equatable {
   final double outputAmount;
   final String outputUnit;
   final double totalCost;
-  final String? imagePath;
+  final double sellPrice; // 판매가 (DB v7에서 추가)
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<RecipeIngredient> ingredients;
@@ -24,7 +24,7 @@ class Recipe extends Equatable {
     required this.outputAmount,
     required this.outputUnit,
     required this.totalCost,
-    this.imagePath,
+    this.sellPrice = 0,
     required this.createdAt,
     required this.updatedAt,
     this.ingredients = const [],
@@ -41,7 +41,7 @@ class Recipe extends Equatable {
       'output_amount': outputAmount,
       'output_unit': outputUnit,
       'total_cost': totalCost,
-      'image_path': imagePath,
+      'sell_price': sellPrice,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'tag_ids': jsonEncode(tagIds), // List<String>을 JSON 문자열로 변환
@@ -76,6 +76,13 @@ class Recipe extends Equatable {
       }
     }
 
+    final rawSellPrice = json['sell_price'];
+    final double sellPrice = rawSellPrice == null
+        ? 0
+        : (rawSellPrice is int
+            ? rawSellPrice.toDouble()
+            : (rawSellPrice as num).toDouble());
+
     return Recipe(
       id: json['id'],
       name: json['name'],
@@ -87,7 +94,7 @@ class Recipe extends Equatable {
       totalCost: (json['total_cost'] is int)
           ? (json['total_cost'] as int).toDouble()
           : json['total_cost'].toDouble(),
-      imagePath: json['image_path'],
+      sellPrice: sellPrice,
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       tagIds: tagIds,
@@ -103,7 +110,7 @@ class Recipe extends Equatable {
     double? outputAmount,
     String? outputUnit,
     double? totalCost,
-    String? imagePath,
+    double? sellPrice,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<RecipeIngredient>? ingredients,
@@ -117,7 +124,7 @@ class Recipe extends Equatable {
       outputAmount: outputAmount ?? this.outputAmount,
       outputUnit: outputUnit ?? this.outputUnit,
       totalCost: totalCost ?? this.totalCost,
-      imagePath: imagePath ?? this.imagePath,
+      sellPrice: sellPrice ?? this.sellPrice,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       ingredients: ingredients ?? this.ingredients,
@@ -203,7 +210,7 @@ class Recipe extends Equatable {
 
   @override
   String toString() {
-    return 'Recipe(id: $id, name: $name, totalCost: $totalCost, ingredients: ${ingredients.length}, tags: $tagIds)';
+    return 'Recipe(id: $id, name: $name, totalCost: $totalCost, sellPrice: $sellPrice, ingredients: ${ingredients.length}, tags: $tagIds)';
   }
 
   @override
@@ -214,7 +221,7 @@ class Recipe extends Equatable {
         outputAmount,
         outputUnit,
         totalCost,
-        imagePath,
+        sellPrice,
         createdAt,
         updatedAt,
         ingredients,

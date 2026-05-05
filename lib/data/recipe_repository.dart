@@ -1,3 +1,4 @@
+import 'package:logger/logger.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import '../model/index.dart';
@@ -9,9 +10,23 @@ class RecipeRepository {
   final RecipePriceHistoryRepository _priceHistoryRepository =
       RecipePriceHistoryRepository();
   final Uuid _uuid = const Uuid();
+  static final Logger _log = Logger(
+    printer: PrettyPrinter(
+      methodCount: 0,
+      lineLength: 100,
+      colors: true,
+      printEmojis: false,
+      dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
+    ),
+  );
 
   // 레시피 추가
   Future<void> insertRecipe(Recipe recipe) async {
+    _log.d(
+      '[insertRecipe] id=${recipe.id} name=${recipe.name} '
+      'totalCost=${recipe.totalCost} sellPrice=${recipe.sellPrice} '
+      'ingredients=${recipe.ingredients.length} sauces=${recipe.sauces.length}',
+    );
     final db = await _databaseHelper.database;
     await db.transaction((txn) async {
       // 레시피 추가
@@ -21,17 +36,22 @@ class RecipeRepository {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
-      // 첫 가격 히스토리 기록
+      // 첫 가격 히스토리 기록 (원가 + 판매가)
       final priceHistory = RecipePriceHistory(
         id: _uuid.v4(),
         recipeId: recipe.id,
         price: recipe.totalCost,
+        sellPrice: recipe.sellPrice,
         recordedAt: DateTime.now(),
       );
       await txn.insert(
         'recipe_price_history',
         priceHistory.toJson(),
         conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      _log.d(
+        '[insertRecipe] history 적재 cost=${recipe.totalCost} '
+        'sellPrice=${recipe.sellPrice}',
       );
 
       // 레시피 재료들 추가
@@ -52,6 +72,7 @@ class RecipeRepository {
         );
       }
     });
+    _log.i('[insertRecipe] 완료 id=${recipe.id}');
   }
 
   // 모든 레시피 조회 (재료 정보 포함)
@@ -110,18 +131,26 @@ class RecipeRepository {
 
   // 레시피 업데이트
   Future<void> updateRecipe(Recipe recipe) async {
+    _log.d(
+      '[updateRecipe] id=${recipe.id} new totalCost=${recipe.totalCost} '
+      'new sellPrice=${recipe.sellPrice} '
+      'ingredients=${recipe.ingredients.length} sauces=${recipe.sauces.length}',
+    );
     final db = await _databaseHelper.database;
     await db.transaction((txn) async {
-      // 기존 레시피 가격 조회
+      // 기존 레시피 원가/판매가 조회 (변경 감지용)
       final List<Map<String, dynamic>> oldRecipeMaps = await txn.query(
         'recipes',
         where: 'id = ?',
         whereArgs: [recipe.id],
       );
 
-      double? oldPrice;
+      double? oldCost;
+      double? oldSellPrice;
       if (oldRecipeMaps.isNotEmpty) {
-        oldPrice = (oldRecipeMaps.first['total_cost'] as num?)?.toDouble();
+        oldCost = (oldRecipeMaps.first['total_cost'] as num?)?.toDouble();
+        final rawSell = oldRecipeMaps.first['sell_price'];
+        oldSellPrice = rawSell == null ? null : (rawSell as num).toDouble();
       }
 
       // 레시피 업데이트
@@ -132,12 +161,22 @@ class RecipeRepository {
         whereArgs: [recipe.id],
       );
 
-      // 가격이 변경되었으면 히스토리 저장
-      if (oldPrice != null && oldPrice != recipe.totalCost) {
+      // 신규/변경 시 히스토리 기록 — 원가 또는 판매가 중 하나라도 변하면 스냅샷 1행 추가
+      final isNew = oldCost == null;
+      final costChanged = !isNew && oldCost != recipe.totalCost;
+      final sellPriceChanged =
+          !isNew && (oldSellPrice ?? 0) != recipe.sellPrice;
+      _log.d(
+        '[updateRecipe] diff cost=$oldCost→${recipe.totalCost} '
+        'sellPrice=$oldSellPrice→${recipe.sellPrice} '
+        'isNew=$isNew costChanged=$costChanged sellPriceChanged=$sellPriceChanged',
+      );
+      if (isNew || costChanged || sellPriceChanged) {
         final priceHistory = RecipePriceHistory(
           id: _uuid.v4(),
           recipeId: recipe.id,
           price: recipe.totalCost,
+          sellPrice: recipe.sellPrice,
           recordedAt: DateTime.now(),
         );
         await txn.insert(
@@ -145,18 +184,9 @@ class RecipeRepository {
           priceHistory.toJson(),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
-      } else if (oldPrice == null) {
-        // 새로 추가된 레시피인 경우 첫 가격 기록
-        final priceHistory = RecipePriceHistory(
-          id: _uuid.v4(),
-          recipeId: recipe.id,
-          price: recipe.totalCost,
-          recordedAt: DateTime.now(),
-        );
-        await txn.insert(
-          'recipe_price_history',
-          priceHistory.toJson(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
+        _log.i(
+          '[updateRecipe] history 적재 cost=${recipe.totalCost} '
+          'sellPrice=${recipe.sellPrice}',
         );
       }
 
@@ -196,17 +226,22 @@ class RecipeRepository {
 
   // 레시피 삭제
   Future<void> deleteRecipe(String id) async {
+    _log.d('[deleteRecipe] id=$id');
     final db = await _databaseHelper.database;
     await db.transaction((txn) async {
       // 레시피 재료들 먼저 삭제
-      await txn.delete(
+      final iDel = await txn.delete(
         'recipe_ingredients',
         where: 'recipe_id = ?',
         whereArgs: [id],
       );
 
       // 레시피 삭제
-      await txn.delete('recipes', where: 'id = ?', whereArgs: [id]);
+      final rDel =
+          await txn.delete('recipes', where: 'id = ?', whereArgs: [id]);
+      _log.i(
+        '[deleteRecipe] 완료 id=$id recipes=$rDel ingredients=$iDel',
+      );
     });
   }
 

@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../theme/app_text_styles.dart';
-import '../../../util/app_strings.dart';
-import '../../widget/index.dart';
-import '../../widget/recipe_quick_view_dialog.dart';
 
 import '../../../controller/recipe/recipe_cubit.dart';
 import '../../../controller/recipe/recipe_state.dart';
-import '../../../model/recipe.dart';
-import '../../../model/tag.dart';
+import '../../../controller/sauce/sauce_cubit.dart';
+import '../../../controller/sauce/sauce_state.dart';
 import '../../../controller/setting/locale_cubit.dart';
-import '../../../controller/setting/recipe_view_mode_cubit.dart';
-import '../../../controller/setting/view_mode_cubit.dart';
+import '../../../controller/setting/number_format_cubit.dart';
+import '../../../model/recipe.dart';
+import '../../../model/sauce.dart';
+import '../../../router/index.dart';
+import '../../../theme/tokens/tokens.dart';
 import '../../../util/app_locale.dart';
-import '../../../router/router_helper.dart';
-import '../../../data/ingredient_repository.dart';
+import '../../../util/app_strings.dart';
+import '../../../util/number_format_style.dart';
+import '../../../util/number_formatter.dart';
+import '../../../util/recipe_margin.dart';
+import '../../widget/segment_control.dart';
 
-/// 레시피 메인 페이지
+enum _Tab { recipe, sauce }
+
+/// 레시피 + 소스 통합 메인 페이지.
+///
+/// 상단 sticky 헤더(흰색): 제목 "레시피" + 합계 부제 + + 등록 pill 버튼,
+/// 그 아래 세그먼트 컨트롤로 레시피/소스 리스트 토글.
 class RecipeMainPage extends StatefulWidget {
   const RecipeMainPage({super.key});
 
@@ -27,669 +33,640 @@ class RecipeMainPage extends StatefulWidget {
 }
 
 class _RecipeMainPageState extends State<RecipeMainPage> {
-  bool _isSelectionMode = false;
-  final Set<String> _selectedRecipes = {};
-  String? _selectedFilter;
-  final TextEditingController _searchController = TextEditingController();
-
-  // 필터 옵션: 기본 태그(`tag.dart`) 기반으로 구성
-  List<String> get _filterOptions {
-    final currentLocale = context.read<LocaleCubit>().state;
-    final allText = AppStrings.getAll(currentLocale);
-    return [
-      allText,
-      ...DefaultTags.recipeTagsFor(currentLocale).map((t) => t.name),
-    ];
-  }
+  _Tab _tab = _Tab.recipe;
 
   @override
   void initState() {
     super.initState();
-    // Tab navigation에서 탭 변경 시 loadRecipes()를 호출하므로 여기서는 호출하지 않음
+    context.read<RecipeCubit>().loadRecipes();
+    context.read<SauceCubit>().loadSauces();
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  List<Recipe> _recipesOf(RecipeState state) {
+    if (state is RecipeLoaded) return state.recipes;
+    if (state is RecipeAdded) return state.recipes;
+    if (state is RecipeUpdated) return state.recipes;
+    if (state is RecipeDeleted) return state.recipes;
+    if (state is RecipeFilteredByTag) return state.recipes;
+    if (state is RecipeFilteredByTags) return state.recipes;
+    if (state is RecipeSearchResult) return state.recipes;
+    if (state is RecipeCostRecalculated) return state.recipes;
+    return const [];
   }
 
-  // 레시피의 재료 정보 계산
-  Map<String, dynamic> _calculateRecipeInfo(Recipe recipe) {
-    final ingredientCount = recipe.ingredients.length;
-    double totalWeightG = 0.0;
-    final currentLocale = context.read<LocaleCubit>().state;
+  List<Sauce> _saucesOf(SauceState state) {
+    if (state is SauceLoaded) return state.sauces;
+    if (state is SauceAdded) return state.sauces;
+    if (state is SauceUpdatedState) return state.sauces;
+    if (state is SauceDeleted) return state.sauces;
+    return const [];
+  }
 
-    // 모든 재료의 투입량을 g 단위(기본 단위)로 환산해서 합산
-    for (final ingredient in recipe.ingredients) {
-      final unitId = ingredient.unitId;
-      final unitPiece = AppStrings.getUnitPiece(currentLocale);
-      final unitSlice = AppStrings.getUnitSlice(currentLocale);
-
-      switch (unitId) {
-        case 'g':
-          totalWeightG += ingredient.amount;
-          break;
-        case 'kg':
-          totalWeightG += ingredient.amount * 1000;
-          break;
-        case 'ml':
-          totalWeightG += ingredient.amount; // ml ≈ g 가정
-          break;
-        case 'L':
-          totalWeightG += ingredient.amount * 1000;
-          break;
-        default:
-          // 단위 ID가 언어팩의 "개" 또는 "조각"과 일치하는지 확인
-          if (unitId == unitPiece ||
-              unitId == unitSlice ||
-              unitId == '개' ||
-              unitId == '조각') {
-            totalWeightG += ingredient.amount * 50; // 개당 50g 가정
-          } else {
-            totalWeightG += ingredient.amount;
-          }
-          break;
-      }
+  void _openCreate(AppLocale locale) {
+    if (_tab == _Tab.recipe) {
+      context.push(AppRouter.recipeCreate);
+    } else {
+      context.push(AppRouter.sauceCreate);
     }
-
-    return {
-      'ingredientCount': ingredientCount,
-      'totalWeight': totalWeightG,
-      'weightUnit': 'g',
-    };
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    // 초기 필터 설정
-    _selectedFilter ??= AppStrings.getAll(currentLocale);
+    final tokens = AppColorTokens.of(context);
+    final locale = context.watch<LocaleCubit>().state;
+    final formatStyle = context.watch<NumberFormatCubit>().state;
+
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text(
-          AppStrings.getRecipeManagement(currentLocale),
-          style: AppTextStyles.headline4
-              .copyWith(color: Theme.of(context).colorScheme.onSurface),
+      backgroundColor: tokens.bgElev2,
+      body: SafeArea(
+        bottom: false,
+        child: BlocBuilder<RecipeCubit, RecipeState>(
+          builder: (context, recipeState) {
+            return BlocBuilder<SauceCubit, SauceState>(
+              builder: (context, sauceState) {
+                final recipes = _recipesOf(recipeState);
+                final sauces = _saucesOf(sauceState);
+                final recipeLoading = recipeState is RecipeLoading;
+                final sauceLoading = sauceState is SauceLoading;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _StickyHeader(
+                      recipeCount: recipes.length,
+                      sauceCount: sauces.length,
+                      tab: _tab,
+                      locale: locale,
+                      onTabChanged: (t) => setState(() => _tab = t),
+                      onAdd: () => _openCreate(locale),
+                    ),
+                    Expanded(
+                      child: _tab == _Tab.recipe
+                          ? _RecipeList(
+                              recipes: recipes,
+                              isLoading: recipeLoading && recipes.isEmpty,
+                              locale: locale,
+                              formatStyle: formatStyle,
+                              onTap: (r) => context.push(
+                                AppRouter.recipeDetail,
+                                extra: r,
+                              ),
+                              onAdd: () =>
+                                  context.push(AppRouter.recipeCreate),
+                            )
+                          : _SauceList(
+                              sauces: sauces,
+                              isLoading: sauceLoading && sauces.isEmpty,
+                              locale: locale,
+                              formatStyle: formatStyle,
+                              onTap: (s) => context.push(
+                                AppRouter.sauceEdit,
+                                extra: s,
+                              ),
+                              onAdd: () =>
+                                  context.push(AppRouter.sauceCreate),
+                            ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
         ),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        actions: [
-          if (_isSelectionMode) ...[
-            TextButton(
-              onPressed: _cancelSelection,
-              child: Text(
-                AppStrings.getCancelSelection(currentLocale),
-                style: AppTextStyles.buttonMedium.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
+      ),
+    );
+  }
+}
+
+class _StickyHeader extends StatelessWidget {
+  final int recipeCount;
+  final int sauceCount;
+  final _Tab tab;
+  final AppLocale locale;
+  final ValueChanged<_Tab> onTabChanged;
+  final VoidCallback onAdd;
+
+  const _StickyHeader({
+    required this.recipeCount,
+    required this.sauceCount,
+    required this.tab,
+    required this.locale,
+    required this.onTabChanged,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    final actionLabel = tab == _Tab.recipe
+        ? AppStrings.getRecipes(locale)
+        : AppStrings.getSauces(locale);
+
+    return Container(
+      color: tokens.bgBase,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s20,
+        AppSpacing.s8,
+        AppSpacing.s16,
+        AppSpacing.s12,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.getRecipes(locale),
+                      style: AppTypography.display3.copyWith(
+                        color: tokens.fgStrong,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${AppStrings.getRecipes(locale)} $recipeCount${_unit(locale)} · ${AppStrings.getSauces(locale)} $sauceCount${_unit(locale)}',
+                      style: AppTypography.label1.copyWith(
+                        color: tokens.fgTertiary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ] else ...[
-            IconButton(
-              onPressed: _toggleSelectionMode,
-              icon: Icon(
-                Icons.select_all,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.6),
+              const SizedBox(width: AppSpacing.s8),
+              _AddPillButton(label: actionLabel, onPressed: onAdd),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s16),
+          SegmentControl<_Tab>(
+            items: [
+              SegmentItem(
+                value: _Tab.recipe,
+                label: '${AppStrings.getRecipes(locale)} $recipeCount',
               ),
+              SegmentItem(
+                value: _Tab.sauce,
+                label: '${AppStrings.getSauces(locale)} $sauceCount',
+              ),
+            ],
+            selected: tab,
+            onChanged: onTabChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _unit(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '개';
+      case AppLocale.japan:
+        return '個';
+      case AppLocale.china:
+        return '个';
+      case AppLocale.usa:
+      case AppLocale.chinaTraditional:
+        return '';
+      case AppLocale.vietnam:
+        return '';
+    }
+  }
+}
+
+class _AddPillButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+
+  const _AddPillButton({required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Material(
+      color: tokens.primary,
+      borderRadius: AppRadius.brPill,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: AppRadius.brPill,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.s12,
+            vertical: AppSpacing.s6,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add, size: 16, color: tokens.fgOnPrimary),
+              const SizedBox(width: 2),
+              Text(
+                label,
+                style: AppTypography.label2.copyWith(
+                  color: tokens.fgOnPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RecipeList extends StatelessWidget {
+  final List<Recipe> recipes;
+  final bool isLoading;
+  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
+  final ValueChanged<Recipe> onTap;
+  final VoidCallback onAdd;
+
+  const _RecipeList({
+    required this.recipes,
+    required this.isLoading,
+    required this.locale,
+    required this.formatStyle,
+    required this.onTap,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (recipes.isEmpty) {
+      return _EmptyState(
+        icon: Icons.menu_book_outlined,
+        title: AppStrings.getNoRecipes(locale),
+        ctaLabel: AppStrings.getRecipes(locale),
+        onAdd: onAdd,
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s16,
+        AppSpacing.s16,
+        AppSpacing.s16,
+        AppSpacing.s32,
+      ),
+      itemCount: recipes.length,
+      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.s8),
+      itemBuilder: (context, index) {
+        final r = recipes[index];
+        return _RecipeCard(
+          recipe: r,
+          locale: locale,
+          formatStyle: formatStyle,
+          onTap: () => onTap(r),
+        );
+      },
+    );
+  }
+}
+
+class _RecipeCard extends StatelessWidget {
+  final Recipe recipe;
+  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
+  final VoidCallback onTap;
+
+  const _RecipeCard({
+    required this.recipe,
+    required this.locale,
+    required this.formatStyle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    final ingredientCount = recipe.ingredients.length;
+    final sauceCount = recipe.sauces.length;
+    final servings =
+        '${NumberFormatter.formatNumber(recipe.outputAmount.round(), formatStyle)}${recipe.outputUnit}';
+    final costText = NumberFormatter.formatCurrency(
+      recipe.totalCost,
+      locale,
+      formatStyle,
+    );
+    final sellText = NumberFormatter.formatCurrency(
+      recipe.sellPrice,
+      locale,
+      formatStyle,
+    );
+    final marginPct = RecipeMargin.percent(recipe.sellPrice, recipe.totalCost);
+    final marginColor = recipe.sellPrice <= 0
+        ? tokens.fgTertiary
+        : RecipeMargin.color(marginPct, tokens);
+    final marginText = recipe.sellPrice <= 0
+        ? '-'
+        : '${marginPct.toStringAsFixed(0)}%';
+
+    return Material(
+      color: tokens.bgBase,
+      borderRadius: AppRadius.brR16,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brR16,
+        child: Container(
+          decoration: BoxDecoration(
+            color: tokens.bgBase,
+            borderRadius: AppRadius.brR16,
+            border: Border.all(color: tokens.borderSubtle, width: 1),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.s16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      recipe.name,
+                      style: AppTypography.headline2.copyWith(
+                        color: tokens.fgStrong,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${AppStrings.getIngredients(locale)} $ingredientCount · ${AppStrings.getSauces(locale)} $sauceCount · $servings',
+                      style: AppTypography.label2.copyWith(
+                        color: tokens.fgTertiary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppSpacing.s8),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: _CostSellPair(
+                            label: AppStrings.getCost(locale),
+                            value: costText,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: _CostSellPair(
+                            label: AppStrings.getSell(locale),
+                            value: sellText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    marginText,
+                    style: AppTypography.title3.copyWith(
+                      color: marginColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                      height: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    AppStrings.getMarginRate(locale),
+                    style: AppTypography.label2.copyWith(
+                      color: tokens.fgTertiary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CostSellPair extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _CostSellPair({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return RichText(
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(
+        style: AppTypography.label2.copyWith(color: tokens.fgTertiary),
+        children: [
+          TextSpan(text: '$label '),
+          TextSpan(
+            text: value,
+            style: AppTypography.label2.copyWith(
+              color: tokens.fgStrong,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SauceList extends StatelessWidget {
+  final List<Sauce> sauces;
+  final bool isLoading;
+  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
+  final ValueChanged<Sauce> onTap;
+  final VoidCallback onAdd;
+
+  const _SauceList({
+    required this.sauces,
+    required this.isLoading,
+    required this.locale,
+    required this.formatStyle,
+    required this.onTap,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (sauces.isEmpty) {
+      return _EmptyState(
+        icon: Icons.blender_outlined,
+        title: AppStrings.getNoSauces(locale),
+        ctaLabel: AppStrings.getSauces(locale),
+        onAdd: onAdd,
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s16,
+        AppSpacing.s16,
+        AppSpacing.s16,
+        AppSpacing.s32,
+      ),
+      itemCount: sauces.length,
+      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.s8),
+      itemBuilder: (context, index) {
+        final s = sauces[index];
+        return _SauceCard(
+          sauce: s,
+          locale: locale,
+          formatStyle: formatStyle,
+          onTap: () => onTap(s),
+        );
+      },
+    );
+  }
+}
+
+class _SauceCard extends StatelessWidget {
+  final Sauce sauce;
+  final AppLocale locale;
+  final NumberFormatStyle formatStyle;
+  final VoidCallback onTap;
+
+  const _SauceCard({
+    required this.sauce,
+    required this.locale,
+    required this.formatStyle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    final costText = NumberFormatter.formatCurrency(
+      sauce.totalCost,
+      locale,
+      formatStyle,
+    );
+
+    return Material(
+      color: tokens.bgBase,
+      borderRadius: AppRadius.brR16,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brR16,
+        child: Container(
+          decoration: BoxDecoration(
+            color: tokens.bgBase,
+            borderRadius: AppRadius.brR16,
+            border: Border.all(color: tokens.borderSubtle, width: 1),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.s16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      sauce.name,
+                      style: AppTypography.headline2.copyWith(
+                        color: tokens.fgStrong,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${AppStrings.getTotalWeight(locale)} ${NumberFormatter.formatNumber(sauce.totalWeight.round(), formatStyle)}g',
+                      style: AppTypography.label2.copyWith(
+                        color: tokens.fgTertiary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    costText,
+                    style: AppTypography.headline2.copyWith(
+                      color: tokens.fgStrong,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    AppStrings.getSauceCostLabel(locale),
+                    style: AppTypography.label2.copyWith(
+                      color: tokens.fgTertiary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String ctaLabel;
+  final VoidCallback onAdd;
+
+  const _EmptyState({
+    required this.icon,
+    required this.title,
+    required this.ctaLabel,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.s24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 56, color: tokens.fgDisabled),
+            const SizedBox(height: AppSpacing.s12),
+            Text(
+              title,
+              style:
+                  AppTypography.heading2.copyWith(color: tokens.fgStrong),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.s20),
+            FilledButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add),
+              label: Text(ctaLabel),
             ),
           ],
-        ],
-      ),
-      body: BlocBuilder<RecipeCubit, RecipeState>(
-        builder: (context, recipeState) {
-          return Column(
-            children: [
-              // AppBar 아래 바깥쪽 구분선
-              const Divider(
-                  height: 1,
-                  thickness: 1), // color removed to use theme default
-              if (_isSelectionMode) ...[
-                _buildSelectionHeader(),
-                // Selection Header 아래 안쪽 구분선
-                const Divider(height: 1, thickness: 1),
-              ],
-              _buildSearchSection(),
-              // Search Section 아래 안쪽 구분선
-              const Divider(height: 1, thickness: 1),
-              _buildFilterSection(),
-              // Filter Section 아래 안쪽 구분선
-              const Divider(height: 1, thickness: 1),
-              Expanded(child: _buildRecipeList(recipeState)),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: _buildFloatingActionButton(),
-    );
-  }
-
-  Widget _buildSearchSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: AppInputField(
-        label: AppStrings.getSearchRecipe(context.watch<LocaleCubit>().state),
-        hint: AppStrings.getSearchRecipeHint(
-          context.watch<LocaleCubit>().state,
         ),
-        controller: _searchController,
-        prefixIcon: Icon(Icons.search,
-            color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
-        onChanged: (value) {
-          context.read<RecipeCubit>().searchRecipes(value);
-        },
       ),
     );
-  }
-
-  Widget _buildFilterSection() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(left: 8),
-              child: Row(
-                children: _filterOptions.map((filter) {
-                  final isSelected = _selectedFilter == filter;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(filter),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedFilter = filter;
-                        });
-                        _applyFilter(filter, currentLocale);
-                      },
-                      selectedColor:
-                          colorScheme.primary.withValues(alpha: 0.2),
-                      checkmarkColor: colorScheme.primary,
-                      labelStyle: AppTextStyles.bodySmall.copyWith(
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.onSurface.withValues(alpha: 0.6),
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w400,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-          BlocBuilder<RecipeViewModeCubit, IngredientViewMode>(
-            builder: (context, viewMode) {
-              final isCompact = viewMode == IngredientViewMode.compact;
-              return IconButton(
-                icon: Icon(
-                  isCompact ? Icons.grid_view : Icons.view_list,
-                  color: isCompact
-                      ? colorScheme.primary
-                      : colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
-                tooltip: isCompact
-                    ? AppStrings.getSwitchToCard(currentLocale)
-                    : AppStrings.getSwitchToCompact(currentLocale),
-                onPressed: () =>
-                    context.read<RecipeViewModeCubit>().toggle(),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSelectionHeader() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-      child: Row(
-        children: [
-          Icon(Icons.check_circle,
-              color: Theme.of(context).colorScheme.primary, size: 20),
-          const SizedBox(width: 8),
-          Text(
-            AppStrings.getSelectedCount(currentLocale, _selectedRecipes.length),
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const Spacer(),
-          TextButton(
-            onPressed: _deleteSelectedRecipes,
-            child: Text(
-              AppStrings.getDeleteSelected(context.watch<LocaleCubit>().state),
-              style: AppTextStyles.buttonSmall
-                  .copyWith(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecipeList(RecipeState state) {
-    // LocaleCubit은 최상위에서 이미 watch하고 있으므로 여기서 다시 watch할 필요 없음
-    final currentLocale = context.read<LocaleCubit>().state;
-
-    if (state is RecipeLoading) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (state is RecipeEmpty) {
-      return const SizedBox(height: 200, child: RecipeEmptyState());
-    }
-
-    if (state is RecipeError) {
-      return SizedBox(
-        height: 200,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline,
-                  size: 64, color: Theme.of(context).colorScheme.error),
-              const SizedBox(height: 16),
-              Text(
-                state.message,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              AppButton(
-                text: AppStrings.getRetry(context.watch<LocaleCubit>().state),
-                type: AppButtonType.primary,
-                onPressed: () {
-                  context.read<RecipeCubit>().loadRecipes();
-                },
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    List<Recipe> recipes = [];
-    if (state is RecipeLoaded) {
-      recipes = state.recipes;
-    } else if (state is RecipeSearchResult) {
-      recipes = state.recipes;
-    } else if (state is RecipeFilteredByTag) {
-      recipes = state.recipes;
-    } else if (state is RecipeFilteredByTags) {
-      recipes = state.recipes;
-    } else if (state is RecipeAdded) {
-      recipes = state.recipes;
-    } else if (state is RecipeUpdated) {
-      recipes = state.recipes;
-    } else if (state is RecipeDeleted) {
-      recipes = state.recipes;
-    } else if (state is RecipesSortedByCost) {
-      recipes = state.recipes;
-    } else if (state is RecentRecipesLoaded) {
-      recipes = state.recipes;
-    } else if (state is RecipesByIngredientLoaded) {
-      recipes = state.recipes;
-    } else if (state is RecipeCostRecalculated) {
-      recipes = state.recipes;
-    } else if (state is AiRecipeConverted) {
-      // AI 레시피를 일반 레시피로 변환한 후 레시피 목록 업데이트
-      recipes = state.recipes;
-    }
-    // Note: AiRecipeSaved는 AI 레시피를 저장하는 것이지 일반 레시피를 생성하는 것이 아닙니다.
-    // AI 레시피는 별도 관리되므로 여기서는 처리하지 않습니다.
-
-    if (recipes.isEmpty) {
-      return const SizedBox(height: 200, child: RecipeEmptyState());
-    }
-
-    final viewMode = context.watch<RecipeViewModeCubit>().state;
-    if (viewMode == IngredientViewMode.compact) {
-      return RecipeCompactGrid(
-        recipes: recipes,
-        onTap: _editRecipe,
-        onLongPress: (recipe) => _toggleRecipeSelection(recipe.id),
-      );
-    }
-
-    return Container(
-      constraints: BoxConstraints(
-        minHeight: 100,
-      ),
-      child: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(
-            16, 16, 16, 80), // 하단 패딩을 80으로 증가 (FAB 공간 확보)
-        shrinkWrap: true,
-        itemCount: recipes.length,
-        itemBuilder: (context, index) {
-          final recipe = recipes[index];
-          final isSelected = _selectedRecipes.contains(recipe.id);
-
-          final recipeInfo = _calculateRecipeInfo(recipe);
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: RecipeCard(
-              name: recipe.name,
-              description: recipe.description,
-              totalCost: recipe.totalCost,
-              ingredientCount: recipeInfo['ingredientCount'],
-              totalWeight: recipeInfo['totalWeight'],
-              weightUnit: recipeInfo['weightUnit'],
-              isSelected: isSelected,
-              recipe: recipe, // 실제 Recipe 객체 전달
-              locale: currentLocale, // 로컬화 지원
-              onTap: () => _editRecipe(recipe),
-              onEdit: () => _editRecipe(recipe),
-              onDelete: () => _deleteRecipe(recipe),
-              onLongPress: () => _toggleRecipeSelection(recipe.id),
-              onAiAnalysis: () => _startAiAnalysis(recipe), // AI 분석 콜백 추가
-              onViewQuick: () => _viewRecipeQuick(recipe), // 레시피 바로보기 콜백 추가
-              onPriceChart: () => _showPriceChart(recipe), // 가격 차트 콜백 추가
-              onShare: () => _shareRecipe(recipe), // 공유 콜백 추가
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildFloatingActionButton() {
-    final currentLocale = context.watch<LocaleCubit>().state;
-    if (_isSelectionMode) {
-      return FloatingActionButton(
-        heroTag: 'recipe_delete_button',
-        onPressed: _deleteSelectedRecipes,
-        backgroundColor: Theme.of(context).colorScheme.error,
-        foregroundColor: Theme.of(context).colorScheme.onError,
-        child: const Icon(Icons.delete),
-      );
-    }
-
-    return FloatingActionButton.extended(
-      heroTag: 'recipe_add_button',
-      onPressed: _addRecipe,
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-      foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
-      label: Text(
-        AppStrings.getAddRecipeButton(currentLocale),
-        style: AppTextStyles.buttonMedium,
-      ),
-    );
-  }
-
-  void _applyFilter(String filter, AppLocale locale) {
-    final allText = AppStrings.getAll(locale);
-    if (filter == allText) {
-      context.read<RecipeCubit>().loadRecipes();
-    } else {
-      // 기본 태그 목록에서 이름으로 id 찾기 후 Cubit에 위임
-      final tag = DefaultTags.recipeTagsFor(locale).firstWhere(
-        (t) => t.name == filter,
-        orElse: () => Tag(
-          id: '',
-          name: '',
-          color: '#000000',
-          type: TagType.recipe,
-          createdAt: DateTime.now(),
-        ),
-      );
-      if (tag.id.isNotEmpty) {
-        context.read<RecipeCubit>().filterRecipesByTag(tag.id);
-      }
-    }
-  }
-
-  void _toggleSelectionMode() {
-    setState(() {
-      _isSelectionMode = !_isSelectionMode;
-      if (!_isSelectionMode) {
-        _selectedRecipes.clear();
-      }
-    });
-  }
-
-  void _cancelSelection() {
-    setState(() {
-      _isSelectionMode = false;
-      _selectedRecipes.clear();
-    });
-  }
-
-  void _toggleRecipeSelection(String recipeId) {
-    setState(() {
-      if (_selectedRecipes.contains(recipeId)) {
-        _selectedRecipes.remove(recipeId);
-      } else {
-        _selectedRecipes.add(recipeId);
-      }
-    });
-  }
-
-  void _addRecipe() {
-    context.push('/recipe/create');
-  }
-
-  void _editRecipe(Recipe recipe) {
-    context.push('/recipe/edit', extra: recipe);
-  }
-
-  // ignore: unused_element
-  void _viewRecipe(Recipe recipe) {
-    context.push('/recipe/detail', extra: recipe);
-  }
-
-  void _deleteRecipe(Recipe recipe) {
-    final currentLocale = context.read<LocaleCubit>().state;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppStrings.getDeleteRecipe(currentLocale)),
-        content: Text(
-          '${recipe.name} ${AppStrings.getDeleteRecipeConfirm(currentLocale)}',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppStrings.getCancel(currentLocale)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              try {
-                await context.read<RecipeCubit>().deleteRecipe(recipe.id);
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        AppStrings.getDeleteError(currentLocale, e.toString()),
-                      ),
-                      backgroundColor: Theme.of(context).colorScheme.error,
-                    ),
-                  );
-                }
-              }
-            },
-            child: Text(
-              AppStrings.getDelete(currentLocale),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _deleteSelectedRecipes() {
-    final currentLocale = context.read<LocaleCubit>().state;
-    if (_selectedRecipes.isEmpty) return;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppStrings.getDeleteSelectedRecipes(currentLocale)),
-        content: Text(
-          AppStrings.getDeleteSelectedRecipesConfirm(
-            currentLocale,
-            _selectedRecipes.length,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppStrings.getCancel(currentLocale)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              try {
-                for (final recipeId in _selectedRecipes) {
-                  await context.read<RecipeCubit>().deleteRecipe(recipeId);
-                }
-                _cancelSelection();
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        AppStrings.getDeleteError(currentLocale, e.toString()),
-                      ),
-                      backgroundColor: Theme.of(context).colorScheme.error,
-                    ),
-                  );
-                }
-              }
-            },
-            child: Text(
-              AppStrings.getDelete(currentLocale),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 삭제 예정 함수 제거 (미사용)
-
-  /// AI 분석 시작
-  void _startAiAnalysis(Recipe recipe) {
-    // AI 판매 분석 페이지로 이동 (RouterHelper 사용)
-    RouterHelper.goToAiSalesAnalysis(context, recipe);
-  }
-
-  /// 레시피 바로보기
-  void _viewRecipeQuick(Recipe recipe) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final bottomPadding = MediaQuery.of(ctx).viewInsets.bottom;
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.only(bottom: bottomPadding),
-            child: FractionallySizedBox(
-              heightFactor: 0.9,
-              child: RecipeQuickViewContent(
-                recipe: recipe,
-                locale: context.read<LocaleCubit>().state,
-                onClose: () => Navigator.of(ctx).pop(),
-                isBottomSheet: true,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// 가격 차트 표시
-  void _showPriceChart(Recipe recipe) {
-    final currentLocale = context.read<LocaleCubit>().state;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return SafeArea(
-          child: FractionallySizedBox(
-            heightFactor: 0.85,
-            child: RecipePriceChartBottomSheet(
-              recipeId: recipe.id,
-              recipeName: recipe.name,
-              currentPrice: recipe.totalCost,
-              locale: currentLocale,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// 레시피 공유
-  void _shareRecipe(Recipe recipe) async {
-    final currentLocale = context.read<LocaleCubit>().state;
-    final buffer = StringBuffer();
-
-    buffer.writeln(recipe.name);
-    if (recipe.description.isNotEmpty) {
-      buffer.writeln(recipe.description);
-    }
-    buffer.writeln('--- ${AppStrings.getIngredients(currentLocale)} ---');
-
-    // 재료 정보 추가
-    final ingredientRepo = IngredientRepository();
-    for (final ingredient in recipe.ingredients) {
-      try {
-        final ing =
-            await ingredientRepo.getIngredientById(ingredient.ingredientId);
-        final name = ing?.name ?? ingredient.ingredientId;
-        buffer.writeln('- $name: ${ingredient.amount} ${ingredient.unitId}');
-      } catch (e) {
-        buffer.writeln(
-            '- ${ingredient.ingredientId}: ${ingredient.amount} ${ingredient.unitId}');
-      }
-    }
-
-    // 클립보드에 복사
-    await Clipboard.setData(ClipboardData(text: buffer.toString()));
-
-    // 스낵 메시지 표시
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppStrings.getCopied(currentLocale)),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
   }
 }

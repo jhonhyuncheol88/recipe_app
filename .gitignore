@@ -43,6 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+android/.kotlin/
+
+# Xcode local build cache (should not be in VCS)
+ios/build/
 
 # Keystore files
 *.jks

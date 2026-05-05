@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_text_styles.dart';
+import '../../theme/tokens/tokens.dart';
 
 /// 앱에서 사용하는 공통 ListTile 위젯
 class AppListTile extends StatelessWidget {
@@ -289,6 +290,11 @@ class SettingsListTile extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showChevron;
 
+  /// 아이콘 톤 — 미지정 시 primary. negative 등 시맨틱 컬러 주입 시
+  /// 배경(soft) 도 자동 매칭된다.
+  final Color? iconColor;
+  final Color? iconBackgroundColor;
+
   const SettingsListTile({
     super.key,
     required this.title,
@@ -297,11 +303,15 @@ class SettingsListTile extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.showChevron = true,
+    this.iconColor,
+    this.iconBackgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = AppColorTokens.of(context);
+    final fg = iconColor ?? tokens.primary;
+    final bg = iconBackgroundColor ?? tokens.primarySoft;
     return AppListTile(
       title: title,
       subtitle: subtitle,
@@ -309,15 +319,14 @@ class SettingsListTile extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: colorScheme.primary.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          color: bg,
+          borderRadius: AppRadius.brR8,
         ),
-        child: Icon(icon, color: colorScheme.primary, size: 20),
+        child: Icon(icon, color: fg, size: 20),
       ),
       trailing: trailing ??
           (showChevron
-              ? Icon(Icons.chevron_right,
-                  color: colorScheme.onSurface.withOpacity(0.3))
+              ? Icon(Icons.chevron_right, color: tokens.fgTertiary)
               : null),
       onTap: onTap,
     );

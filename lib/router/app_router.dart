@@ -10,12 +10,15 @@ import '../controller/ingredient/ingredient_cubit.dart';
 import '../screen/pages/ingredient/ingredient_main_page.dart';
 import '../screen/pages/ingredient/ingredient_add_page.dart';
 import '../screen/pages/ingredient/ingredient_bulk_add_page.dart';
+import '../screen/pages/ingredient/ingredient_detail_page.dart';
 import '../screen/pages/ingredient/ingredient_edit_page.dart';
 import '../screen/pages/recipe/recipe_main_page.dart';
 import '../screen/pages/recipe/recipe_add_page.dart';
+import '../screen/pages/recipe/recipe_detail_page.dart';
 import '../screen/pages/recipe/recipe_edit_page.dart';
 import '../screen/pages/recipe/recipe_ingredient_select_page.dart';
 import '../screen/pages/sauce/sauce_main_page.dart';
+import '../screen/pages/sauce/sauce_create_page.dart';
 import '../screen/pages/sauce/sauce_edit_page.dart';
 import '../screen/pages/sauce/sauce_ingredient_select_page.dart';
 import '../model/index.dart';
@@ -33,6 +36,9 @@ import '../screen/pages/encyclopedia/encyclopedia_main_page.dart';
 import '../screen/pages/encyclopedia/encyclopedia_recipe_detail_page.dart';
 import '../presentation/pages/batch_edit/batch_edit_page.dart';
 import '../screen/pages/settings/recipe_tag_management_page.dart';
+import '../screen/pages/report/report_page.dart';
+import '../screen/pages/premium/premium_page.dart';
+import '../controller/report/report_cubit.dart';
 
 import '../util/app_locale.dart';
 
@@ -58,10 +64,12 @@ class AppRouter {
   static const String recipeEdit = '/recipe/edit';
   static const String ingredientDetail = '/ingredient/detail';
   static const String recipeDetail = '/recipe/detail';
+  static const String report = '/report';
   static const String scanReceipt = '/scan-receipt';
   static const String ocr = '/ocr';
   static const String ocrResult = '/ocr/result';
   static const String sauces = '/sauces';
+  static const String sauceCreate = '/sauce/create';
   static const String sauceEdit = '/sauce/edit';
   static const String sauceIngredientSelect = '/sauce/ingredient-select';
   static const String login = '/login';
@@ -71,6 +79,7 @@ class AppRouter {
   static const String recipeTagManagement = '/settings/recipe-tags';
   static const String encyclopedia = '/encyclopedia';
   static const String encyclopediaRecipeDetail = '/encyclopedia/recipe/:number';
+  static const String premium = '/premium';
 
   /// GoRouter 인스턴스 생성
   static GoRouter get router => GoRouter(
@@ -163,6 +172,16 @@ class AppRouter {
             },
           ),
           GoRoute(
+            path: ingredientDetail,
+            builder: (context, state) {
+              final ingredient = state.extra as Ingredient?;
+              if (ingredient == null) {
+                return const IngredientMainPage();
+              }
+              return IngredientDetailPage(ingredient: ingredient);
+            },
+          ),
+          GoRoute(
             path: ingredientBatchEdit,
             builder: (context, state) => const BatchEditPage(),
           ),
@@ -175,6 +194,10 @@ class AppRouter {
           // 소스 관련 라우트
           GoRoute(
               path: sauces, builder: (context, state) => const SauceMainPage()),
+          GoRoute(
+            path: sauceCreate,
+            builder: (context, state) => const SauceCreatePage(),
+          ),
           GoRoute(
             path: sauceEdit,
             builder: (context, state) {
@@ -221,6 +244,16 @@ class AppRouter {
             builder: (context, state) {
               final recipe = state.extra as Recipe?;
               return RecipeEditPage(recipe: recipe!);
+            },
+          ),
+          GoRoute(
+            path: recipeDetail,
+            builder: (context, state) {
+              final recipe = state.extra as Recipe?;
+              if (recipe == null) {
+                return const RecipeMainPage();
+              }
+              return RecipeDetailPage(recipe: recipe);
             },
           ),
 
@@ -274,13 +307,31 @@ class AppRouter {
             builder: (context, state) => const RecipeTagManagementPage(),
           ),
 
-          // 로그인 페이지
-          GoRoute(path: login, builder: (context, state) => LoginScreen()),
+          // 로그인 페이지 — extra 로 returnTo 경로를 전달하면 로그인 성공 후 그 경로로 이동
+          GoRoute(
+            path: login,
+            builder: (context, state) {
+              final extra = state.extra;
+              String? returnTo;
+              if (extra is String) {
+                returnTo = extra;
+              } else if (extra is Map && extra['returnTo'] is String) {
+                returnTo = extra['returnTo'] as String;
+              }
+              return LoginScreen(returnTo: returnTo);
+            },
+          ),
 
           // 계정 정보 페이지
           GoRoute(
             path: accountInfo,
             builder: (context, state) => const AccountInfoPage(),
+          ),
+
+          // 광고 제거 결제 페이지 (RevenueCat)
+          GoRoute(
+            path: premium,
+            builder: (context, state) => const PremiumPage(),
           ),
 
           // AI 페이지 (탭바 페이지)
@@ -414,6 +465,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     const IngredientMainPage(),
     const RecipeMainPage(),
+    const ReportPage(),
     const SettingsPage(),
   ];
 
@@ -442,6 +494,9 @@ class _HomePageState extends State<HomePage> {
                   } else if (index == 0) {
                     // 재료 탭
                     context.read<IngredientCubit>().loadIngredients();
+                  } else if (index == 2) {
+                    // 리포트 탭
+                    context.read<ReportCubit>().refresh();
                   }
                 },
                 type: BottomNavigationBarType.fixed,
@@ -457,6 +512,10 @@ class _HomePageState extends State<HomePage> {
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.restaurant_menu),
                     label: AppStrings.getRecipes(currentLocale),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.bar_chart),
+                    label: AppStrings.getReport(currentLocale),
                   ),
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.settings),

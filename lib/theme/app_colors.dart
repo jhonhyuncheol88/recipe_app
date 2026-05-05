@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import '../controller/setting/theme_cubit.dart';
 
-/// Semantic Color Palette
+/// Legacy color constants — 위젯에서 직접 참조하는 정적 색.
+///
+/// 신규 작업은 `Theme.of(context).colorScheme` 또는
+/// `lib/theme/tokens/app_color_tokens.dart` 의 `AppColorTokens.of(context)` 를 사용한다.
+/// 이 클래스는 점진적으로 제거될 예정이다.
 class AppColors {
   // --- Static Defaults (파스텔 톤) ---
   static const Color primary = Color(0xFF9CA8E0);
@@ -36,113 +39,4 @@ class AppColors {
   static const Color dividerLight = Color(0xFFF8F5F2);
   static const Color aiRecipeCard = Color(0xFFFFFFFF);
   static const Color aiRecipeHeader = Color(0xFFF8F5F2);
-
-  // --- Dynamic Theme Logic ---
-
-  static ColorScheme getColorScheme(ThemeType type, Brightness brightness) {
-    if (brightness == Brightness.dark) {
-      return _getDarkColorScheme(type);
-    }
-    return _getLightColorScheme(type);
-  }
-
-  static ColorScheme _getLightColorScheme(ThemeType type) {
-    switch (type) {
-      case ThemeType.wonkkaSignature:
-        return const ColorScheme.light(
-          primary: Color(0xFF9CA8E0), // 소프트 퍼플블루
-          onPrimary: Color(0xFF1A1A1A),
-          secondary: Color(0xFFE8B4B8), // 듀스티 로즈
-          onSecondary: Color(0xFF4A4541),
-          surface: Color(0xFFFFF9F5), // 크림 화이트
-          onSurface: Color(0xFF4A4541), // 웜 그레이
-          error: Color(0xFFE8A5A5),
-          onError: Color(0xFF1A1A1A),
-        );
-      case ThemeType.minimalistMono:
-        return const ColorScheme.light(
-          primary: Color(0xFF7D7D7D),
-          onPrimary: Colors.white,
-          secondary: Color(0xFFB8B8B8),
-          onSecondary: Color(0xFF3D3D3D),
-          surface: Color(0xFFFAFAF8),
-          onSurface: Color(0xFF3D3D3D),
-          error: Color(0xFFE8A5A5),
-          onError: Color(0xFF1A1A1A),
-        );
-      case ThemeType.natureGreen:
-        return const ColorScheme.light(
-          primary: Color(0xFF8FBC8F), // 다크 시에라
-          onPrimary: Color(0xFF1A1A1A),
-          secondary: Color(0xFFC5E1C5), // 라이트 세이지
-          onSecondary: Color(0xFF3D4A3D),
-          surface: Color(0xFFF5FAF5),
-          onSurface: Color(0xFF3D4A3D),
-          error: Color(0xFFE8A5A5),
-          onError: Color(0xFF1A1A1A),
-        );
-      case ThemeType.oceanBlue:
-        return const ColorScheme.light(
-          primary: Color(0xFF87CEEB), // 스카이 블루
-          onPrimary: Color(0xFF1A1A1A),
-          secondary: Color(0xFFB5D8EB), // 파우더 블루
-          onSecondary: Color(0xFF3D4A52),
-          surface: Color(0xFFF5FAFC),
-          onSurface: Color(0xFF3D4A52),
-          error: Color(0xFFE8A5A5),
-          onError: Color(0xFF1A1A1A),
-        );
-    }
-  }
-
-  static ColorScheme _getDarkColorScheme(ThemeType type) {
-    const darkOnSurface = Color(0xFFF5F5F0);
-
-    switch (type) {
-      case ThemeType.wonkkaSignature:
-        return const ColorScheme.dark(
-          primary: Color(0xFFB5C4F0),
-          onPrimary: Color(0xFF1A1A1A),
-          secondary: Color(0xFFE8B4B8),
-          onSecondary: Color(0xFF1A1A1A),
-          surface: Color(0xFF1E1C24),
-          onSurface: darkOnSurface,
-          error: Color(0xFFE8A5A5),
-          onError: Color(0xFF1A1A1A),
-        );
-      case ThemeType.minimalistMono:
-        return const ColorScheme.dark(
-          primary: Color(0xFFE0E0E0),
-          onPrimary: Color(0xFF1A1A1A),
-          secondary: Color(0xFFBDBDBD),
-          onSecondary: Color(0xFF1A1A1A),
-          surface: Color(0xFF1A1A1A),
-          onSurface: darkOnSurface,
-          error: Color(0xFFE8A5A5),
-          onError: Color(0xFF1A1A1A),
-        );
-      case ThemeType.natureGreen:
-        return const ColorScheme.dark(
-          primary: Color(0xFFA8D5BA),
-          onPrimary: Color(0xFF1A1A1A),
-          secondary: Color(0xFFB5D8C5),
-          onSecondary: Color(0xFF1A1A1A),
-          surface: Color(0xFF1A221C),
-          onSurface: darkOnSurface,
-          error: Color(0xFFE8A5A5),
-          onError: Color(0xFF1A1A1A),
-        );
-      case ThemeType.oceanBlue:
-        return const ColorScheme.dark(
-          primary: Color(0xFFA5C9EB),
-          onPrimary: Color(0xFF1A1A1A),
-          secondary: Color(0xFFB5D8EB),
-          onSecondary: Color(0xFF1A1A1A),
-          surface: Color(0xFF1A1E24),
-          onSurface: darkOnSurface,
-          error: Color(0xFFE8A5A5),
-          onError: Color(0xFF1A1A1A),
-        );
-    }
-  }
 }

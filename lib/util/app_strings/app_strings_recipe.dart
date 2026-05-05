@@ -13,7 +13,7 @@ mixin AppStringsRecipe {
         return '添加食谱';
       case AppLocale.usa:
         return 'Add Recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Add Recipe';
       case AppLocale.vietnam:
         return 'Thêm công thức';
@@ -30,7 +30,7 @@ mixin AppStringsRecipe {
         return '添加食谱';
       case AppLocale.usa:
         return 'Add Recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Add Recipe';
       case AppLocale.vietnam:
         return 'Thêm công thức';
@@ -47,7 +47,7 @@ mixin AppStringsRecipe {
         return '食谱名称';
       case AppLocale.usa:
         return 'Recipe Name';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe Name';
       case AppLocale.vietnam:
         return 'Tên công thức';
@@ -64,7 +64,7 @@ mixin AppStringsRecipe {
         return '找不到食谱信息';
       case AppLocale.usa:
         return 'Recipe information not found';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe information not found';
       case AppLocale.vietnam:
         return 'Không tìm thấy thông tin công thức';
@@ -81,7 +81,7 @@ mixin AppStringsRecipe {
         return '无食谱名称';
       case AppLocale.usa:
         return 'No Recipe Name';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'No Recipe Name';
       case AppLocale.vietnam:
         return 'Không có tên công thức';
@@ -98,7 +98,7 @@ mixin AppStringsRecipe {
         return '总成本';
       case AppLocale.usa:
         return 'Total Cost';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Total Cost';
       case AppLocale.vietnam:
         return 'Tổng chi phí';
@@ -116,7 +116,7 @@ mixin AppStringsRecipe {
         return '搜索食谱';
       case AppLocale.usa:
         return 'Search Recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Search Recipe';
       case AppLocale.vietnam:
         return 'Tìm kiếm công thức';
@@ -134,7 +134,7 @@ mixin AppStringsRecipe {
         return '删除食谱';
       case AppLocale.usa:
         return 'Delete Recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Delete Recipe';
       case AppLocale.vietnam:
         return 'Xóa công thức';
@@ -151,7 +151,7 @@ mixin AppStringsRecipe {
         return '将被删除吗？';
       case AppLocale.usa:
         return 'will be deleted?';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'will be deleted?';
       case AppLocale.vietnam:
         return 'sẽ bị xóa?';
@@ -168,7 +168,7 @@ mixin AppStringsRecipe {
         return '删除选中的食谱';
       case AppLocale.usa:
         return 'Delete Selected Recipes';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Delete Selected Recipes';
       case AppLocale.vietnam:
         return 'Xóa công thức đã chọn';
@@ -186,7 +186,7 @@ mixin AppStringsRecipe {
         return '基本信息';
       case AppLocale.usa:
         return 'Basic Information';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Basic Information';
       case AppLocale.vietnam:
         return 'Thông tin cơ bản';
@@ -203,7 +203,7 @@ mixin AppStringsRecipe {
         return '请输入食谱名称';
       case AppLocale.usa:
         return 'Enter recipe name';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Enter recipe name';
       case AppLocale.vietnam:
         return 'Nhập tên công thức';
@@ -220,7 +220,7 @@ mixin AppStringsRecipe {
         return '请输入食谱名称';
       case AppLocale.usa:
         return 'Recipe name is required';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe name is required';
       case AppLocale.vietnam:
         return 'Tên công thức là bắt buộc';
@@ -237,7 +237,7 @@ mixin AppStringsRecipe {
         return '食谱说明';
       case AppLocale.usa:
         return 'Recipe Description';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe Description';
       case AppLocale.vietnam:
         return 'Mô tả công thức';
@@ -254,7 +254,7 @@ mixin AppStringsRecipe {
         return '请输入食谱说明';
       case AppLocale.usa:
         return 'Enter recipe description';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Enter recipe description';
       case AppLocale.vietnam:
         return 'Nhập mô tả công thức';
@@ -271,7 +271,7 @@ mixin AppStringsRecipe {
         return '产量';
       case AppLocale.usa:
         return 'Output Amount';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Output Amount';
       case AppLocale.vietnam:
         return 'Số lượng đầu ra';
@@ -288,7 +288,7 @@ mixin AppStringsRecipe {
         return '请输入产量';
       case AppLocale.usa:
         return 'Enter output amount';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Enter output amount';
       case AppLocale.vietnam:
         return 'Nhập số lượng đầu ra';
@@ -305,7 +305,7 @@ mixin AppStringsRecipe {
         return '请输入产量';
       case AppLocale.usa:
         return 'Output amount is required';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Output amount is required';
       case AppLocale.vietnam:
         return 'Số lượng đầu ra là bắt buộc';
@@ -322,7 +322,7 @@ mixin AppStringsRecipe {
         return '请输入正确的产量';
       case AppLocale.usa:
         return 'Enter a valid output amount';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Enter a valid output amount';
       case AppLocale.vietnam:
         return 'Nhập số lượng đầu ra hợp lệ';
@@ -339,7 +339,7 @@ mixin AppStringsRecipe {
         return '生产单位';
       case AppLocale.usa:
         return 'Output Unit';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Output Unit';
       case AppLocale.vietnam:
         return 'Đơn vị đầu ra';
@@ -356,7 +356,7 @@ mixin AppStringsRecipe {
         return '请选择生产单位';
       case AppLocale.usa:
         return 'Please select output unit';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Please select output unit';
       case AppLocale.vietnam:
         return 'Vui lòng chọn đơn vị đầu ra';
@@ -374,7 +374,7 @@ mixin AppStringsRecipe {
         return '食谱材料';
       case AppLocale.usa:
         return 'Recipe Ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe Ingredients';
       case AppLocale.vietnam:
         return 'Nguyên liệu công thức';
@@ -391,7 +391,7 @@ mixin AppStringsRecipe {
         return '没有已登记的材料。';
       case AppLocale.usa:
         return 'No ingredients registered.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'No ingredients registered.';
       case AppLocale.vietnam:
         return 'Chưa có nguyên liệu nào được đăng ký.';
@@ -408,7 +408,7 @@ mixin AppStringsRecipe {
         return '没有选中的材料';
       case AppLocale.usa:
         return 'No ingredients selected';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'No ingredients selected';
       case AppLocale.vietnam:
         return 'No đã chọn';
@@ -426,7 +426,7 @@ mixin AppStringsRecipe {
         return '食谱标签';
       case AppLocale.usa:
         return 'Recipe Tags';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe Tags';
       case AppLocale.vietnam:
         return 'Thẻ công thức';
@@ -444,7 +444,7 @@ mixin AppStringsRecipe {
         return '保存食谱';
       case AppLocale.usa:
         return 'Save Recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Save Recipe';
       case AppLocale.vietnam:
         return 'Lưu công thức';
@@ -461,7 +461,7 @@ mixin AppStringsRecipe {
         return '食谱已成功添加';
       case AppLocale.usa:
         return 'Recipe added successfully';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe added successfully';
       case AppLocale.vietnam:
         return 'Công thức đã được thêm thành công';
@@ -478,7 +478,7 @@ mixin AppStringsRecipe {
         return '添加食谱失败';
       case AppLocale.usa:
         return 'Failed to add recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Failed to add recipe';
       case AppLocale.vietnam:
         return 'Không thể thêm công thức';
@@ -495,7 +495,7 @@ mixin AppStringsRecipe {
         return '食谱已成功修改';
       case AppLocale.usa:
         return 'Recipe updated successfully';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe updated successfully';
       case AppLocale.vietnam:
         return 'Công thức đã được cập nhật thành công';
@@ -517,7 +517,7 @@ mixin AppStringsRecipe {
       case AppLocale.usa:
         base = 'Failed to update recipe';
         break;
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         base = 'Failed to update recipe';
         break;
       case AppLocale.vietnam:
@@ -538,7 +538,7 @@ mixin AppStringsRecipe {
         return '编辑食谱';
       case AppLocale.usa:
         return 'Edit Recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Edit Recipe';
       case AppLocale.vietnam:
         return 'Chỉnh sửa công thức';
@@ -556,7 +556,7 @@ mixin AppStringsRecipe {
         return '食谱';
       case AppLocale.usa:
         return 'Recipes';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipes';
       case AppLocale.vietnam:
         return 'Công thức';
@@ -573,7 +573,7 @@ mixin AppStringsRecipe {
         return '设置';
       case AppLocale.usa:
         return 'Settings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Settings';
       case AppLocale.vietnam:
         return 'Cài đặt';
@@ -591,7 +591,7 @@ mixin AppStringsRecipe {
         return '没有食谱';
       case AppLocale.usa:
         return 'No recipes';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'No recipes';
       case AppLocale.vietnam:
         return 'Không có công thức';
@@ -608,7 +608,7 @@ mixin AppStringsRecipe {
         return '创建第一个食谱吧！\n添加食材并计算成本。';
       case AppLocale.usa:
         return 'Create your first recipe!\nAdd ingredients and calculate the cost.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Create your first recipe!\nAdd ingredients and calculate the cost.';
       case AppLocale.vietnam:
         return 'Tạo công thức đầu tiên của bạn!\\nThêm nguyên liệu và tính toán chi phí.';
@@ -626,7 +626,7 @@ mixin AppStringsRecipe {
         return '韩餐';
       case AppLocale.usa:
         return 'Korean';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Korean';
       case AppLocale.vietnam:
         return 'Hàn Quốc';
@@ -643,7 +643,7 @@ mixin AppStringsRecipe {
         return '中餐';
       case AppLocale.usa:
         return 'Chinese';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Chinese';
       case AppLocale.vietnam:
         return 'Trung Quốc';
@@ -660,7 +660,7 @@ mixin AppStringsRecipe {
         return '日餐';
       case AppLocale.usa:
         return 'Japanese';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Japanese';
       case AppLocale.vietnam:
         return 'Nhật Bản';
@@ -677,7 +677,7 @@ mixin AppStringsRecipe {
         return '西餐';
       case AppLocale.usa:
         return 'Western';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Western';
       case AppLocale.vietnam:
         return 'Phương Tây';
@@ -694,7 +694,7 @@ mixin AppStringsRecipe {
         return '意大利菜';
       case AppLocale.usa:
         return 'Italian';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Italian';
       case AppLocale.vietnam:
         return 'Ý';
@@ -711,7 +711,7 @@ mixin AppStringsRecipe {
         return '墨西哥菜';
       case AppLocale.usa:
         return 'Mexican';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Mexican';
       case AppLocale.vietnam:
         return 'Mexico';
@@ -728,7 +728,7 @@ mixin AppStringsRecipe {
         return '泰国菜';
       case AppLocale.usa:
         return 'Thai';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Thai';
       case AppLocale.vietnam:
         return 'Thái Lan';
@@ -745,7 +745,7 @@ mixin AppStringsRecipe {
         return '印度菜';
       case AppLocale.usa:
         return 'Indian';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Indian';
       case AppLocale.vietnam:
         return 'Ấn Độ';
@@ -762,7 +762,7 @@ mixin AppStringsRecipe {
         return '越南菜';
       case AppLocale.usa:
         return 'Vietnamese';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Vietnamese';
       case AppLocale.vietnam:
         return 'Việt Nam';
@@ -779,7 +779,7 @@ mixin AppStringsRecipe {
         return '融合菜';
       case AppLocale.usa:
         return 'Fusion';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Fusion';
       case AppLocale.vietnam:
         return 'Kết hợp';
@@ -840,7 +840,7 @@ mixin AppStringsRecipe {
         return '已删除材料';
       case AppLocale.usa:
         return 'Ingredient deleted';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Ingredient deleted';
       case AppLocale.vietnam:
         return 'Nguyên liệu đã được xóa';
@@ -858,7 +858,7 @@ mixin AppStringsRecipe {
         return '确定要删除$count个食谱吗？';
       case AppLocale.usa:
         return 'Are you sure you want to delete $count recipes?';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Are you sure you want to delete $count recipes?';
       case AppLocale.vietnam:
         return 'Bạn có chắc chắn muốn xóa $count công thức không?';
@@ -876,7 +876,7 @@ mixin AppStringsRecipe {
         return '快速查看食谱';
       case AppLocale.usa:
         return 'View Recipe Quick';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'View Recipe Quick';
       case AppLocale.vietnam:
         return 'Xem công thức nhanh';
@@ -893,7 +893,7 @@ mixin AppStringsRecipe {
         return '食谱备注';
       case AppLocale.usa:
         return 'Recipe Memo';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe Memo';
       case AppLocale.vietnam:
         return 'Ghi chú công thức';
@@ -910,7 +910,7 @@ mixin AppStringsRecipe {
         return '材料及投入量';
       case AppLocale.usa:
         return 'Ingredients & Amounts';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Ingredients & Amounts';
       case AppLocale.vietnam:
         return 'Nguyên liệu và số lượng';
@@ -927,7 +927,7 @@ mixin AppStringsRecipe {
         return '倍数';
       case AppLocale.usa:
         return 'Multiplier';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Multiplier';
       case AppLocale.vietnam:
         return 'Hệ số nhân';
@@ -944,7 +944,7 @@ mixin AppStringsRecipe {
         return '调整倍数后材料投入量将自动计算';
       case AppLocale.usa:
         return 'Adjust multiplier to automatically calculate ingredient amounts';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Adjust multiplier to automatically calculate ingredient amounts';
       case AppLocale.vietnam:
         return 'Điều chỉnh hệ số nhân để tự động tính toán số lượng nguyên liệu';
@@ -961,7 +961,7 @@ mixin AppStringsRecipe {
         return '暂无备注';
       case AppLocale.usa:
         return 'No memo';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'No memo';
       case AppLocale.vietnam:
         return 'Không có ghi chú';
@@ -978,7 +978,7 @@ mixin AppStringsRecipe {
         return '1倍 ~ 50倍 (整数单位)';
       case AppLocale.usa:
         return '1x ~ 50x (Integer units)';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '1x ~ 50x (Ganzzahlige Einheiten)';
       case AppLocale.vietnam:
         return '1x ~ 50x (Số nguyên)';
@@ -996,7 +996,7 @@ mixin AppStringsRecipe {
         return '选择材料';
       case AppLocale.usa:
         return 'Select Ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Select Ingredients';
       case AppLocale.vietnam:
         return 'Chọn nguyên liệu';
@@ -1013,7 +1013,7 @@ mixin AppStringsRecipe {
         return '已选择的材料';
       case AppLocale.usa:
         return 'Selected Ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Selected Ingredients';
       case AppLocale.vietnam:
         return 'Nguyên liệu đã chọn';
@@ -1030,7 +1030,7 @@ mixin AppStringsRecipe {
         return '完成';
       case AppLocale.usa:
         return 'Complete';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Complete';
       case AppLocale.vietnam:
         return 'Hoàn thành';
@@ -1043,7 +1043,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return 'メニュータグ管理';
       case AppLocale.china: return '菜单标签管理';
       case AppLocale.usa:   return 'Menu Tag Management';
-      case AppLocale.euro:  return 'Menu Tag Management';
+      case AppLocale.chinaTraditional:  return 'Menu Tag Management';
       case AppLocale.vietnam: return 'Quản lý thẻ menu';
     }
   }
@@ -1054,7 +1054,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return 'レシピタグの追加・編集・並べ替え';
       case AppLocale.china: return '添加、编辑和重新排序菜谱标签';
       case AppLocale.usa:   return 'Add, edit, and reorder recipe tags';
-      case AppLocale.euro:  return 'Add, edit, and reorder recipe tags';
+      case AppLocale.chinaTraditional:  return 'Add, edit, and reorder recipe tags';
       case AppLocale.vietnam: return 'Thêm, chỉnh sửa và sắp xếp lại thẻ';
     }
   }
@@ -1065,7 +1065,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return 'タグを追加';
       case AppLocale.china: return '添加标签';
       case AppLocale.usa:   return 'Add Tag';
-      case AppLocale.euro:  return 'Add Tag';
+      case AppLocale.chinaTraditional:  return 'Add Tag';
       case AppLocale.vietnam: return 'Thêm thẻ';
     }
   }
@@ -1076,7 +1076,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return 'タグを編集';
       case AppLocale.china: return '编辑标签';
       case AppLocale.usa:   return 'Edit Tag';
-      case AppLocale.euro:  return 'Edit Tag';
+      case AppLocale.chinaTraditional:  return 'Edit Tag';
       case AppLocale.vietnam: return 'Chỉnh sửa thẻ';
     }
   }
@@ -1087,7 +1087,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return 'タグを削除';
       case AppLocale.china: return '删除标签';
       case AppLocale.usa:   return 'Delete Tag';
-      case AppLocale.euro:  return 'Delete Tag';
+      case AppLocale.chinaTraditional:  return 'Delete Tag';
       case AppLocale.vietnam: return 'Xóa thẻ';
     }
   }
@@ -1098,7 +1098,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return 'タグ "$name" を削除しますか？';
       case AppLocale.china: return '确定删除标签 "$name"？';
       case AppLocale.usa:   return 'Delete tag "$name"?';
-      case AppLocale.euro:  return 'Delete tag "$name"?';
+      case AppLocale.chinaTraditional:  return 'Delete tag "$name"?';
       case AppLocale.vietnam: return 'Xóa thẻ "$name"?';
     }
   }
@@ -1109,7 +1109,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return 'タグ名';
       case AppLocale.china: return '标签名称';
       case AppLocale.usa:   return 'Tag Name';
-      case AppLocale.euro:  return 'Tag Name';
+      case AppLocale.chinaTraditional:  return 'Tag Name';
       case AppLocale.vietnam: return 'Tên thẻ';
     }
   }
@@ -1120,7 +1120,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return '色';
       case AppLocale.china: return '颜色';
       case AppLocale.usa:   return 'Color';
-      case AppLocale.euro:  return 'Color';
+      case AppLocale.chinaTraditional:  return 'Color';
       case AppLocale.vietnam: return 'Màu sắc';
     }
   }
@@ -1131,7 +1131,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return 'タグがありません';
       case AppLocale.china: return '暂无标签';
       case AppLocale.usa:   return 'No tags yet';
-      case AppLocale.euro:  return 'No tags yet';
+      case AppLocale.chinaTraditional:  return 'No tags yet';
       case AppLocale.vietnam: return 'Chưa có thẻ nào';
     }
   }
@@ -1142,7 +1142,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return '長押しでドラッグして順序を変更できます';
       case AppLocale.china: return '长按拖动可以调整顺序';
       case AppLocale.usa:   return 'Long press and drag to reorder';
-      case AppLocale.euro:  return 'Long press and drag to reorder';
+      case AppLocale.chinaTraditional:  return 'Long press and drag to reorder';
       case AppLocale.vietnam: return 'Nhấn giữ và kéo để sắp xếp lại';
     }
   }
@@ -1153,7 +1153,7 @@ mixin AppStringsRecipe {
       case AppLocale.japan: return 'レシピ $count 件で使用中';
       case AppLocale.china: return '在 $count 个菜谱中使用';
       case AppLocale.usa:   return 'Used in $count recipe(s)';
-      case AppLocale.euro:  return 'Used in $count recipe(s)';
+      case AppLocale.chinaTraditional:  return 'Used in $count recipe(s)';
       case AppLocale.vietnam: return 'Đang dùng trong $count công thức';
     }
   }

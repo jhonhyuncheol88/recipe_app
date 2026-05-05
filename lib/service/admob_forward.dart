@@ -8,10 +8,16 @@ import '../controller/ad/ad_cubit.dart';
 
 class AdMobForwardService {
   static AdMobForwardService? _instance;
-  static AdMobForwardService get instance => _instance ??= AdMobForwardService._internal();
+  static AdMobForwardService get instance =>
+      _instance ??= AdMobForwardService._internal();
 
   late final Logger _logger;
   AdCubit? _adCubit;
+
+  /// Pro 사용자 광고 게이팅. true 반환 시 광고를 노출하지 않고 즉시 watched
+  /// 처리 — 호출처(AI 분석/백과사전/판매 분석)의 후속 콜백이 정상 진행됨.
+  /// PremiumCubit.state.isPremium 을 매번 조회하도록 callback 형태로 받는다.
+  bool Function()? _premiumGate;
 
   AdMobForwardService._internal() {
     _logger = Logger(
@@ -31,6 +37,12 @@ class AdMobForwardService {
     _logger.i('AdCubit 설정 완료');
   }
 
+  /// Premium gate callback 등록. main.dart 의 PremiumCubit 생성 직후 호출.
+  void setPremiumGate(bool Function() gate) {
+    _premiumGate = gate;
+    _logger.i('Premium gate 등록 완료');
+  }
+
   /// AdMob 초기화
   Future<void> initialize() async {
     _logger.i('AdMob 초기화 시작');
@@ -42,11 +54,11 @@ class AdMobForwardService {
       // kDebugMode를 사용해서 테스트 모드 설정 (디버그 빌드일 때만)
       if (kDebugMode) {
         _logger.d('디버그 모드: 테스트 디바이스 설정 적용');
-        
+
         // 실제 기기 ID를 환경 변수에서 가져오거나 기본값 사용
         final testDeviceIdFromEnv = dotenv.env['ADMOB_TEST_DEVICE_ID'];
         final testDeviceIds = <String>['EMULATOR'];
-        
+
         if (testDeviceIdFromEnv != null && testDeviceIdFromEnv.isNotEmpty) {
           testDeviceIds.add(testDeviceIdFromEnv);
           _logger.d('환경 변수에서 테스트 디바이스 ID 로드: $testDeviceIdFromEnv');
@@ -54,10 +66,12 @@ class AdMobForwardService {
           // 환경 변수에 없으면 로그에 안내 메시지 출력
           _logger.w('⚠️ ADMOB_TEST_DEVICE_ID가 설정되지 않았습니다.');
           _logger.w('⚠️ 실제 기기에서 테스트 광고를 보려면:');
-          _logger.w('⚠️ 1. 앱을 실행하고 로그캣에서 "To get test ads on this device" 메시지를 찾으세요');
+          _logger.w(
+            '⚠️ 1. 앱을 실행하고 로그캣에서 "To get test ads on this device" 메시지를 찾으세요',
+          );
           _logger.w('⚠️ 2. .env 파일에 ADMOB_TEST_DEVICE_ID="실제기기ID" 추가하세요');
         }
-        
+
         MobileAds.instance.updateRequestConfiguration(
           RequestConfiguration(testDeviceIds: testDeviceIds),
         );
@@ -66,8 +80,9 @@ class AdMobForwardService {
         _logger.i('릴리즈 모드로 실행 중');
       }
 
-      // 초기화 후 광고 미리 로드 시작 (백그라운드에서)
-      _preloadInterstitialAdInBackground();
+      // 전면 광고는 사용 시점(showInterstitialAd)에 lazy 로드 — 부팅 시 자동
+      // preload 하지 않는다. 호출 후 다음 광고는 _preloadInterstitialAdInBackground
+      // 가 백그라운드에서 받아둔다.
     } catch (e) {
       _logger.e('AdMob 초기화 실패: $e');
       rethrow;
@@ -91,32 +106,35 @@ class AdMobForwardService {
   /// 전면 광고 ID 가져오기 (Android/iOS)
   String getInterstitialAdUnitId() {
     _logger.d(
-        '전면 광고 ID 요청 - kDebugMode: $kDebugMode, Platform: ${Platform.operatingSystem}');
+      '전면 광고 ID 요청 - kDebugMode: $kDebugMode, Platform: ${Platform.operatingSystem}',
+    );
 
     // 환경 변수로 실제 광고 ID 강제 사용 여부 확인
     final forceProduction = dotenv.env['ADMOB_FORCE_PRODUCTION'] == 'true';
-    
+
     // 실제 광고 ID 확인
-    final envKey = Platform.isAndroid
-        ? 'ADMOB_ANDROID_FORWARD_ID'
-        : 'ADMOB_IOS_FORWARD_ID';
+    final envKey =
+        Platform.isAndroid
+            ? 'ADMOB_ANDROID_FORWARD_ID'
+            : 'ADMOB_IOS_FORWARD_ID';
     final prodId = dotenv.env[envKey];
-    
+
     // 디버그 모드에서는 테스트 광고 ID 사용 (강제 프로덕션 모드가 아닐 때만)
     // HTTP 403 에러 방지를 위해 디버그 모드에서는 기본적으로 테스트 ID 사용
     if (kDebugMode && !forceProduction) {
       _logger.w('⚠️ 디버그 모드: 테스트 광고 ID 사용');
       _logger.w('⚠️ 실제 광고 ID를 사용하려면 릴리즈 빌드로 실행하거나');
       _logger.w('⚠️ .env 파일에 ADMOB_FORCE_PRODUCTION=true 추가하세요');
-      
-      final testId = Platform.isAndroid
-          ? 'ca-app-pub-3940256099942544/1033173712' // Android 테스트 전면
-          : 'ca-app-pub-3940256099942544/4411468910'; // iOS 테스트 전면
+
+      final testId =
+          Platform.isAndroid
+              ? 'ca-app-pub-3940256099942544/1033173712' // Android 테스트 전면
+              : 'ca-app-pub-3940256099942544/4411468910'; // iOS 테스트 전면
       _logger.d('${Platform.operatingSystem} 테스트 전면 광고 ID: $testId');
       print('AdMobForwardService: 테스트 광고 ID 사용 - $testId');
       return testId;
     }
-    
+
     // 릴리즈 모드이거나 강제 프로덕션 모드에서는 실제 광고 ID 사용
     if (prodId != null && prodId.isNotEmpty) {
       _logger.i('✅ 실제 전면 광고 ID 사용: $prodId');
@@ -125,15 +143,16 @@ class AdMobForwardService {
       print('AdMobForwardService: 실제 광고 ID 사용 - $prodId');
       return prodId;
     }
-    
+
     // 실제 광고 ID가 없으면 디버그 모드에서만 테스트 ID 사용
     if (kDebugMode) {
       _logger.w('⚠️ 실제 광고 ID가 설정되지 않음 ($envKey)');
       _logger.w('⚠️ 디버그 모드이므로 테스트 광고 ID를 사용합니다');
-      
-      final testId = Platform.isAndroid
-          ? 'ca-app-pub-3940256099942544/1033173712' // Android 테스트 전면
-          : 'ca-app-pub-3940256099942544/4411468910'; // iOS 테스트 전면
+
+      final testId =
+          Platform.isAndroid
+              ? 'ca-app-pub-3940256099942544/1033173712' // Android 테스트 전면
+              : 'ca-app-pub-3940256099942544/4411468910'; // iOS 테스트 전면
       _logger.d('${Platform.operatingSystem} 테스트 전면 광고 ID: $testId');
       print('AdMobForwardService: 테스트 광고 ID 사용 - $testId');
       return testId;
@@ -146,10 +165,15 @@ class AdMobForwardService {
 
   /// 전면 광고 로드
   Future<InterstitialAd?> loadInterstitialAd() async {
+    if (_premiumGate?.call() == true) {
+      _logger.d('Premium 사용자 — 전면 광고 로드 스킵');
+      return null;
+    }
+
     _logger.i('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     _logger.i('📺 전면 광고 로드 시작');
     _logger.i('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    
+
     try {
       final completer = Completer<InterstitialAd?>();
       final adUnitId = getInterstitialAdUnitId();
@@ -158,7 +182,7 @@ class AdMobForwardService {
       _logger.i('🔍 kDebugMode: $kDebugMode');
       _logger.i('🔍 Platform: ${Platform.operatingSystem}');
       _logger.i('🔍 AdMob 초기화 상태 확인 중...');
-      
+
       // AdMob 초기화 상태 확인
       try {
         final initializationStatus = await MobileAds.instance.initialize();
@@ -167,7 +191,7 @@ class AdMobForwardService {
       } catch (e) {
         _logger.w('AdMob 초기화 상태 확인 실패: $e');
       }
-      
+
       print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       print('AdMobForwardService: 광고 로드 시도 시작');
       print('광고 단위 ID: $adUnitId');
@@ -200,7 +224,7 @@ class AdMobForwardService {
             _logger.e('에러 도메인: ${error.domain}');
             _logger.e('에러 응답 정보: ${error.responseInfo}');
             _logger.e('에러 응답 정보 toString: ${error.responseInfo?.toString()}');
-            
+
             // 에러 코드별 상세 설명
             switch (error.code) {
               case 0:
@@ -223,7 +247,7 @@ class AdMobForwardService {
               default:
                 _logger.e('에러 유형: 알 수 없는 에러 코드');
             }
-            
+
             print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             print('❌❌❌ AdMobForwardService: 전면 광고 로드 실패 ❌❌❌');
             print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -232,7 +256,7 @@ class AdMobForwardService {
             print('에러 도메인: ${error.domain}');
             print('에러 응답 정보: ${error.responseInfo}');
             print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            
+
             if (!completer.isCompleted) {
               completer.complete(null);
             }
@@ -279,6 +303,14 @@ class AdMobForwardService {
   /// 전면 광고 표시 (미리 로드된 광고 우선 사용)
   Future<bool> showInterstitialAd() async {
     _logger.d('전면 광고 표시 요청');
+
+    // Pro 사용자: 광고 스킵 + 후속 콜백(AI 분석 등) 정상 진행되도록 watched 처리
+    if (_premiumGate?.call() == true) {
+      _logger.i('🎟️ Premium 사용자 — 광고 스킵');
+      _adCubit?.adWatched();
+      return true;
+    }
+
     print('AdMobForwardService: 전면 광고 표시 요청');
     _adCubit?.startAdLoading();
 
@@ -291,7 +323,7 @@ class AdMobForwardService {
         print('AdMobForwardService: 미리 로드된 광고 사용');
         interstitialAd = _preloadedInterstitialAd;
         _preloadedInterstitialAd = null; // 사용 후 제거하여 중복 사용 방지
-        
+
         // 미리 로드된 광고를 사용하는 동안 다음 광고를 백그라운드에서 미리 로드
         _preloadInterstitialAdInBackground();
       } else {
@@ -299,7 +331,7 @@ class AdMobForwardService {
         _logger.i('⚠️ 미리 로드된 광고 없음, 새로 로드 시작');
         print('AdMobForwardService: 미리 로드된 광고 없음, 새로 로드 시작');
         interstitialAd = await loadInterstitialAd();
-        
+
         // 광고 로드 후 다음 광고를 백그라운드에서 미리 로드
         _preloadInterstitialAdInBackground();
       }
@@ -404,6 +436,11 @@ class AdMobForwardService {
 
   /// 백그라운드에서 전면 광고 미리 로드 (에러 무시)
   void _preloadInterstitialAdInBackground() {
+    if (_premiumGate?.call() == true) {
+      _logger.d('Premium 사용자 — 전면 광고 미리 로드 스킵');
+      return;
+    }
+
     // 이미 로드 중이거나 이미 로드된 광고가 있으면 스킵
     if (_isPreloading || _preloadedInterstitialAd != null) {
       _logger.d('광고 미리 로드 스킵 (이미 로드 중이거나 로드 완료)');
@@ -412,7 +449,7 @@ class AdMobForwardService {
 
     _isPreloading = true;
     _logger.d('📥 백그라운드에서 전면 광고 미리 로드 시작');
-    
+
     // 비동기로 실행하되 에러는 무시
     Future(() async {
       try {
@@ -435,6 +472,11 @@ class AdMobForwardService {
 
   /// 전면 광고 미리 로드 (수동 호출용)
   Future<void> preloadInterstitialAd() async {
+    if (_premiumGate?.call() == true) {
+      _logger.d('Premium 사용자 — 전면 광고 사전 로드 스킵');
+      return;
+    }
+
     if (_isPreloading || _preloadedInterstitialAd != null) {
       _logger.d('광고 미리 로드 스킵 (이미 로드 중이거나 로드 완료)');
       return;
@@ -464,4 +506,3 @@ class AdMobForwardService {
     return await showInterstitialAd();
   }
 }
-

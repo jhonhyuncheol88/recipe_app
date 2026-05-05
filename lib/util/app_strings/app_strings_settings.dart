@@ -13,7 +13,7 @@ mixin AppStringsSettings {
         return '通知设置';
       case AppLocale.usa:
         return 'Notification Settings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Notification Settings';
       case AppLocale.vietnam:
         return 'Cài đặt thông báo';
@@ -30,7 +30,7 @@ mixin AppStringsSettings {
         return '启用通知';
       case AppLocale.usa:
         return 'Enable Notifications';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Enable Notifications';
       case AppLocale.vietnam:
         return 'Bật thông báo';
@@ -47,7 +47,7 @@ mixin AppStringsSettings {
         return '开启或关闭所有通知';
       case AppLocale.usa:
         return 'Turn all notifications on or off';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Turn all notifications on or off';
       case AppLocale.vietnam:
         return 'Bật hoặc tắt tất cả thông báo';
@@ -64,7 +64,7 @@ mixin AppStringsSettings {
         return '保质期警告通知';
       case AppLocale.usa:
         return 'Expiry Warning Notification';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Expiry Warning Notification';
       case AppLocale.vietnam:
         return 'Thông báo cảnh báo hết hạn';
@@ -81,7 +81,7 @@ mixin AppStringsSettings {
         return '保质期前3天通知';
       case AppLocale.usa:
         return 'Notification 3 days before expiry';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Notification 3 days before expiry';
       case AppLocale.vietnam:
         return 'Thông báo 3 ngày trước khi hết hạn';
@@ -98,7 +98,7 @@ mixin AppStringsSettings {
         return '保质期危险通知';
       case AppLocale.usa:
         return 'Expiry Danger Notification';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Expiry Danger Notification';
       case AppLocale.vietnam:
         return 'Thông báo nguy hiểm hết hạn';
@@ -115,7 +115,7 @@ mixin AppStringsSettings {
         return '保质期前1天通知';
       case AppLocale.usa:
         return 'Notification 1 day before expiry';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Notification 1 day before expiry';
       case AppLocale.vietnam:
         return 'Thông báo 1 ngày trước khi hết hạn';
@@ -132,7 +132,7 @@ mixin AppStringsSettings {
         return '保质期过期通知';
       case AppLocale.usa:
         return 'Expiry Expired Notification';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Expiry Expired Notification';
       case AppLocale.vietnam:
         return 'Thông báo đã hết hạn';
@@ -149,7 +149,7 @@ mixin AppStringsSettings {
         return '保质期当天通知';
       case AppLocale.usa:
         return 'Notification on expiry date';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Notification on expiry date';
       case AppLocale.vietnam:
         return 'Thông báo vào ngày hết hạn';
@@ -167,10 +167,44 @@ mixin AppStringsSettings {
         return '应用设置';
       case AppLocale.usa:
         return 'App Settings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'App Settings';
       case AppLocale.vietnam:
         return 'Cài đặt ứng dụng';
+    }
+  }
+
+  static String getDataManagement(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '데이터 관리';
+      case AppLocale.japan:
+        return 'データ管理';
+      case AppLocale.china:
+        return '数据管理';
+      case AppLocale.usa:
+        return 'Data Management';
+      case AppLocale.chinaTraditional:
+        return 'Data Management';
+      case AppLocale.vietnam:
+        return 'Quản lý dữ liệu';
+    }
+  }
+
+  static String getOtherSettings(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '기타';
+      case AppLocale.japan:
+        return 'その他';
+      case AppLocale.china:
+        return '其他';
+      case AppLocale.usa:
+        return 'Other';
+      case AppLocale.chinaTraditional:
+        return 'Other';
+      case AppLocale.vietnam:
+        return 'Khác';
     }
   }
 
@@ -184,7 +218,7 @@ mixin AppStringsSettings {
         return '语言设置';
       case AppLocale.usa:
         return 'Language Settings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Language Settings';
       case AppLocale.vietnam:
         return 'Cài đặt ngôn ngữ';
@@ -201,7 +235,7 @@ mixin AppStringsSettings {
         return '导出数据';
       case AppLocale.usa:
         return 'Export Data';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Export Data';
       case AppLocale.vietnam:
         return 'Xuất dữ liệu';
@@ -218,7 +252,7 @@ mixin AppStringsSettings {
         return '备份材料和食谱数据';
       case AppLocale.usa:
         return 'Backup ingredient and recipe data';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Backup ingredient and recipe data';
       case AppLocale.vietnam:
         return 'Sao lưu dữ liệu nguyên liệu và công thức';
@@ -235,7 +269,7 @@ mixin AppStringsSettings {
         return '导入数据';
       case AppLocale.usa:
         return 'Import Data';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Import Data';
       case AppLocale.vietnam:
         return 'Nhập dữ liệu';
@@ -252,7 +286,7 @@ mixin AppStringsSettings {
         return '恢复备份数据';
       case AppLocale.usa:
         return 'Restore backed up data';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Restore backed up data';
       case AppLocale.vietnam:
         return 'Khôi phục dữ liệu đã sao lưu';
@@ -269,7 +303,7 @@ mixin AppStringsSettings {
         return '数据重置';
       case AppLocale.usa:
         return 'Reset Data';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Reset Data';
       case AppLocale.vietnam:
         return 'Đặt lại dữ liệu';
@@ -286,7 +320,7 @@ mixin AppStringsSettings {
         return '删除所有数据';
       case AppLocale.usa:
         return 'Delete all data';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Delete all data';
       case AppLocale.vietnam:
         return 'Xóa tất cả dữ liệu';
@@ -304,7 +338,7 @@ mixin AppStringsSettings {
         return '保存到设备';
       case AppLocale.usa:
         return 'Save to Device';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Save to Device';
       case AppLocale.vietnam:
         return 'Lưu vào thiết bị';
@@ -321,7 +355,7 @@ mixin AppStringsSettings {
         return '分享';
       case AppLocale.usa:
         return 'Share';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Share';
       case AppLocale.vietnam:
         return 'Chia sẻ';
@@ -338,7 +372,7 @@ mixin AppStringsSettings {
         return '导出完成';
       case AppLocale.usa:
         return 'Export Complete';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Export Complete';
       case AppLocale.vietnam:
         return 'Xuất hoàn tất';
@@ -355,7 +389,7 @@ mixin AppStringsSettings {
         return '导出完成：已保存到$location';
       case AppLocale.usa:
         return 'Export complete: Saved to $location';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Export complete: Saved to $location';
       case AppLocale.vietnam:
         return 'Xuất hoàn tất: Đã lưu vào $location';
@@ -372,7 +406,7 @@ mixin AppStringsSettings {
         return '导出失败';
       case AppLocale.usa:
         return 'Export Failed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Export Failed';
       case AppLocale.vietnam:
         return 'Xuất thất bại';
@@ -389,7 +423,7 @@ mixin AppStringsSettings {
         return '导出失败：$error';
       case AppLocale.usa:
         return 'Export failed: $error';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Export failed: $error';
       case AppLocale.vietnam:
         return 'Xuất thất bại: $error';
@@ -406,7 +440,7 @@ mixin AppStringsSettings {
         return '分享失败';
       case AppLocale.usa:
         return 'Share Failed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Share Failed';
       case AppLocale.vietnam:
         return 'Chia sẻ thất bại';
@@ -423,7 +457,7 @@ mixin AppStringsSettings {
         return '分享失败：$error';
       case AppLocale.usa:
         return 'Share failed: $error';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Share failed: $error';
       case AppLocale.vietnam:
         return 'Chia sẻ thất bại: $error';
@@ -440,7 +474,7 @@ mixin AppStringsSettings {
         return '数量';
       case AppLocale.usa:
         return 'Quantity';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Quantity';
       case AppLocale.vietnam:
         return 'Số lượng';
@@ -457,7 +491,7 @@ mixin AppStringsSettings {
         return '食谱应用数据库导出';
       case AppLocale.usa:
         return 'Recipe App Database Export';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe App Database Export';
       case AppLocale.vietnam:
         return 'Xuất cơ sở dữ liệu ứng dụng công thức';
@@ -474,7 +508,7 @@ mixin AppStringsSettings {
         return '导入失败';
       case AppLocale.usa:
         return 'Import Failed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Import Failed';
       case AppLocale.vietnam:
         return 'Nhập thất bại';
@@ -491,7 +525,7 @@ mixin AppStringsSettings {
         return '导入失败：$error';
       case AppLocale.usa:
         return 'Import failed: $error';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Import failed: $error';
       case AppLocale.vietnam:
         return 'Nhập thất bại: $error';
@@ -508,7 +542,7 @@ mixin AppStringsSettings {
         return '数据导入完成';
       case AppLocale.usa:
         return 'Data Import Complete';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Data Import Complete';
       case AppLocale.vietnam:
         return 'Nhập dữ liệu hoàn tất';
@@ -525,7 +559,7 @@ mixin AppStringsSettings {
         return '只能选择数据库文件(.db)。';
       case AppLocale.usa:
         return 'Only database files (.db) can be selected.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Only database files (.db) can be selected.';
       case AppLocale.vietnam:
         return 'Chỉ có thể chọn file cơ sở dữ liệu (.db).';
@@ -542,7 +576,7 @@ mixin AppStringsSettings {
         return '重置失败';
       case AppLocale.usa:
         return 'Reset Failed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Reset Failed';
       case AppLocale.vietnam:
         return 'Đặt lại thất bại';
@@ -559,7 +593,7 @@ mixin AppStringsSettings {
         return '重置失败：$error';
       case AppLocale.usa:
         return 'Reset failed: $error';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Reset failed: $error';
       case AppLocale.vietnam:
         return 'Đặt lại thất bại: $error';
@@ -576,7 +610,7 @@ mixin AppStringsSettings {
         return '重置';
       case AppLocale.usa:
         return 'Reset';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Reset';
       case AppLocale.vietnam:
         return 'Đặt lại';
@@ -593,7 +627,7 @@ mixin AppStringsSettings {
         return '重新查看引导页';
       case AppLocale.usa:
         return 'View Onboarding Again';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'View Onboarding Again';
       case AppLocale.vietnam:
         return 'Xem giới thiệu lại';
@@ -610,7 +644,7 @@ mixin AppStringsSettings {
         return '可以重新查看应用使用方法';
       case AppLocale.usa:
         return 'Review how to use the app';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Review how to use the app';
       case AppLocale.vietnam:
         return 'Xem lại cách sử dụng ứng dụng';
@@ -627,7 +661,7 @@ mixin AppStringsSettings {
         return '发送反馈';
       case AppLocale.usa:
         return 'Send Feedback';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Send Feedback';
       case AppLocale.vietnam:
         return 'Gửi phản hồi';
@@ -644,7 +678,7 @@ mixin AppStringsSettings {
         return '请发送反馈邮件';
       case AppLocale.usa:
         return 'Please send feedback email';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Please send feedback email';
       case AppLocale.vietnam:
         return 'Vui lòng gửi email phản hồi';
@@ -661,7 +695,7 @@ mixin AppStringsSettings {
         return '请输入咨询内容。\n\n';
       case AppLocale.usa:
         return 'Please write your inquiry.\n\n';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Please write your inquiry.\n\n';
       case AppLocale.vietnam:
         return 'Vui lòng viết nội dung yêu cầu của bạn.\\n\\n';
@@ -678,7 +712,7 @@ mixin AppStringsSettings {
         return '[食谱应用咨询]';
       case AppLocale.usa:
         return '[Recipe App Inquiry]';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '[Recipe App Inquiry]';
       case AppLocale.vietnam:
         return '[Yêu cầu ứng dụng công thức]';
@@ -695,7 +729,7 @@ mixin AppStringsSettings {
         return '无法使用邮件应用。';
       case AppLocale.usa:
         return 'Mail app is not available.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Mail app is not available.';
       case AppLocale.vietnam:
         return 'Ứng dụng thư không khả dụng.';
@@ -712,7 +746,7 @@ mixin AppStringsSettings {
         return '请通过以下邮箱联系我们，我们会尽快回复！\n\njeon_hyun_cheol@jalam-kr.com';
       case AppLocale.usa:
         return 'Please contact us at the email below and we will respond promptly!\n\njeon_hyun_cheol@jalam-kr.com';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Please contact us at the email below and we will respond promptly!\n\njeon_hyun_cheol@jalam-kr.com';
       case AppLocale.vietnam:
         return 'Vui lòng liên hệ với chúng tôi qua email bên dưới và chúng tôi sẽ phản hồi nhanh chóng!\\n\\njeon_hyun_cheol@jalam-kr.com';
@@ -729,7 +763,7 @@ mixin AppStringsSettings {
         return '价格趋势';
       case AppLocale.usa:
         return 'Price Trend';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Price Trend';
       case AppLocale.vietnam:
         return 'Xu hướng giá';
@@ -746,7 +780,7 @@ mixin AppStringsSettings {
         return '每日';
       case AppLocale.usa:
         return 'Daily';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Daily';
       case AppLocale.vietnam:
         return 'Hàng ngày';
@@ -763,7 +797,7 @@ mixin AppStringsSettings {
         return '每月';
       case AppLocale.usa:
         return 'Monthly';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Monthly';
       case AppLocale.vietnam:
         return 'Hàng tháng';
@@ -780,7 +814,7 @@ mixin AppStringsSettings {
         return '每年';
       case AppLocale.usa:
         return 'Yearly';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Yearly';
       case AppLocale.vietnam:
         return 'Hàng năm';
@@ -797,7 +831,7 @@ mixin AppStringsSettings {
         return '没有价格数据';
       case AppLocale.usa:
         return 'No price data available';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'No price data available';
       case AppLocale.vietnam:
         return 'Không có dữ liệu giá';
@@ -814,7 +848,7 @@ mixin AppStringsSettings {
         return '写评论';
       case AppLocale.usa:
         return 'Write Review';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Write Review';
       case AppLocale.vietnam:
         return 'Viết đánh giá';
@@ -831,7 +865,7 @@ mixin AppStringsSettings {
         return '请在应用商店中评分和写评论';
       case AppLocale.usa:
         return 'Rate and review the app on the store';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Rate and review the app on the store';
       case AppLocale.vietnam:
         return 'Đánh giá và viết nhận xét về ứng dụng trên cửa hàng';
@@ -848,7 +882,7 @@ mixin AppStringsSettings {
         return '写评论失败: $error';
       case AppLocale.usa:
         return 'Failed to write review: $error';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Failed to write review: $error';
       case AppLocale.vietnam:
         return 'Không thể viết đánh giá: $error';
@@ -865,7 +899,7 @@ mixin AppStringsSettings {
         return '请登录以同步数据';
       case AppLocale.usa:
         return 'Sign in to sync your data';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Sign in to sync your data';
       case AppLocale.vietnam:
         return 'Đăng nhập để đồng bộ dữ liệu của bạn';
@@ -882,7 +916,7 @@ mixin AppStringsSettings {
         return '下载文件夹';
       case AppLocale.usa:
         return 'Download folder';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Download folder';
       case AppLocale.vietnam:
         return 'Thư mục tải xuống';
@@ -899,7 +933,7 @@ mixin AppStringsSettings {
         return 'Documents文件夹';
       case AppLocale.usa:
         return 'Documents folder';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Documents folder';
       case AppLocale.vietnam:
         return 'Thư mục tài liệu';
@@ -917,7 +951,7 @@ mixin AppStringsSettings {
         return '提示';
       case AppLocale.usa:
         return 'Tips';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Tipps';
       case AppLocale.vietnam:
         return 'Mẹo';
@@ -934,7 +968,7 @@ mixin AppStringsSettings {
         return '请使用清晰的收据照片';
       case AppLocale.usa:
         return 'Use clear receipt photos';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Verwenden Sie klare Kassenbon-Fotos';
       case AppLocale.vietnam:
         return 'Sử dụng ảnh hóa đơn rõ ràng';
@@ -951,7 +985,7 @@ mixin AppStringsSettings {
         return '请在明亮的光线下拍摄';
       case AppLocale.usa:
         return 'Take photos in good lighting';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Machen Sie Fotos bei gutem Licht';
       case AppLocale.vietnam:
         return 'Chụp ảnh trong ánh sáng tốt';
@@ -968,7 +1002,7 @@ mixin AppStringsSettings {
         return '请确认文本是否清晰可见';
       case AppLocale.usa:
         return 'Make sure text is clearly visible';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Stellen Sie sicher, dass der Text klar sichtbar ist';
       case AppLocale.vietnam:
         return 'Đảm bảo văn bản rõ ràng và dễ đọc';
@@ -985,7 +1019,7 @@ mixin AppStringsSettings {
         return '请稍等...';
       case AppLocale.usa:
         return 'Please wait a moment...';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Bitte warten Sie einen Moment...';
       case AppLocale.vietnam:
         return 'Vui lòng đợi một chút...';
@@ -1002,7 +1036,7 @@ mixin AppStringsSettings {
         return '收据图像';
       case AppLocale.usa:
         return 'Receipt Image';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Kassenbon-Bild';
       case AppLocale.vietnam:
         return 'Hình ảnh hóa đơn';
@@ -1019,7 +1053,7 @@ mixin AppStringsSettings {
         return '将保存$count个材料';
       case AppLocale.usa:
         return '$count ingredients will be saved';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '$count Zutaten werden gespeichert';
       case AppLocale.vietnam:
         return '$count nguyên liệu sẽ được lưu';
@@ -1036,7 +1070,7 @@ mixin AppStringsSettings {
         return '正在保存材料...';
       case AppLocale.usa:
         return 'Saving ingredients...';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Zutaten werden gespeichert...';
       case AppLocale.vietnam:
         return 'Đang lưu nguyên liệu...';
@@ -1054,7 +1088,7 @@ mixin AppStringsSettings {
         return '数字格式设置';
       case AppLocale.usa:
         return 'Number Format Settings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Zahlenformat-Einstellungen';
       case AppLocale.vietnam:
         return 'Cài đặt định dạng số';
@@ -1071,7 +1105,7 @@ mixin AppStringsSettings {
         return '千位逗号式 (1,000,000)';
       case AppLocale.usa:
         return 'Thousands Comma (1,000,000)';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Tausender-Komma (1,000,000)';
       case AppLocale.vietnam:
         return 'Dấu phẩy hàng nghìn (1,000,000)';
@@ -1088,7 +1122,7 @@ mixin AppStringsSettings {
         return '美元式 (1,000.00)';
       case AppLocale.usa:
         return 'Dollar Style (1,000.00)';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Dollar-Stil (1,000.00)';
       case AppLocale.vietnam:
         return 'Kiểu đô la (1,000.00)';
@@ -1105,7 +1139,7 @@ mixin AppStringsSettings {
         return '欧洲式 (100.000.000)';
       case AppLocale.usa:
         return 'European Style (100.000.000)';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Europäischer Stil (100.000.000)';
       case AppLocale.vietnam:
         return 'Kiểu châu Âu (100.000.000)';
@@ -1122,7 +1156,7 @@ mixin AppStringsSettings {
         return '显示设置';
       case AppLocale.usa:
         return 'Display Settings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Display Settings';
       case AppLocale.vietnam:
         return 'Cài đặt hiển thị';
@@ -1139,7 +1173,7 @@ mixin AppStringsSettings {
         return '主题颜色';
       case AppLocale.usa:
         return 'Theme Color';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Theme Color';
       case AppLocale.vietnam:
         return 'Màu chủ đề';
@@ -1156,7 +1190,7 @@ mixin AppStringsSettings {
         return '深色模式';
       case AppLocale.usa:
         return 'Dark Mode';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Dark Mode';
       case AppLocale.vietnam:
         return 'Chế độ tối';
@@ -1173,7 +1207,7 @@ mixin AppStringsSettings {
         return '开启';
       case AppLocale.usa:
         return 'On';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'On';
       case AppLocale.vietnam:
         return 'Bật';
@@ -1190,7 +1224,7 @@ mixin AppStringsSettings {
         return '关闭';
       case AppLocale.usa:
         return 'Off';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Off';
       case AppLocale.vietnam:
         return 'Tắt';
@@ -1207,7 +1241,7 @@ mixin AppStringsSettings {
         return '选择主题颜色';
       case AppLocale.usa:
         return 'Select Theme Color';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Select Theme Color';
       case AppLocale.vietnam:
         return 'Chọn màu chủ đề';

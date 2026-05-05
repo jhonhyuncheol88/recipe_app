@@ -3,90 +3,50 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Available Theme Types
-enum ThemeType {
-  wonkkaSignature,
-  minimalistMono,
-  natureGreen,
-  oceanBlue,
-}
-
-/// Extension to get display names
-extension ThemeTypeExtension on ThemeType {
-  String get displayName {
-    switch (this) {
-      case ThemeType.wonkkaSignature:
-        return 'Wonkka Signature';
-      case ThemeType.minimalistMono:
-        return 'Minimalist Mono';
-      case ThemeType.natureGreen:
-        return 'Nature Green';
-      case ThemeType.oceanBlue:
-        return 'Ocean Blue';
-    }
-  }
-}
-
-/// Theme State
+/// Theme State — light/dark 만 보관.
 class ThemeState extends Equatable {
-  final ThemeType themeType;
   final Brightness brightness;
 
-  const ThemeState({
-    this.themeType = ThemeType.wonkkaSignature,
-    this.brightness = Brightness.light,
-  });
+  const ThemeState({this.brightness = Brightness.light});
 
-  ThemeState copyWith({
-    ThemeType? themeType,
-    Brightness? brightness,
-  }) {
-    return ThemeState(
-      themeType: themeType ?? this.themeType,
-      brightness: brightness ?? this.brightness,
-    );
+  ThemeState copyWith({Brightness? brightness}) {
+    return ThemeState(brightness: brightness ?? this.brightness);
   }
 
+  bool get isDark => brightness == Brightness.dark;
+
   @override
-  List<Object> get props => [themeType, brightness];
+  List<Object> get props => [brightness];
 }
 
-/// Theme Cubit
+/// Theme Cubit.
+///
+/// 라이트/다크 모드 전환만 관리한다. 색·타이포·여백 등의 디자인 토큰은
+/// `lib/theme/tokens/` 에서 관리되며, `AppTheme.light` / `AppTheme.dark` 가
+/// 양쪽 ThemeData 를 빌드한다.
 class ThemeCubit extends Cubit<ThemeState> {
+  static const String _kIsDarkMode = 'is_dark_mode';
+
   ThemeCubit() : super(const ThemeState()) {
     _loadTheme();
   }
 
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    final themeIndex = prefs.getInt('theme_type') ?? 0;
-    final isDark = prefs.getBool('is_dark_mode') ?? false;
-
+    final isDark = prefs.getBool(_kIsDarkMode) ?? false;
     emit(ThemeState(
-      themeType:
-          ThemeType.values[themeIndex.clamp(0, ThemeType.values.length - 1)],
       brightness: isDark ? Brightness.dark : Brightness.light,
     ));
   }
 
-  Future<void> changeTheme(ThemeType type) async {
-    emit(state.copyWith(themeType: type));
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('theme_type', type.index);
-  }
-
   Future<void> toggleBrightness() async {
-    final newBrightness = state.brightness == Brightness.light
-        ? Brightness.dark
-        : Brightness.light;
-    emit(state.copyWith(brightness: newBrightness));
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('is_dark_mode', newBrightness == Brightness.dark);
+    final next = state.isDark ? Brightness.light : Brightness.dark;
+    await setBrightness(next);
   }
 
   Future<void> setBrightness(Brightness brightness) async {
     emit(state.copyWith(brightness: brightness));
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('is_dark_mode', brightness == Brightness.dark);
+    await prefs.setBool(_kIsDarkMode, brightness == Brightness.dark);
   }
 }

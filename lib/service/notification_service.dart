@@ -51,8 +51,8 @@ class NotificationService {
     // Timezone 초기화 - flutter_timezone으로 기기 IANA 타임존 획득
     tz.initializeTimeZones();
     try {
-      final tzInfo = await FlutterTimezone.getLocalTimezone();
-      final deviceLocation = tz.getLocation(tzInfo.identifier);
+      final tzName = await FlutterTimezone.getLocalTimezone();
+      final deviceLocation = tz.getLocation(tzName);
       tz.setLocalLocation(deviceLocation);
     } catch (e) {
       tz.setLocalLocation(tz.getLocation('UTC'));
@@ -149,6 +149,8 @@ class NotificationService {
         scheduledDate,
         details,
         androidScheduleMode: _scheduleMode,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: matchDateTimeComponents,
         payload: payload,
       );

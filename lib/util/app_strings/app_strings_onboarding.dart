@@ -13,7 +13,7 @@ mixin AppStringsOnboarding {
         return '让餐厅成本计算变得简单准确';
       case AppLocale.usa:
         return 'Easy and Accurate Restaurant Cost Management';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Easy and Accurate Restaurant Cost Management';
       case AppLocale.vietnam:
         return 'Quản lý chi phí nhà hàng dễ dàng và chính xác';
@@ -30,7 +30,7 @@ mixin AppStringsOnboarding {
         return '只需拍照即可自动注册食材，\nAI食谱推荐实现收益最大化';
       case AppLocale.usa:
         return 'Just take a photo for automatic ingredient registration and \nAI recipe recommendations to maximize profits';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Just take a photo for automatic ingredient registration and \nAI recipe recommendations to maximize profits';
       case AppLocale.vietnam:
         return 'Chỉ cần chụp ảnh để đăng ký nguyên liệu tự động và \\nđề xuất công thức AI để tối đa hóa lợi nhuận';
@@ -47,7 +47,7 @@ mixin AppStringsOnboarding {
         return '食材图像自动注册';
       case AppLocale.usa:
         return 'Automatic Registration with Ingredient Images';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Automatic Registration with Ingredient Images';
       case AppLocale.vietnam:
         return 'Đăng ký tự động với hình ảnh nguyên liệu';
@@ -64,7 +64,7 @@ mixin AppStringsOnboarding {
         return 'AI准确识别食材';
       case AppLocale.usa:
         return 'Accurate Ingredient Recognition with AI';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Accurate Ingredient Recognition with AI';
       case AppLocale.vietnam:
         return 'Nhận dạng nguyên liệu chính xác với AI';
@@ -81,7 +81,7 @@ mixin AppStringsOnboarding {
         return '用现有食材提出创意食谱';
       case AppLocale.usa:
         return 'Creative Recipe Suggestions with Available Ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Creative Recipe Suggestions with Available Ingredients';
       case AppLocale.vietnam:
         return 'Đề xuất công thức sáng tạo với nguyên liệu có sẵn';
@@ -98,7 +98,7 @@ mixin AppStringsOnboarding {
         return 'Gemini AI提供最佳组合';
       case AppLocale.usa:
         return 'Gemini AI Suggests Optimal Combinations';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Gemini AI Suggests Optimal Combinations';
       case AppLocale.vietnam:
         return 'Gemini AI đề xuất kết hợp tối ưu';
@@ -115,7 +115,7 @@ mixin AppStringsOnboarding {
         return '实时成本计算和收益分析';
       case AppLocale.usa:
         return 'Real-time Cost Calculation and Profit Analysis';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Real-time Cost Calculation and Profit Analysis';
       case AppLocale.vietnam:
         return 'Tính toán chi phí và phân tích lợi nhuận theo thời gian thực';
@@ -132,7 +132,7 @@ mixin AppStringsOnboarding {
         return '应用行业标准成本率';
       case AppLocale.usa:
         return 'Industry Standard Cost Ratio Applied';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Industry Standard Cost Ratio Applied';
       case AppLocale.vietnam:
         return 'Áp dụng tỷ lệ chi phí tiêu chuẩn ngành';
@@ -149,7 +149,7 @@ mixin AppStringsOnboarding {
         return '按食材追踪保质期和通知';
       case AppLocale.usa:
         return 'Ingredient-specific Expiry Date Tracking and Notifications';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Ingredient-specific Expiry Date Tracking and Notifications';
       case AppLocale.vietnam:
         return 'Theo dõi và thông báo ngày hết hạn cụ thể cho từng nguyên liệu';
@@ -166,7 +166,7 @@ mixin AppStringsOnboarding {
         return '防止废弃损失保护收益';
       case AppLocale.usa:
         return 'Prevent Waste Loss and Protect Profits';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Prevent Waste Loss and Protect Profits';
       case AppLocale.vietnam:
         return 'Ngăn chặn lãng phí và bảo vệ lợi nhuận';
@@ -183,7 +183,7 @@ mixin AppStringsOnboarding {
         return '手工计算成本的复杂过程';
       case AppLocale.usa:
         return 'Complex manual cost calculation process';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Complex manual cost calculation process';
       case AppLocale.vietnam:
         return 'Complex manual cost calculation process';
@@ -200,7 +200,7 @@ mixin AppStringsOnboarding {
         return 'AI自动化简单成本管理';
       case AppLocale.usa:
         return 'AI-automated simple cost management';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI-automated simple cost management';
       case AppLocale.vietnam:
         return 'AI-automated simple cost management';
@@ -217,7 +217,7 @@ mixin AppStringsOnboarding {
         return '五花肉500g + 洋葱2个 + 酱汁 → AI食谱生成';
       case AppLocale.usa:
         return 'Pork belly 500g + Onion 2pcs + Sauce → AI Recipe Generation';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Pork belly 500g + Onion 2pcs + Sauce → AI Recipe Generation';
       case AppLocale.vietnam:
         return 'Pork belly 500g + Onion 2pcs + Sauce → AI Recipe Generation';
@@ -234,7 +234,7 @@ mixin AppStringsOnboarding {
         return '总成本8,500元 → 推荐售价24,000元';
       case AppLocale.usa:
         return 'Total cost 8,500 won → Recommended selling price 24,000 won';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Total cost 8,500 won → Recommended selling price 24,000 won';
       case AppLocale.vietnam:
         return 'Total cost 8,500 won → Recommended selling price 24,000 won';
@@ -251,7 +251,7 @@ mixin AppStringsOnboarding {
         return '保质期前3天通知 → 废弃损失0元，收益保护';
       case AppLocale.usa:
         return 'Notification 3 days before expiry → Zero waste loss, profit protection';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Notification 3 days before expiry → Zero waste loss, profit protection';
       case AppLocale.vietnam:
         return 'Notification 3 days before expiry → Zero waste loss, profit protection';
@@ -268,7 +268,7 @@ mixin AppStringsOnboarding {
         return '设置目标成本率';
       case AppLocale.usa:
         return 'Set Target Cost Ratio';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Set Target Cost Ratio';
       case AppLocale.vietnam:
         return 'Set Target Cost Ratio';
@@ -285,7 +285,7 @@ mixin AppStringsOnboarding {
         return '启动应用时会显示一次全屏广告';
       case AppLocale.usa:
         return 'A full-screen ad appears once on app start';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'A full-screen ad appears once on app start';
       case AppLocale.vietnam:
         return 'A full-screen ad appears once on app start';
@@ -302,7 +302,7 @@ mixin AppStringsOnboarding {
         return '为维持服务与免费使用，启动应用时会显示一次全屏广告。广告结束后会立即进入服务。';
       case AppLocale.usa:
         return 'To keep the service free, one full-screen ad shows when you open the app. After it finishes, you’ll go straight into the app.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'To keep the service free, one full-screen ad shows when you open the app. After it finishes, you’ll go straight into the app.';
       case AppLocale.vietnam:
         return 'To keep the service free, one full-screen ad shows when you open the app. After it finishes, you’ll go straight into the app.';
@@ -319,7 +319,7 @@ mixin AppStringsOnboarding {
         return '广告结束后即可立即使用。';
       case AppLocale.usa:
         return 'You can use the app right after the ad.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'You can use the app right after the ad.';
       case AppLocale.vietnam:
         return 'You can use the app right after the ad.';
@@ -336,7 +336,7 @@ mixin AppStringsOnboarding {
         return '测试期间可能会显示 Google 测试广告。';
       case AppLocale.usa:
         return 'During testing, Google test ads may appear.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'During testing, Google test ads may appear.';
       case AppLocale.vietnam:
         return 'During testing, Google test ads may appear.';
@@ -353,7 +353,7 @@ mixin AppStringsOnboarding {
         return '已复制食谱文本。';
       case AppLocale.usa:
         return 'Recipe text copied.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe text copied.';
       case AppLocale.vietnam:
         return 'Recipe text copied.';
@@ -370,7 +370,7 @@ mixin AppStringsOnboarding {
         return '主要经营食材类别';
       case AppLocale.usa:
         return 'Main Ingredient Categories';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Main Ingredient Categories';
       case AppLocale.vietnam:
         return 'Main Ingredient Categories';
@@ -387,7 +387,7 @@ mixin AppStringsOnboarding {
         return '开始使用元卡';
       case AppLocale.usa:
         return 'Start Wonka';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Start Wonka';
       case AppLocale.vietnam:
         return 'Start Wonka';
@@ -404,7 +404,7 @@ mixin AppStringsOnboarding {
         return '跳过';
       case AppLocale.usa:
         return 'Skip';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Skip';
       case AppLocale.vietnam:
         return 'Skip';
@@ -421,7 +421,7 @@ mixin AppStringsOnboarding {
         return '下一步';
       case AppLocale.usa:
         return 'Next';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Next';
       case AppLocale.vietnam:
         return 'Next';
@@ -438,7 +438,7 @@ mixin AppStringsOnboarding {
         return '上一步';
       case AppLocale.usa:
         return 'Previous';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Previous';
       case AppLocale.vietnam:
         return 'Previous';
@@ -455,7 +455,7 @@ mixin AppStringsOnboarding {
         return '准备就绪！';
       case AppLocale.usa:
         return 'Ready!';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Ready!';
       case AppLocale.vietnam:
         return 'Ready!';
@@ -472,7 +472,7 @@ mixin AppStringsOnboarding {
         return '现在开始使用元卡进行餐厅管理吧！';
       case AppLocale.usa:
         return 'Start managing your restaurant with Wonka!';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Start managing your restaurant with Wonka!';
       case AppLocale.vietnam:
         return 'Start managing your restaurant with Wonka!';
@@ -489,7 +489,7 @@ mixin AppStringsOnboarding {
         return '可选设置';
       case AppLocale.usa:
         return 'Optional Settings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Optional Settings';
       case AppLocale.vietnam:
         return 'Optional Settings';
@@ -506,7 +506,7 @@ mixin AppStringsOnboarding {
         return '主要功能';
       case AppLocale.usa:
         return 'Main Features';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Main Features';
       case AppLocale.vietnam:
         return 'Main Features';
@@ -523,7 +523,7 @@ mixin AppStringsOnboarding {
         return 'Before & After';
       case AppLocale.usa:
         return 'Before & After';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Before & After';
       case AppLocale.vietnam:
         return 'Before & After';
@@ -540,7 +540,7 @@ mixin AppStringsOnboarding {
         return '使用示例';
       case AppLocale.usa:
         return 'Usage Example';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Usage Example';
       case AppLocale.vietnam:
         return 'Usage Example';
@@ -558,7 +558,7 @@ mixin AppStringsOnboarding {
         return '权限设置';
       case AppLocale.usa:
         return 'Permission Setup';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Permission Setup';
       case AppLocale.vietnam:
         return 'Permission Setup';
@@ -575,7 +575,7 @@ mixin AppStringsOnboarding {
         return '通知权限';
       case AppLocale.usa:
         return 'Notification Permission';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Notification Permission';
       case AppLocale.vietnam:
         return 'Notification Permission';
@@ -592,7 +592,7 @@ mixin AppStringsOnboarding {
         return '食材保质期临近时\n向您发送通知';
       case AppLocale.usa:
         return 'We\'ll send you notifications\nwhen ingredients expire soon';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'We\'ll send you notifications\nwhen ingredients expire soon';
       case AppLocale.vietnam:
         return 'Chúng tôi sẽ gửi thông báo cho bạn\\nkhi nguyên liệu sắp hết hạn';
@@ -609,7 +609,7 @@ mixin AppStringsOnboarding {
         return '相机权限';
       case AppLocale.usa:
         return 'Camera Permission';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Camera Permission';
       case AppLocale.vietnam:
         return 'Camera Permission';
@@ -626,7 +626,7 @@ mixin AppStringsOnboarding {
         return '拍摄收据\n快速登记食材';
       case AppLocale.usa:
         return 'Take photos of receipts to\nquickly add ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Take photos of receipts to\nquickly add ingredients';
       case AppLocale.vietnam:
         return 'Take photos of receipts to\\nquickly add ingredients';
@@ -643,7 +643,7 @@ mixin AppStringsOnboarding {
         return '照片库权限';
       case AppLocale.usa:
         return 'Photo Library Permission';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Photo Library Permission';
       case AppLocale.vietnam:
         return 'Photo Library Permission';
@@ -660,7 +660,7 @@ mixin AppStringsOnboarding {
         return '从照片中选择收据\n快速登记食材';
       case AppLocale.usa:
         return 'Select receipts from photos to\nquickly add ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Select receipts from photos to\nquickly add ingredients';
       case AppLocale.vietnam:
         return 'Select receipts from photos to\\nquickly add ingredients';
@@ -677,7 +677,7 @@ mixin AppStringsOnboarding {
         return '该权限可实现的功能';
       case AppLocale.usa:
         return 'Available features';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Available features';
       case AppLocale.vietnam:
         return 'Available features';
@@ -694,7 +694,7 @@ mixin AppStringsOnboarding {
         return '保质期通知';
       case AppLocale.usa:
         return 'Expiry notifications';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Expiry notifications';
       case AppLocale.vietnam:
         return 'Expiry notifications';
@@ -711,7 +711,7 @@ mixin AppStringsOnboarding {
         return '重要更新通知';
       case AppLocale.usa:
         return 'Important updates';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Important updates';
       case AppLocale.vietnam:
         return 'Important updates';
@@ -728,7 +728,7 @@ mixin AppStringsOnboarding {
         return '个性化通知';
       case AppLocale.usa:
         return 'Personalized notifications';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Personalized notifications';
       case AppLocale.vietnam:
         return 'Personalized notifications';
@@ -745,7 +745,7 @@ mixin AppStringsOnboarding {
         return '收据OCR识别';
       case AppLocale.usa:
         return 'Receipt OCR recognition';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Receipt OCR recognition';
       case AppLocale.vietnam:
         return 'Receipt OCR recognition';
@@ -762,7 +762,7 @@ mixin AppStringsOnboarding {
         return '食材拍照';
       case AppLocale.usa:
         return 'Take ingredient photos';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Take ingredient photos';
       case AppLocale.vietnam:
         return 'Take ingredient photos';
@@ -779,7 +779,7 @@ mixin AppStringsOnboarding {
         return '快速登记食材';
       case AppLocale.usa:
         return 'Quick ingredient registration';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Quick ingredient registration';
       case AppLocale.vietnam:
         return 'Quick ingredient registration';
@@ -796,7 +796,7 @@ mixin AppStringsOnboarding {
         return '可随时在设置中更改';
       case AppLocale.usa:
         return 'You can change this anytime in settings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'You can change this anytime in settings';
       case AppLocale.vietnam:
         return 'You can change this anytime in settings';
@@ -813,7 +813,7 @@ mixin AppStringsOnboarding {
         return '允许权限';
       case AppLocale.usa:
         return 'Allow Permission';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Allow Permission';
       case AppLocale.vietnam:
         return 'Allow Permission';
@@ -830,7 +830,7 @@ mixin AppStringsOnboarding {
         return '稍后进行';
       case AppLocale.usa:
         return 'Skip for now';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Skip for now';
       case AppLocale.vietnam:
         return 'Skip for now';
@@ -847,7 +847,7 @@ mixin AppStringsOnboarding {
         return '权限被拒绝';
       case AppLocale.usa:
         return 'Permission Denied';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Permission Denied';
       case AppLocale.vietnam:
         return 'Quyền bị từ chối';
@@ -864,7 +864,7 @@ mixin AppStringsOnboarding {
         return '部分功能可能受限。\n可随时在设置中更改权限。';
       case AppLocale.usa:
         return 'Some features may be limited.\nYou can change permissions anytime in settings.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Some features may be limited.\nYou can change permissions anytime in settings.';
       case AppLocale.vietnam:
         return 'Some features may be limited.\\nYou can change permissions anytime in settings.';
@@ -882,7 +882,7 @@ mixin AppStringsOnboarding {
         return '已允许';
       case AppLocale.usa:
         return 'Allowed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Allowed';
       case AppLocale.vietnam:
         return 'Allowed';
@@ -899,7 +899,7 @@ mixin AppStringsOnboarding {
         return '已拒绝';
       case AppLocale.usa:
         return 'Denied';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Denied';
       case AppLocale.vietnam:
         return 'Denied';
@@ -916,7 +916,7 @@ mixin AppStringsOnboarding {
         return '相机权限已允许';
       case AppLocale.usa:
         return 'Camera permission already granted';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Camera permission already granted';
       case AppLocale.vietnam:
         return 'Camera permission already granted';
@@ -933,7 +933,7 @@ mixin AppStringsOnboarding {
         return '相机权限已允许';
       case AppLocale.usa:
         return 'Camera permission granted';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Camera permission granted';
       case AppLocale.vietnam:
         return 'Camera permission granted';
@@ -950,7 +950,7 @@ mixin AppStringsOnboarding {
         return '相机权限已拒绝';
       case AppLocale.usa:
         return 'Camera permission denied';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Camera permission denied';
       case AppLocale.vietnam:
         return 'Camera permission denied';
@@ -967,7 +967,7 @@ mixin AppStringsOnboarding {
         return '相机权限已被永久拒绝。\n请在设置应用中允许权限。';
       case AppLocale.usa:
         return 'Camera permission permanently denied.\nPlease allow permission in the Settings app.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Camera permission permanently denied.\nPlease allow permission in the Settings app.';
       case AppLocale.vietnam:
         return 'Camera permission permanently denied.\\nPlease allow permission in the Settings app.';

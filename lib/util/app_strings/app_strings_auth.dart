@@ -13,7 +13,7 @@ mixin AppStringsAuth {
         return '食谱应用';
       case AppLocale.usa:
         return 'Recipe App';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe App';
       case AppLocale.vietnam:
         return 'Ứng dụng công thức';
@@ -30,7 +30,7 @@ mixin AppStringsAuth {
         return '管理食谱并获取AI烹饪方法';
       case AppLocale.usa:
         return 'Manage recipes and get AI cooking methods';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Manage recipes and get AI cooking methods';
       case AppLocale.vietnam:
         return 'Quản lý công thức và nhận phương pháp nấu ăn AI';
@@ -47,7 +47,7 @@ mixin AppStringsAuth {
         return '使用Google登录';
       case AppLocale.usa:
         return 'Sign in with Google';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Sign in with Google';
       case AppLocale.vietnam:
         return 'Đăng nhập bằng Google';
@@ -64,7 +64,7 @@ mixin AppStringsAuth {
         return '登录失败';
       case AppLocale.usa:
         return 'Login Failed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Login Failed';
       case AppLocale.vietnam:
         return 'Đăng nhập thất bại';
@@ -81,7 +81,7 @@ mixin AppStringsAuth {
         return '登录失败';
       case AppLocale.usa:
         return 'Failed to sign in';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Failed to sign in';
       case AppLocale.vietnam:
         return 'Không thể đăng nhập';
@@ -99,7 +99,7 @@ mixin AppStringsAuth {
         return '欢迎！';
       case AppLocale.usa:
         return 'Welcome!';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Welcome!';
       case AppLocale.vietnam:
         return 'Chào mừng!';
@@ -116,7 +116,7 @@ mixin AppStringsAuth {
         return '食谱应用已准备就绪。';
       case AppLocale.usa:
         return 'You are ready to use the recipe app.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'You are ready to use the recipe app.';
       case AppLocale.vietnam:
         return 'Bạn đã sẵn sàng sử dụng ứng dụng công thức.';
@@ -133,7 +133,7 @@ mixin AppStringsAuth {
         return '退出登录';
       case AppLocale.usa:
         return 'Logout';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Logout';
       case AppLocale.vietnam:
         return 'Đăng xuất';
@@ -150,7 +150,7 @@ mixin AppStringsAuth {
         return '用户';
       case AppLocale.usa:
         return 'User';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'User';
       case AppLocale.vietnam:
         return 'Người dùng';
@@ -167,7 +167,7 @@ mixin AppStringsAuth {
         return '登录完成';
       case AppLocale.usa:
         return 'Login Complete';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Login Complete';
       case AppLocale.vietnam:
         return 'Đăng nhập hoàn tất';
@@ -184,12 +184,149 @@ mixin AppStringsAuth {
         return '使用Google账户轻松登录';
       case AppLocale.usa:
         return 'Sign in easily with your Google account';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Sign in easily with your Google account';
       case AppLocale.vietnam:
         return 'Sign in easily with your Google account';
     }
   }
+
+  static String getAppleLoginButton(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return 'Apple로 로그인';
+      case AppLocale.japan:
+        return 'Appleでサインイン';
+      case AppLocale.china:
+        return '使用 Apple 登录';
+      case AppLocale.usa:
+        return 'Sign in with Apple';
+      case AppLocale.chinaTraditional:
+        return 'Mit Apple anmelden';
+      case AppLocale.vietnam:
+        return 'Đăng nhập bằng Apple';
+    }
+  }
+
+  static String getLoginInProgress(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '로그인 중...';
+      case AppLocale.japan:
+        return 'ログイン中...';
+      case AppLocale.china:
+        return '正在登录...';
+      case AppLocale.usa:
+        return 'Signing in...';
+      case AppLocale.chinaTraditional:
+        return 'Anmeldung läuft...';
+      case AppLocale.vietnam:
+        return 'Đang đăng nhập...';
+    }
+  }
+
+  static String getSignInRequiredForFeature(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이 기능은 로그인 후 이용할 수 있습니다';
+      case AppLocale.japan:
+        return 'この機能はログイン後にご利用いただけます';
+      case AppLocale.china:
+        return '此功能需要登录后使用';
+      case AppLocale.usa:
+        return 'Please sign in to use this feature';
+      case AppLocale.chinaTraditional:
+        return 'Bitte melden Sie sich an, um diese Funktion zu nutzen';
+      case AppLocale.vietnam:
+        return 'Vui lòng đăng nhập để sử dụng tính năng này';
+    }
+  }
+
+  static String getDeleteAccount(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '계정 탈퇴';
+      case AppLocale.japan:
+        return 'アカウント削除';
+      case AppLocale.china:
+        return '注销账户';
+      case AppLocale.usa:
+        return 'Delete Account';
+      case AppLocale.chinaTraditional:
+        return 'Konto löschen';
+      case AppLocale.vietnam:
+        return 'Xóa tài khoản';
+    }
+  }
+
+  static String getDeleteAccountConfirmTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '정말 탈퇴하시겠습니까?';
+      case AppLocale.japan:
+        return '本当に退会しますか？';
+      case AppLocale.china:
+        return '确定要注销账户吗？';
+      case AppLocale.usa:
+        return 'Delete your account?';
+      case AppLocale.chinaTraditional:
+        return 'Konto wirklich löschen?';
+      case AppLocale.vietnam:
+        return 'Bạn có chắc muốn xóa tài khoản?';
+    }
+  }
+
+  static String getDeleteAccountConfirmMessage(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '계정과 클라우드 동기화 데이터가 삭제됩니다. 이 작업은 되돌릴 수 없습니다.';
+      case AppLocale.japan:
+        return 'アカウントとクラウド同期データが削除されます。この操作は取り消せません。';
+      case AppLocale.china:
+        return '账户及云端同步数据将被删除，此操作无法恢复。';
+      case AppLocale.usa:
+        return 'Your account and synced cloud data will be deleted. This cannot be undone.';
+      case AppLocale.chinaTraditional:
+        return 'Ihr Konto und synchronisierte Cloud-Daten werden gelöscht. Dies kann nicht rückgängig gemacht werden.';
+      case AppLocale.vietnam:
+        return 'Tài khoản và dữ liệu đồng bộ trên đám mây sẽ bị xóa. Không thể hoàn tác.';
+    }
+  }
+
+  static String getDeleteAccountReauthRequired(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '보안을 위해 다시 로그인 후 탈퇴해주세요';
+      case AppLocale.japan:
+        return 'セキュリティのため再度ログインしてから退会してください';
+      case AppLocale.china:
+        return '为了安全，请重新登录后再注销';
+      case AppLocale.usa:
+        return 'Please sign in again before deleting your account';
+      case AppLocale.chinaTraditional:
+        return 'Bitte melden Sie sich erneut an, bevor Sie Ihr Konto löschen';
+      case AppLocale.vietnam:
+        return 'Vui lòng đăng nhập lại trước khi xóa tài khoản';
+    }
+  }
+
+  static String getDeleteAccountSuccess(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '탈퇴가 완료되었습니다';
+      case AppLocale.japan:
+        return '退会が完了しました';
+      case AppLocale.china:
+        return '注销已完成';
+      case AppLocale.usa:
+        return 'Your account has been deleted';
+      case AppLocale.chinaTraditional:
+        return 'Ihr Konto wurde gelöscht';
+      case AppLocale.vietnam:
+        return 'Đã xóa tài khoản';
+    }
+  }
+
 
   /// 계정 관련
   static String getAccount(AppLocale locale) {
@@ -202,7 +339,7 @@ mixin AppStringsAuth {
         return '账户';
       case AppLocale.usa:
         return 'Account';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Account';
       case AppLocale.vietnam:
         return 'Tài khoản';
@@ -219,7 +356,7 @@ mixin AppStringsAuth {
         return '账户设置';
       case AppLocale.usa:
         return 'Account Settings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Account Settings';
       case AppLocale.vietnam:
         return 'Cài đặt tài khoản';
@@ -236,7 +373,7 @@ mixin AppStringsAuth {
         return '登录';
       case AppLocale.usa:
         return 'Sign In';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Sign In';
       case AppLocale.vietnam:
         return 'Đăng nhập';
@@ -253,7 +390,7 @@ mixin AppStringsAuth {
         return '退出登录';
       case AppLocale.usa:
         return 'Sign Out';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Sign Out';
       case AppLocale.vietnam:
         return 'Đăng xuất';
@@ -270,7 +407,7 @@ mixin AppStringsAuth {
         return '未登录';
       case AppLocale.usa:
         return 'Not signed in';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Not signed in';
       case AppLocale.vietnam:
         return 'Not signed in';
@@ -287,7 +424,7 @@ mixin AppStringsAuth {
         return '已登录为';
       case AppLocale.usa:
         return 'Signed in as';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Signed in as';
       case AppLocale.vietnam:
         return 'Signed in as';
@@ -305,7 +442,7 @@ mixin AppStringsAuth {
         return '账户信息';
       case AppLocale.usa:
         return 'Account Information';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Account Information';
       case AppLocale.vietnam:
         return 'Account Information';
@@ -322,7 +459,7 @@ mixin AppStringsAuth {
         return '订阅状态';
       case AppLocale.usa:
         return 'Subscription Status';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Subscription Status';
       case AppLocale.vietnam:
         return 'Trạng thái đăng ký';
@@ -339,7 +476,7 @@ mixin AppStringsAuth {
         return '免费用户';
       case AppLocale.usa:
         return 'Free User';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Free User';
       case AppLocale.vietnam:
         return 'Người dùng miễn phí';
@@ -356,7 +493,7 @@ mixin AppStringsAuth {
         return '高级用户';
       case AppLocale.usa:
         return 'Premium User';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Premium User';
       case AppLocale.vietnam:
         return 'Người dùng cao cấp';
@@ -373,7 +510,7 @@ mixin AppStringsAuth {
         return '• 有广告\n• AI食谱每日3次';
       case AppLocale.usa:
         return '• Ads included\n• AI recipes: 3 per day';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '• Ads included\n• AI recipes: 3 per day';
       case AppLocale.vietnam:
         return '• Ads included\\n• AI recipes: 3 per day';
@@ -390,7 +527,7 @@ mixin AppStringsAuth {
         return '• 无广告\n• AI食谱无限制';
       case AppLocale.usa:
         return '• No ads\n• Unlimited AI recipes';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '• No ads\n• Unlimited AI recipes';
       case AppLocale.vietnam:
         return '• No ads\\n• Unlimited AI recipes';
@@ -407,7 +544,7 @@ mixin AppStringsAuth {
         return '升级到高级版';
       case AppLocale.usa:
         return 'Upgrade to Premium';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Upgrade to Premium';
       case AppLocale.vietnam:
         return 'Nâng cấp lên cao cấp';
@@ -424,7 +561,7 @@ mixin AppStringsAuth {
         return '当前计划';
       case AppLocale.usa:
         return 'Current Plan';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Current Plan';
       case AppLocale.vietnam:
         return 'Gói hiện tại';
@@ -441,7 +578,7 @@ mixin AppStringsAuth {
         return '邮箱';
       case AppLocale.usa:
         return 'Email';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Email';
       case AppLocale.vietnam:
         return 'Email';
@@ -458,7 +595,7 @@ mixin AppStringsAuth {
         return '用户名';
       case AppLocale.usa:
         return 'Username';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Username';
       case AppLocale.vietnam:
         return 'Username';
@@ -475,7 +612,7 @@ mixin AppStringsAuth {
         return '注册日期';
       case AppLocale.usa:
         return 'Join Date';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Join Date';
       case AppLocale.vietnam:
         return 'Ngày tham gia';

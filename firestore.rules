@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// Firestore 보안 규칙 — Phase 6.
+// 진실원천(SoT) 은 RevenueCat 서버. 클라이언트는 isPremium 을 절대 변경할 수
+// 없으며, Phase 7 의 Cloud Functions Webhook (Admin SDK) 만 갱신 가능.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 사용자 프로필 + isPremium 캐시
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      // 첫 생성: 자기 uid 만, isPremium 은 false 또는 미포함
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && (!('isPremium' in request.resource.data)
+                        || request.resource.data.isPremium == false);
+
+      // 수정: 자기 uid, isPremium 은 미포함이거나 기존 값과 동일
+      // (즉 클라이언트는 isPremium 을 변경할 수 없음 — Cloud Functions 만 가능)
+      allow update: if request.auth != null
+                    && request.auth.uid == uid
+                    && (!('isPremium' in request.resource.data)
+                        || request.resource.data.isPremium == resource.data.isPremium);
+
+      // 삭제는 Functions 에서만 (계정 탈퇴 시)
+      allow delete: if false;
+    }
+
+    // 프리미엄 인덱스 — Webhook(Admin SDK) 만 쓰기. 클라이언트는 본인 문서만 읽기.
+    match /premium_users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update, delete: if false;
+    }
+
+    // 구매 이벤트 이력 (append-only, 본인만 read)
+    match /purchases/{uid}/events/{eventId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update, delete: if false;
+    }
+  }
+}

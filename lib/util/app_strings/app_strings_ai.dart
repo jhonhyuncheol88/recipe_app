@@ -13,7 +13,7 @@ mixin AppStringsAi {
         return 'AI食谱生成';
       case AppLocale.usa:
         return 'AI Recipe Generation';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Recipe Generation';
       case AppLocale.vietnam:
         return 'Tạo công thức AI';
@@ -30,7 +30,7 @@ mixin AppStringsAi {
         return '与AI一起制作创意食谱';
       case AppLocale.usa:
         return 'Create Creative Recipes with AI';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Create Creative Recipes with AI';
       case AppLocale.vietnam:
         return 'Tạo công thức sáng tạo với AI';
@@ -47,7 +47,7 @@ mixin AppStringsAi {
         return '选择您拥有的食材，AI将建议创意食谱，并告诉您需要的额外材料。';
       case AppLocale.usa:
         return 'Select your available ingredients and AI will suggest creative recipes and tell you about any additional ingredients needed.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Select your available ingredients and AI will suggest creative recipes and tell you about any additional ingredients needed.';
       case AppLocale.vietnam:
         return 'Chọn nguyên liệu bạn có và AI sẽ đề xuất công thức sáng tạo và cho bạn biết về các nguyên liệu bổ sung cần thiết.';
@@ -64,7 +64,7 @@ mixin AppStringsAi {
         return '选择要使用的食材';
       case AppLocale.usa:
         return 'Select Ingredients to Use';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Select Ingredients to Use';
       case AppLocale.vietnam:
         return 'Chọn nguyên liệu để sử dụng';
@@ -81,7 +81,7 @@ mixin AppStringsAi {
         return '已选择的材料';
       case AppLocale.usa:
         return 'Selected Ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Selected Ingredients';
       case AppLocale.vietnam:
         return 'Nguyên liệu đã chọn';
@@ -98,7 +98,7 @@ mixin AppStringsAi {
         return '食谱生成';
       case AppLocale.usa:
         return 'Recipe Generation';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe Generation';
       case AppLocale.vietnam:
         return 'Tạo công thức';
@@ -115,7 +115,7 @@ mixin AppStringsAi {
         return 'AI食谱生成';
       case AppLocale.usa:
         return 'Generate AI Recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Generate AI Recipe';
       case AppLocale.vietnam:
         return 'Tạo công thức AI';
@@ -132,7 +132,7 @@ mixin AppStringsAi {
         return '食谱生成中...';
       case AppLocale.usa:
         return 'Generating Recipe...';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Generating Recipe...';
       case AppLocale.vietnam:
         return 'Đang tạo công thức...';
@@ -149,7 +149,7 @@ mixin AppStringsAi {
         return '生成的食谱';
       case AppLocale.usa:
         return 'Generated Recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Generated Recipe';
       case AppLocale.vietnam:
         return 'Công thức đã tạo';
@@ -166,7 +166,7 @@ mixin AppStringsAi {
         return '烹饪风格';
       case AppLocale.usa:
         return 'Cooking Style';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Cooking Style';
       case AppLocale.vietnam:
         return 'Phong cách nấu ăn';
@@ -183,7 +183,7 @@ mixin AppStringsAi {
         return '份数';
       case AppLocale.usa:
         return 'Servings';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Servings';
       case AppLocale.vietnam:
         return 'Phần ăn';
@@ -200,7 +200,7 @@ mixin AppStringsAi {
         return '烹饪时间';
       case AppLocale.usa:
         return 'Cooking Time';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Cooking Time';
       case AppLocale.vietnam:
         return 'Thời gian nấu';
@@ -217,7 +217,7 @@ mixin AppStringsAi {
         return '难度';
       case AppLocale.usa:
         return 'Difficulty';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Difficulty';
       case AppLocale.vietnam:
         return 'Độ khó';
@@ -234,7 +234,7 @@ mixin AppStringsAi {
         return '所需材料';
       case AppLocale.usa:
         return 'Required Ingredients';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Required Ingredients';
       case AppLocale.vietnam:
         return 'Nguyên liệu cần thiết';
@@ -251,7 +251,7 @@ mixin AppStringsAi {
         return '额外需要的材料';
       case AppLocale.usa:
         return 'Additional Ingredients Needed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Additional Ingredients Needed';
       case AppLocale.vietnam:
         return 'Nguyên liệu bổ sung cần thiết';
@@ -268,7 +268,7 @@ mixin AppStringsAi {
         return '一次性添加所有材料';
       case AppLocale.usa:
         return 'Add All Ingredients at Once';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Add All Ingredients at Once';
       case AppLocale.vietnam:
         return 'Thêm tất cả nguyên liệu cùng lúc';
@@ -285,7 +285,7 @@ mixin AppStringsAi {
         return 'AI食谱生成器使用方法';
       case AppLocale.usa:
         return 'AI Recipe Generator Usage';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Recipe Generator Usage';
       case AppLocale.vietnam:
         return 'Cách sử dụng trình tạo công thức AI';
@@ -314,7 +314,7 @@ mixin AppStringsAi {
             '2. Press AI recipe generation button\n'
             '3. AI suggests creative recipes\n'
             '4. We\'ll let you know if additional ingredients are needed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '1. Select ingredients to use\n'
             '2. Press AI recipe generation button\n'
             '3. AI suggests creative recipes\n'
@@ -329,7 +329,7 @@ mixin AppStringsAi {
             '2. Press the AI Recipe Generation button\n'
             '3. AI suggests creative recipes\n'
             '4. Tells you about any additional ingredients needed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '1. Select ingredients to use\n'
             '2. Press the AI Recipe Generation button\n'
             '3. AI suggests creative recipes\n'
@@ -347,7 +347,7 @@ mixin AppStringsAi {
         return '为了生成食谱，请至少选择1种食材。';
       case AppLocale.usa:
         return 'Please select at least 1 ingredient to generate a recipe.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Please select at least 1 ingredient to generate a recipe.';
       case AppLocale.vietnam:
         return 'Vui lòng chọn ít nhất 1 nguyên liệu để tạo công thức.';
@@ -364,7 +364,7 @@ mixin AppStringsAi {
         return '没有已注册的食材。\n请先添加食材。';
       case AppLocale.usa:
         return 'No ingredients registered.\nPlease add ingredients first.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'No ingredients registered.\nPlease add ingredients first.';
       case AppLocale.vietnam:
         return 'Chưa có nguyên liệu nào được đăng ký.\\nVui lòng thêm nguyên liệu trước.';
@@ -381,7 +381,7 @@ mixin AppStringsAi {
         return '无法加载食材。';
       case AppLocale.usa:
         return 'Cannot load ingredients.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Cannot load ingredients.';
       case AppLocale.vietnam:
         return 'Không thể tải nguyên liệu.';
@@ -398,7 +398,7 @@ mixin AppStringsAi {
         return '食谱生成时发生错误';
       case AppLocale.usa:
         return 'An error occurred while generating the recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'An error occurred while generating the recipe';
       case AppLocale.vietnam:
         return 'Đã xảy ra lỗi khi tạo công thức';
@@ -415,7 +415,7 @@ mixin AppStringsAi {
         return '$featureName功能将在后续实现。';
       case AppLocale.usa:
         return '$featureName feature will be implemented later.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '$featureName feature will be implemented later.';
       case AppLocale.vietnam:
         return 'Tính năng $featureName sẽ được triển khai sau.';
@@ -432,7 +432,7 @@ mixin AppStringsAi {
         return '材料添加';
       case AppLocale.usa:
         return 'Ingredient Addition';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Ingredient Addition';
       case AppLocale.vietnam:
         return 'Thêm nguyên liệu';
@@ -449,7 +449,7 @@ mixin AppStringsAi {
         return '批量材料添加';
       case AppLocale.usa:
         return 'Bulk Ingredient Addition';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Bulk Ingredient Addition';
       case AppLocale.vietnam:
         return 'Thêm nguyên liệu hàng loạt';
@@ -467,7 +467,7 @@ mixin AppStringsAi {
         return 'AI食谱管理';
       case AppLocale.usa:
         return 'AI Recipe Management';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Recipe Management';
       case AppLocale.vietnam:
         return 'Quản lý công thức AI';
@@ -484,7 +484,7 @@ mixin AppStringsAi {
         return '已保存的AI食谱';
       case AppLocale.usa:
         return 'Saved AI Recipes';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Saved AI Recipes';
       case AppLocale.vietnam:
         return 'Công thức AI đã lưu';
@@ -501,7 +501,7 @@ mixin AppStringsAi {
         return 'AI食谱列表';
       case AppLocale.usa:
         return 'AI Recipe List';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Recipe List';
       case AppLocale.vietnam:
         return 'Danh sách công thức AI';
@@ -518,7 +518,7 @@ mixin AppStringsAi {
         return '没有已保存的AI食谱';
       case AppLocale.usa:
         return 'No saved AI recipes';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'No saved AI recipes';
       case AppLocale.vietnam:
         return 'Không có công thức AI đã lưu';
@@ -535,7 +535,7 @@ mixin AppStringsAi {
         return '使用AI生成食谱时会自动保存。\n创建您的第一个AI食谱吧！';
       case AppLocale.usa:
         return 'AI-generated recipes are automatically saved.\nCreate your first AI recipe!';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI-generated recipes are automatically saved.\nCreate your first AI recipe!';
       case AppLocale.vietnam:
         return 'Các công thức do AI tạo được tự động lưu.\\nTạo công thức AI đầu tiên của bạn!';
@@ -552,7 +552,7 @@ mixin AppStringsAi {
         return '转换为普通食谱';
       case AppLocale.usa:
         return 'Convert to Recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Convert to Recipe';
       case AppLocale.vietnam:
         return 'Chuyển đổi thành công thức';
@@ -569,7 +569,7 @@ mixin AppStringsAi {
         return '可以将AI食谱转换为普通食谱进行管理';
       case AppLocale.usa:
         return 'Convert AI recipe to regular recipe for management';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Convert AI recipe to regular recipe for management';
       case AppLocale.vietnam:
         return 'Chuyển đổi công thức AI thành công thức thông thường để quản lý';
@@ -586,7 +586,7 @@ mixin AppStringsAi {
         return 'AI食谱统计';
       case AppLocale.usa:
         return 'AI Recipe Stats';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Recipe Stats';
       case AppLocale.vietnam:
         return 'Thống kê công thức AI';
@@ -603,7 +603,7 @@ mixin AppStringsAi {
         return '总生成食谱数';
       case AppLocale.usa:
         return 'Total Generated';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Total Generated';
       case AppLocale.vietnam:
         return 'Tổng số đã tạo';
@@ -620,7 +620,7 @@ mixin AppStringsAi {
         return '已转换食谱';
       case AppLocale.usa:
         return 'Converted Recipes';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Converted Recipes';
       case AppLocale.vietnam:
         return 'Công thức đã chuyển đổi';
@@ -637,7 +637,7 @@ mixin AppStringsAi {
         return '转换率';
       case AppLocale.usa:
         return 'Conversion Rate';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Conversion Rate';
       case AppLocale.vietnam:
         return 'Tỷ lệ chuyển đổi';
@@ -654,7 +654,7 @@ mixin AppStringsAi {
         return '最近生成的食谱';
       case AppLocale.usa:
         return 'Recently Generated';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recently Generated';
       case AppLocale.vietnam:
         return 'Gần đây đã tạo';
@@ -671,7 +671,7 @@ mixin AppStringsAi {
         return '按烹饪风格筛选';
       case AppLocale.usa:
         return 'Filter by Cuisine';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Filter by Cuisine';
       case AppLocale.vietnam:
         return 'Lọc theo ẩm thực';
@@ -688,7 +688,7 @@ mixin AppStringsAi {
         return '搜索AI食谱';
       case AppLocale.usa:
         return 'Search AI Recipes';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Search AI Recipes';
       case AppLocale.vietnam:
         return 'Tìm kiếm công thức AI';
@@ -705,7 +705,7 @@ mixin AppStringsAi {
         return '按食谱名称、描述、烹饪风格搜索';
       case AppLocale.usa:
         return 'Search by recipe name, description, or cuisine style';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Search by recipe name, description, or cuisine style';
       case AppLocale.vietnam:
         return 'Tìm kiếm theo tên công thức, mô tả hoặc phong cách ẩm thực';
@@ -722,7 +722,7 @@ mixin AppStringsAi {
         return '删除AI食谱';
       case AppLocale.usa:
         return 'Delete AI Recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Delete AI Recipe';
       case AppLocale.vietnam:
         return 'Xóa công thức AI';
@@ -739,7 +739,7 @@ mixin AppStringsAi {
         return '确定要删除这个AI食谱吗？';
       case AppLocale.usa:
         return 'Are you sure you want to delete this AI recipe?';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Are you sure you want to delete this AI recipe?';
       case AppLocale.vietnam:
         return 'Bạn có chắc chắn muốn xóa công thức AI này không?';
@@ -756,7 +756,7 @@ mixin AppStringsAi {
         return 'AI食谱已删除';
       case AppLocale.usa:
         return 'AI recipe has been deleted';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI recipe has been deleted';
       case AppLocale.vietnam:
         return 'Công thức AI đã bị xóa';
@@ -773,7 +773,7 @@ mixin AppStringsAi {
         return 'AI食谱已自动保存';
       case AppLocale.usa:
         return 'AI recipe has been automatically saved';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI recipe has been automatically saved';
       case AppLocale.vietnam:
         return 'Công thức AI đã được tự động lưu';
@@ -790,7 +790,7 @@ mixin AppStringsAi {
         return 'AI食谱详情';
       case AppLocale.usa:
         return 'AI Recipe Detail';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Recipe Detail';
       case AppLocale.vietnam:
         return 'Chi tiết công thức AI';
@@ -807,7 +807,7 @@ mixin AppStringsAi {
         return '材料分析';
       case AppLocale.usa:
         return 'Ingredients Analysis';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Ingredients Analysis';
       case AppLocale.vietnam:
         return 'Phân tích nguyên liệu';
@@ -824,7 +824,7 @@ mixin AppStringsAi {
         return '成本信息';
       case AppLocale.usa:
         return 'Cost Information';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Cost Information';
       case AppLocale.vietnam:
         return 'Thông tin chi phí';
@@ -841,7 +841,7 @@ mixin AppStringsAi {
         return '烹饪方法';
       case AppLocale.usa:
         return 'Cooking Instructions';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Cooking Instructions';
       case AppLocale.vietnam:
         return 'Hướng dẫn nấu ăn';
@@ -858,7 +858,7 @@ mixin AppStringsAi {
         return '材料可用性';
       case AppLocale.usa:
         return 'Ingredient Availability';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Ingredient Availability';
       case AppLocale.vietnam:
         return 'Tính sẵn có của nguyên liệu';
@@ -875,7 +875,7 @@ mixin AppStringsAi {
         return '总成本';
       case AppLocale.usa:
         return 'Total Cost';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Total Cost';
       case AppLocale.vietnam:
         return 'Tổng chi phí';
@@ -892,7 +892,7 @@ mixin AppStringsAi {
         return 'AI食谱标准';
       case AppLocale.usa:
         return 'AI Recipe Standard';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Recipe Standard';
       case AppLocale.vietnam:
         return 'Tiêu chuẩn công thức AI';
@@ -909,7 +909,7 @@ mixin AppStringsAi {
         return '需要添加这种材料';
       case AppLocale.usa:
         return 'This ingredient needs to be added';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'This ingredient needs to be added';
       case AppLocale.vietnam:
         return 'Nguyên liệu này cần được thêm';
@@ -926,7 +926,7 @@ mixin AppStringsAi {
         return '正在加载AI食谱...';
       case AppLocale.usa:
         return 'Loading AI recipe...';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Loading AI recipe...';
       case AppLocale.vietnam:
         return 'Đang tải công thức AI...';
@@ -943,7 +943,7 @@ mixin AppStringsAi {
         return '找不到AI食谱';
       case AppLocale.usa:
         return 'AI recipe not found';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI recipe not found';
       case AppLocale.vietnam:
         return 'Không tìm thấy công thức AI';
@@ -960,7 +960,7 @@ mixin AppStringsAi {
         return '已转换为普通食谱';
       case AppLocale.usa:
         return 'Converted to regular recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Converted to regular recipe';
       case AppLocale.vietnam:
         return 'Đã chuyển đổi thành công thức thông thường';
@@ -977,7 +977,7 @@ mixin AppStringsAi {
         return '转换失败';
       case AppLocale.usa:
         return 'Conversion failed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Conversion failed';
       case AppLocale.vietnam:
         return 'Chuyển đổi thất bại';
@@ -995,7 +995,7 @@ mixin AppStringsAi {
         return 'AI销售分析';
       case AppLocale.usa:
         return 'AI Sales Analysis';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Sales Analysis';
       case AppLocale.vietnam:
         return 'Phân tích bán hàng AI';
@@ -1012,7 +1012,7 @@ mixin AppStringsAi {
         return 'AI销售分析结果';
       case AppLocale.usa:
         return 'AI Sales Analysis Results';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Sales Analysis Results';
       case AppLocale.vietnam:
         return 'Kết quả phân tích bán hàng AI';
@@ -1029,7 +1029,7 @@ mixin AppStringsAi {
         return 'AI分析食谱的销售策略，建议最优价格和营销方案。';
       case AppLocale.usa:
         return 'AI analyzes recipe sales strategies and suggests optimal pricing and marketing approaches.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI analyzes recipe sales strategies and suggests optimal pricing and marketing approaches.';
       case AppLocale.vietnam:
         return 'AI phân tích chiến lược bán hàng công thức và đề xuất giá cả tối ưu và cách tiếp thị.';
@@ -1046,7 +1046,7 @@ mixin AppStringsAi {
         return 'AI销售分析';
       case AppLocale.usa:
         return 'AI Sales Analysis';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Sales Analysis';
       case AppLocale.vietnam:
         return 'Phân tích bán hàng AI';
@@ -1063,7 +1063,7 @@ mixin AppStringsAi {
         return 'AI销售分析将在观看广告后为您进行！';
       case AppLocale.usa:
         return 'AI sales analysis will proceed after watching an ad!';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI sales analysis will proceed after watching an ad!';
       case AppLocale.vietnam:
         return 'Phân tích bán hàng AI sẽ tiến hành sau khi xem quảng cáo!';
@@ -1080,7 +1080,7 @@ mixin AppStringsAi {
         return '观看广告后，AI将分析食谱的销售策略，建议最优价格和营销方案。';
       case AppLocale.usa:
         return 'After watching an ad, AI will analyze the recipe\'s sales strategy and suggest optimal pricing and marketing approaches.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'After watching an ad, AI will analyze the recipe\'s sales strategy and suggest optimal pricing and marketing approaches.';
       case AppLocale.vietnam:
         return 'Sau khi xem quảng cáo, AI sẽ phân tích chiến lược bán hàng của công thức và đề xuất giá cả tối ưu và cách tiếp thị.';
@@ -1097,7 +1097,7 @@ mixin AppStringsAi {
         return '💰 最优销售价格分析';
       case AppLocale.usa:
         return '💰 Optimal Price Analysis';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '💰 Optimal Price Analysis';
       case AppLocale.vietnam:
         return '💰 Phân tích giá tối ưu';
@@ -1114,7 +1114,7 @@ mixin AppStringsAi {
         return '📢 营销要点';
       case AppLocale.usa:
         return '📢 Marketing Points';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '📢 Marketing Points';
       case AppLocale.vietnam:
         return '📢 Điểm tiếp thị';
@@ -1131,7 +1131,7 @@ mixin AppStringsAi {
         return '🎯 服务指南';
       case AppLocale.usa:
         return '🎯 Serving Guidance';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '🎯 Serving Guidance';
       case AppLocale.vietnam:
         return '🎯 Hướng dẫn phục vụ';
@@ -1148,7 +1148,7 @@ mixin AppStringsAi {
         return '💡 商业洞察';
       case AppLocale.usa:
         return '💡 Business Insights';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return '💡 Business Insights';
       case AppLocale.vietnam:
         return '💡 Thông tin kinh doanh';
@@ -1165,7 +1165,7 @@ mixin AppStringsAi {
         return '推荐销售价格';
       case AppLocale.usa:
         return 'Recommended Price';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recommended Price';
       case AppLocale.vietnam:
         return 'Giá đề xuất';
@@ -1182,7 +1182,7 @@ mixin AppStringsAi {
         return '目标成本率';
       case AppLocale.usa:
         return 'Target Cost Ratio';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Target Cost Ratio';
       case AppLocale.vietnam:
         return 'Tỷ lệ chi phí mục tiêu';
@@ -1199,7 +1199,7 @@ mixin AppStringsAi {
         return '每份预期收益';
       case AppLocale.usa:
         return 'Profit per Serving';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Profit per Serving';
       case AppLocale.vietnam:
         return 'Lợi nhuận mỗi phần ăn';
@@ -1216,7 +1216,7 @@ mixin AppStringsAi {
         return '目标客户群';
       case AppLocale.usa:
         return 'Target Customers';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Target Customers';
       case AppLocale.vietnam:
         return 'Khách hàng mục tiêu';
@@ -1233,7 +1233,7 @@ mixin AppStringsAi {
         return '最佳销售时机';
       case AppLocale.usa:
         return 'Optimal Selling Season';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Optimal Selling Season';
       case AppLocale.vietnam:
         return 'Mùa bán hàng tối ưu';
@@ -1250,7 +1250,7 @@ mixin AppStringsAi {
         return '独特销售卖点';
       case AppLocale.usa:
         return 'Unique Selling Points';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Unique Selling Points';
       case AppLocale.vietnam:
         return 'Điểm bán hàng độc đáo';
@@ -1267,7 +1267,7 @@ mixin AppStringsAi {
         return '竞争优势';
       case AppLocale.usa:
         return 'Competitive Advantages';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Competitive Advantages';
       case AppLocale.vietnam:
         return 'Lợi thế cạnh tranh';
@@ -1284,7 +1284,7 @@ mixin AppStringsAi {
         return '开场白';
       case AppLocale.usa:
         return 'Opening Script';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Opening Script';
       case AppLocale.vietnam:
         return 'Kịch bản mở đầu';
@@ -1301,7 +1301,7 @@ mixin AppStringsAi {
         return '食谱说明';
       case AppLocale.usa:
         return 'Recipe Description';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe Description';
       case AppLocale.vietnam:
         return 'Mô tả công thức';
@@ -1318,7 +1318,7 @@ mixin AppStringsAi {
         return '价格说明';
       case AppLocale.usa:
         return 'Price Justification';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Price Justification';
       case AppLocale.vietnam:
         return 'Biện minh giá';
@@ -1335,7 +1335,7 @@ mixin AppStringsAi {
         return '追加销售技巧';
       case AppLocale.usa:
         return 'Upselling Tips';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Upselling Tips';
       case AppLocale.vietnam:
         return 'Mẹo bán thêm';
@@ -1352,7 +1352,7 @@ mixin AppStringsAi {
         return '成本效率';
       case AppLocale.usa:
         return 'Cost Efficiency';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Cost Efficiency';
       case AppLocale.vietnam:
         return 'Hiệu quả chi phí';
@@ -1369,7 +1369,7 @@ mixin AppStringsAi {
         return '盈利能力提升技巧';
       case AppLocale.usa:
         return 'Profitability Tips';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Profitability Tips';
       case AppLocale.vietnam:
         return 'Mẹo sinh lợi';
@@ -1386,7 +1386,7 @@ mixin AppStringsAi {
         return '注意事项';
       case AppLocale.usa:
         return 'Risk Factors';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Risk Factors';
       case AppLocale.vietnam:
         return 'Yếu tố rủi ro';
@@ -1403,7 +1403,7 @@ mixin AppStringsAi {
         return '关闭';
       case AppLocale.usa:
         return 'Close';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Close';
       case AppLocale.vietnam:
         return 'Đóng';
@@ -1420,7 +1420,7 @@ mixin AppStringsAi {
         return 'AI分析';
       case AppLocale.usa:
         return 'Analyze with AI';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Analyze with AI';
       case AppLocale.vietnam:
         return 'Phân tích với AI';
@@ -1437,7 +1437,7 @@ mixin AppStringsAi {
         return '分析中...';
       case AppLocale.usa:
         return 'Analyzing...';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Analyzing...';
       case AppLocale.vietnam:
         return 'Đang phân tích...';
@@ -1454,7 +1454,7 @@ mixin AppStringsAi {
         return '分析失败';
       case AppLocale.usa:
         return 'Analysis Failed';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Analysis Failed';
       case AppLocale.vietnam:
         return 'Phân tích thất bại';
@@ -1471,7 +1471,7 @@ mixin AppStringsAi {
         return 'AI分析失败，请重试。';
       case AppLocale.usa:
         return 'AI analysis failed. Please try again.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI analysis failed. Please try again.';
       case AppLocale.vietnam:
         return 'Phân tích AI thất bại. Vui lòng thử lại.';
@@ -1488,7 +1488,7 @@ mixin AppStringsAi {
         return '无法获取分析结果';
       case AppLocale.usa:
         return 'Unable to retrieve analysis results';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Unable to retrieve analysis results';
       case AppLocale.vietnam:
         return 'Không thể lấy kết quả phân tích';
@@ -1505,7 +1505,7 @@ mixin AppStringsAi {
         return '分析时发生错误';
       case AppLocale.usa:
         return 'An error occurred during analysis';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'An error occurred during analysis';
       case AppLocale.vietnam:
         return 'Đã xảy ra lỗi trong quá trình phân tích';
@@ -1522,7 +1522,7 @@ mixin AppStringsAi {
         return '特殊要求';
       case AppLocale.usa:
         return 'Special Request';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Special Request';
       case AppLocale.vietnam:
         return 'Yêu cầu đặc biệt';
@@ -1539,7 +1539,7 @@ mixin AppStringsAi {
         return '例：适合高级餐厅的价格策略、特定客户群定位等';
       case AppLocale.usa:
         return 'e.g., Premium restaurant pricing strategy, specific customer targeting, etc.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'e.g., Premium restaurant pricing strategy, specific customer targeting, etc.';
       case AppLocale.vietnam:
         return 'VD: Chiến lược giá nhà hàng cao cấp, nhắm mục tiêu khách hàng cụ thể, v.v.';
@@ -1556,7 +1556,7 @@ mixin AppStringsAi {
         return '开始分析';
       case AppLocale.usa:
         return 'Start Analysis';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Start Analysis';
       case AppLocale.vietnam:
         return 'Bắt đầu phân tích';
@@ -1574,7 +1574,7 @@ mixin AppStringsAi {
         return 'AI';
       case AppLocale.usa:
         return 'AI';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI';
       case AppLocale.vietnam:
         return 'AI';
@@ -1592,7 +1592,7 @@ mixin AppStringsAi {
         return '已转换';
       case AppLocale.usa:
         return 'Converted';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Converted';
       case AppLocale.vietnam:
         return 'Đã chuyển đổi';
@@ -1610,7 +1610,7 @@ mixin AppStringsAi {
         return 'AI食谱生成';
       case AppLocale.usa:
         return 'AI Recipe Generation';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Recipe Generation';
       case AppLocale.vietnam:
         return 'Tạo công thức AI';
@@ -1628,7 +1628,7 @@ mixin AppStringsAi {
         return 'AI食谱生成';
       case AppLocale.usa:
         return 'AI Recipe Generation';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI Recipe Generation';
       case AppLocale.vietnam:
         return 'Tạo công thức AI';
@@ -1645,7 +1645,7 @@ mixin AppStringsAi {
         return 'AI食谱生成将在观看广告后为您进行！';
       case AppLocale.usa:
         return 'AI recipe generation will proceed after watching an ad!';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'AI recipe generation will proceed after watching an ad!';
       case AppLocale.vietnam:
         return 'Tạo công thức AI sẽ tiến hành sau khi xem quảng cáo!';
@@ -1662,7 +1662,7 @@ mixin AppStringsAi {
         return '观看广告后，AI将生成创意食谱。';
       case AppLocale.usa:
         return 'After watching an ad, AI will generate creative recipes.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'After watching an ad, AI will generate creative recipes.';
       case AppLocale.vietnam:
         return 'Sau khi xem quảng cáo, AI sẽ tạo các công thức sáng tạo.';
@@ -1679,7 +1679,7 @@ mixin AppStringsAi {
         return '观看广告后，AI将生成韩餐风格的食谱。';
       case AppLocale.usa:
         return 'After watching an ad, AI will generate Korean style recipes.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'After watching an ad, AI will generate Korean style recipes.';
       case AppLocale.vietnam:
         return 'Sau khi xem quảng cáo, AI sẽ tạo các công thức phong cách Hàn Quốc.';
@@ -1696,7 +1696,7 @@ mixin AppStringsAi {
         return '观看广告后，AI将生成融合风格的食谱。';
       case AppLocale.usa:
         return 'After watching an ad, AI will generate fusion style recipes.';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'After watching an ad, AI will generate fusion style recipes.';
       case AppLocale.vietnam:
         return 'Sau khi xem quảng cáo, AI sẽ tạo các công thức phong cách fusion.';
@@ -1713,7 +1713,7 @@ mixin AppStringsAi {
         return 'Gemini分析时发生错误';
       case AppLocale.usa:
         return 'An error occurred during Gemini analysis';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'An error occurred during Gemini analysis';
       case AppLocale.vietnam:
         return 'Đã xảy ra lỗi trong quá trình phân tích Gemini';
@@ -1730,7 +1730,7 @@ mixin AppStringsAi {
         return '食谱转换';
       case AppLocale.usa:
         return 'Recipe Conversion';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Recipe Conversion';
       case AppLocale.vietnam:
         return 'Chuyển đổi công thức';
@@ -1747,7 +1747,7 @@ mixin AppStringsAi {
         return '您要将此AI食谱转换为普通食谱并保存吗？';
       case AppLocale.usa:
         return 'Do you want to convert and save this AI recipe as a regular recipe?';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Do you want to convert and save this AI recipe as a regular recipe?';
       case AppLocale.vietnam:
         return 'Bạn có muốn chuyển đổi và lưu công thức AI này dưới dạng công thức thông thường không?';
@@ -1764,7 +1764,7 @@ mixin AppStringsAi {
         return '已转换为普通食谱';
       case AppLocale.usa:
         return 'Converted to regular recipe';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Converted to regular recipe';
       case AppLocale.vietnam:
         return 'Đã chuyển đổi thành công thức thông thường';

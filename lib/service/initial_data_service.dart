@@ -75,8 +75,8 @@ class InitialDataService {
         return 1.0 / 200.0; // 1위안 = 200원
       case AppLocale.japan:
         return 1.0 / 9.0; // 1엔 = 9원
-      case AppLocale.euro:
-        return 1.0 / 1300.0; // 유로(기본값으로 미국과 동일)
+      case AppLocale.chinaTraditional:
+        return 1.0 / 45.0; // 대략 1 TWD ≈ 45원 (데모용)
       case AppLocale.vietnam:
         return 1.0 / 23000.0; // 1동 = 23,000원
     }
@@ -99,7 +99,8 @@ class InitialDataService {
         units.firstWhere((u) => u.name == 'ml', orElse: () => units.first);
     final countUnit = locale == AppLocale.korea ||
             locale == AppLocale.japan ||
-            locale == AppLocale.china
+            locale == AppLocale.china ||
+            locale == AppLocale.chinaTraditional
         ? units.firstWhere((u) => u.name == '개', orElse: () => units.first)
         : units.firstWhere((u) => u.name == 'count', orElse: () => units.first);
 
@@ -259,12 +260,14 @@ class InitialDataService {
         units.firstWhere((u) => u.name == 'ml', orElse: () => units.first);
     final countUnit = locale == AppLocale.korea ||
             locale == AppLocale.japan ||
-            locale == AppLocale.china
+            locale == AppLocale.china ||
+            locale == AppLocale.chinaTraditional
         ? units.firstWhere((u) => u.name == '개', orElse: () => units.first)
         : units.firstWhere((u) => u.name == 'count', orElse: () => units.first);
     final servingUnit = locale == AppLocale.korea ||
             locale == AppLocale.japan ||
-            locale == AppLocale.china
+            locale == AppLocale.china ||
+            locale == AppLocale.chinaTraditional
         ? units.firstWhere((u) => u.name == '인분', orElse: () => units.first)
         : units.firstWhere((u) => u.name == 'serving',
             orElse: () => units.first);
@@ -491,6 +494,8 @@ class InitialDataService {
         return ['玉ねぎ', 'ニンジン', 'ねぎ', '卵', '豆腐'];
       case AppLocale.china:
         return ['洋葱', '胡萝卜', '大葱', '鸡蛋', '豆腐'];
+      case AppLocale.chinaTraditional:
+        return ['洋蔥', '胡蘿蔔', '大蔥', '雞蛋', '豆腐'];
       case AppLocale.usa:
         return ['Onion', 'Carrot', 'Green onion', 'Egg', 'Tofu'];
       default:
@@ -518,6 +523,19 @@ class InitialDataService {
         ];
       case AppLocale.china:
         return ['大米', '酱油', '香油', '辣椒酱', '大酱', '糖', '盐', '蒜蓉', '芝麻', '食用油'];
+      case AppLocale.chinaTraditional:
+        return [
+          '大米',
+          '醬油',
+          '香油',
+          '辣椒醬',
+          '大醬',
+          '糖',
+          '鹽',
+          '蒜蓉',
+          '芝麻',
+          '食用油'
+        ];
       case AppLocale.usa:
         return [
           'Rice',
@@ -565,6 +583,15 @@ class InitialDataService {
           'recipe2_desc': '浓郁的韩国代表性汤料理',
           'recipe3': '鸡蛋卷',
           'recipe3_desc': '柔软营养丰富的配菜',
+        };
+      case AppLocale.chinaTraditional:
+        return {
+          'recipe1': '泡菜炒飯',
+          'recipe1_desc': '簡單美味的韓式料理',
+          'recipe2': '大醬湯',
+          'recipe2_desc': '濃郁的韓國代表性湯料理',
+          'recipe3': '雞蛋卷',
+          'recipe3_desc': '柔軟營養豐富的配菜',
         };
       case AppLocale.usa:
         return {

@@ -84,7 +84,8 @@ class AppButton extends StatelessWidget {
         return colorScheme.surface;
       case AppButtonType.success:
         return const Color(
-            0xFF7FB069); // Keep high semantic colors for now or use colorScheme.tertiary
+          0xFF7FB069,
+        ); // Keep high semantic colors for now or use colorScheme.tertiary
       case AppButtonType.warning:
         return colorScheme.secondaryContainer;
       case AppButtonType.error:

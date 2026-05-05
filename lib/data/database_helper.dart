@@ -28,7 +28,7 @@ class DatabaseHelper {
 
       final database = await openDatabase(
         path,
-        version: 6, // 버전 업데이트 (레시피 가격 히스토리 테이블 추가)
+        version: 8, // 버전 업데이트 (가격 히스토리에 sell_price 컬럼 추가)
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       );
@@ -98,6 +98,7 @@ class DatabaseHelper {
           output_amount REAL NOT NULL,
           output_unit TEXT NOT NULL,
           total_cost REAL NOT NULL,
+          sell_price REAL NOT NULL DEFAULT 0,
           image_path TEXT,
           created_at TEXT NOT NULL,
           updated_at TEXT NOT NULL,
@@ -217,6 +218,7 @@ class DatabaseHelper {
           id TEXT PRIMARY KEY,
           recipe_id TEXT NOT NULL,
           price REAL NOT NULL,
+          sell_price REAL NOT NULL DEFAULT 0,
           recorded_at TEXT NOT NULL,
           FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
         )
@@ -459,6 +461,47 @@ class DatabaseHelper {
             name: 'DatabaseHelper',
           );
           // 마이그레이션 실패해도 계속 진행
+        }
+      }
+
+      if (oldVersion < 7) {
+        // 버전 7: 레시피 판매가(sell_price) 컬럼 추가
+        developer.log('recipes.sell_price 컬럼 추가 시작', name: 'DatabaseHelper');
+        try {
+          await db.execute(
+            'ALTER TABLE recipes ADD COLUMN sell_price REAL NOT NULL DEFAULT 0',
+          );
+          developer.log('recipes.sell_price 컬럼 추가 완료', name: 'DatabaseHelper');
+        } catch (e) {
+          // 이미 컬럼이 존재하거나 충돌할 수 있어 방어
+          developer.log(
+            'recipes.sell_price 컬럼 추가 스킵: $e',
+            name: 'DatabaseHelper',
+          );
+        }
+      }
+
+      if (oldVersion < 8) {
+        // 버전 8: 가격 히스토리에 sell_price 컬럼 추가 (판매가 변동도 기록)
+        developer.log(
+          'recipe_price_history.sell_price 컬럼 추가 시작',
+          name: 'DatabaseHelper',
+        );
+        try {
+          await db.execute(
+            'ALTER TABLE recipe_price_history ADD COLUMN sell_price REAL NOT NULL DEFAULT 0',
+          );
+          developer.log(
+            'recipe_price_history.sell_price 컬럼 추가 완료',
+            name: 'DatabaseHelper',
+          );
+          // 기존 행은 sell_price 가 0 으로 채워짐 — 의도적: 이전엔 sell_price 자체가 없어
+          // 레시피 본체에서도 0 이었음. 기존 히스토리는 cost 기록용으로만 의미.
+        } catch (e) {
+          developer.log(
+            'recipe_price_history.sell_price 컬럼 추가 스킵: $e',
+            name: 'DatabaseHelper',
+          );
         }
       }
     } catch (e) {

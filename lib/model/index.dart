@@ -1,4 +1,5 @@
 // 모델 클래스들을 한 곳에서 export
+export 'app_user.dart';
 export 'ingredient.dart';
 export 'unit.dart';
 export 'recipe.dart';

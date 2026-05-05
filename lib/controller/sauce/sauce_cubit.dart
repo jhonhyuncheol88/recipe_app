@@ -267,4 +267,24 @@ class SauceCubit extends Cubit<SauceState> {
       emit(SauceError('소스 구성 재료 수정에 실패했습니다: $e'));
     }
   }
+
+  /// 재료 변경 후 영향받는 소스들 원가 재계산 + 목록 emit.
+  ///
+  /// IngredientCubit 에서 재료 가격이 변경되면 호출됨. 그 재료를 사용하는 소스의
+  /// totalCost 를 다시 계산해서 한 번에 emit.
+  Future<void> refreshAffectedByIngredient(String ingredientId) async {
+    try {
+      final sauces = await _sauceRepository.getAllSauces();
+      for (final s in sauces) {
+        final items = await _sauceRepository.getIngredientsForSauce(s.id);
+        if (items.any((it) => it.ingredientId == ingredientId)) {
+          await _sauceCostService.recomputeAndSaveSauce(s.id);
+        }
+      }
+      final fresh = await _sauceRepository.getAllSauces();
+      emit(SauceLoaded(sauces: fresh));
+    } catch (_) {
+      // refresh 실패는 critical 이 아니므로 silent.
+    }
+  }
 }

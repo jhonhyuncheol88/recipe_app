@@ -74,7 +74,10 @@ class AiSalesAnalysisService {
 
       // 응답 파싱 및 반환
       return _parseAnalysisResponse(
-          responseText, recipe, userLanguage ?? 'korea');
+        responseText,
+        recipe,
+        userLanguage ?? 'korea',
+      );
     } catch (e) {
       // 에러 발생 시 기본 분석 결과 반환
       return _getDefaultAnalysis(recipe, userLanguage ?? 'korea');
@@ -96,26 +99,30 @@ class AiSalesAnalysisService {
     final isKorean = language.toLowerCase() == 'korea';
     final isEnglish = language.toLowerCase() == 'usa';
     final isChinese = language.toLowerCase() == 'china';
+    final isChineseTraditional = language.toLowerCase() == 'chinatraditional';
     final isJapanese = language.toLowerCase() == 'japan';
 
     // 사용자 질문이 있는 경우 포함
-    final userQuerySection = userQuery != null && userQuery.isNotEmpty
-        ? '''
+    final userQuerySection =
+        userQuery != null && userQuery.isNotEmpty
+            ? '''
 사용자 특별 요청사항:
 $userQuery
 
 위 요청사항을 반드시 고려하여 분석해주세요.
 '''
-        : '';
+            : '';
 
     // 재료 정보 구성
-    final ingredientDetails = ingredients.map((ingredient) {
-      final recipeIngredient = recipe.ingredients.firstWhere(
-        (ri) => ri.ingredientId == ingredient.id,
-        orElse: () => recipe.ingredients.first,
-      );
-      return '${ingredient.name} ${recipeIngredient.amount}${recipeIngredient.unitId}';
-    }).join(', ');
+    final ingredientDetails = ingredients
+        .map((ingredient) {
+          final recipeIngredient = recipe.ingredients.firstWhere(
+            (ri) => ri.ingredientId == ingredient.id,
+            orElse: () => recipe.ingredients.first,
+          );
+          return '${ingredient.name} ${recipeIngredient.amount}${recipeIngredient.unitId}';
+        })
+        .join(', ');
 
     // 언어별 프롬프트 구성
     if (isKorean) {
@@ -270,8 +277,8 @@ Analysis Considerations:
 ''';
     }
 
-    if (isChinese) {
-      // 중국어 프롬프트
+    if (isChinese || isChineseTraditional) {
+      // 중국어 프롬프트（간체·번체 동일 구조, 번체 사용자는 UI에서 繁體 표기）
       return '''
 您是一位专为餐厅经营者提供帮助的优秀市场营销专家AI。
 请根据给定的食谱信息分析并建议销售策略。
@@ -481,7 +488,10 @@ Pricing Guidelines (Profit Margin Based on Current Input Value):
 
   /// AI 응답 파싱
   Map<String, dynamic> _parseAnalysisResponse(
-      String response, Recipe recipe, String language) {
+    String response,
+    Recipe recipe,
+    String language,
+  ) {
     try {
       // JSON 부분만 추출 (```json``` 블록이 있는 경우)
       String jsonText = response;
@@ -543,26 +553,32 @@ Pricing Guidelines (Profit Margin Based on Current Input Value):
 
               // 디버깅을 위한 로그
               print(
-                  '🔍 가격 검증: AI 추천=$recommendedPrice, 원가=${recipe.totalCost}, '
-                  '예상 범위=${expectedMinPrice.toStringAsFixed(2)}~${expectedMaxPrice.toStringAsFixed(2)}');
+                '🔍 가격 검증: AI 추천=$recommendedPrice, 원가=${recipe.totalCost}, '
+                '예상 범위=${expectedMinPrice.toStringAsFixed(2)}~${expectedMaxPrice.toStringAsFixed(2)}',
+              );
 
               if (recommendedPrice > expectedMaxPrice ||
                   recommendedPrice < expectedMinPrice) {
                 print(
-                    '⚠️ AI 추천 가격이 비정상적입니다: $recommendedPrice (원가: ${recipe.totalCost})');
+                  '⚠️ AI 추천 가격이 비정상적입니다: $recommendedPrice (원가: ${recipe.totalCost})',
+                );
                 print('기본 계산값(원가율 25%)으로 보정합니다.');
 
                 // 기본 25% 원가율로 재계산
                 final correctedPrice = recipe.totalCost / 0.25;
-                final correctedPriceFormatted =
-                    _formatPriceForLocale(correctedPrice, language);
+                final correctedPriceFormatted = _formatPriceForLocale(
+                  correctedPrice,
+                  language,
+                );
                 optimalPrice['recommended_price'] =
                     correctedPriceFormatted.toString();
 
                 // 수익도 재계산
                 final correctedProfit = correctedPrice - recipe.totalCost;
-                final correctedProfitFormatted =
-                    _formatPriceForLocale(correctedProfit, language);
+                final correctedProfitFormatted = _formatPriceForLocale(
+                  correctedProfit,
+                  language,
+                );
                 optimalPrice['profit_per_serving'] =
                     correctedProfitFormatted.toString();
 
@@ -628,6 +644,7 @@ Pricing Guidelines (Profit Margin Based on Current Input Value):
     // AppLocale enum name으로 직접 비교
     switch (language.toLowerCase()) {
       case 'china':
+      case 'chinatraditional':
         // 중국어: 소수점 2자리까지 반올림
         return double.parse(price.toStringAsFixed(2));
       case 'japan':
@@ -663,10 +680,14 @@ Pricing Guidelines (Profit Margin Based on Current Input Value):
     final profitPerServing = (recommendedPrice - basePrice);
 
     // 언어별 반올림 방식 적용
-    final recommendedPriceFormatted =
-        _formatPriceForLocale(recommendedPrice, language);
-    final profitPerServingFormatted =
-        _formatPriceForLocale(profitPerServing, language);
+    final recommendedPriceFormatted = _formatPriceForLocale(
+      recommendedPrice,
+      language,
+    );
+    final profitPerServingFormatted = _formatPriceForLocale(
+      profitPerServing,
+      language,
+    );
 
     if (isKorean) {
       return {
@@ -674,7 +695,8 @@ Pricing Guidelines (Profit Margin Based on Current Input Value):
           'recommended_price': recommendedPriceFormatted.toString(),
           'cost_ratio': profitRatePercent.toString(),
           'profit_per_serving': profitPerServingFormatted.toString(),
-          'price_analysis': '원가 대비 ${profitRatePercent}% 수익률을 목표로 가격을 설정했습니다. '
+          'price_analysis':
+              '원가 대비 ${profitRatePercent}% 수익률을 목표로 가격을 설정했습니다. '
               '이 가격은 시장 경쟁력과 사장님의 수익을 균형있게 고려한 결과입니다.',
         },
         'marketing_points': {
@@ -705,7 +727,7 @@ Pricing Guidelines (Profit Margin Based on Current Input Value):
           'profit_per_serving': profitPerServingFormatted.toString(),
           'price_analysis':
               'Applied target profit margin of ${profitRatePercent}% based on cost. '
-                  'This price balances market competitiveness with owner profitability.',
+              'This price balances market competitiveness with owner profitability.',
         },
         'marketing_points': {
           'unique_selling_points': [

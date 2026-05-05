@@ -8,7 +8,7 @@ class DateFormatter {
     AppLocale.japan: DateFormat('yyyy年MM月dd日', 'ja_JP'),
     AppLocale.china: DateFormat('yyyy年MM月dd日', 'zh_CN'),
     AppLocale.usa: DateFormat('MMM dd, yyyy', 'en_US'),
-    AppLocale.euro: DateFormat('dd.MM.yyyy', 'de_DE'),
+    AppLocale.chinaTraditional: DateFormat('yyyy/MM/dd', 'zh_TW'),
     AppLocale.vietnam: DateFormat('dd/MM/yyyy', 'vi_VN'),
   };
 
@@ -17,7 +17,7 @@ class DateFormatter {
     AppLocale.japan: DateFormat('HH:mm', 'ja_JP'),
     AppLocale.china: DateFormat('HH:mm', 'zh_CN'),
     AppLocale.usa: DateFormat('h:mm a', 'en_US'),
-    AppLocale.euro: DateFormat('HH:mm', 'de_DE'),
+    AppLocale.chinaTraditional: DateFormat('HH:mm', 'zh_TW'),
     AppLocale.vietnam: DateFormat('HH:mm', 'vi_VN'),
   };
 
@@ -26,7 +26,7 @@ class DateFormatter {
     AppLocale.japan: DateFormat('yyyy年MM月dd日 HH:mm', 'ja_JP'),
     AppLocale.china: DateFormat('yyyy年MM月dd日 HH:mm', 'zh_CN'),
     AppLocale.usa: DateFormat('MMM dd, yyyy h:mm a', 'en_US'),
-    AppLocale.euro: DateFormat('dd.MM.yyyy HH:mm', 'de_DE'),
+    AppLocale.chinaTraditional: DateFormat('yyyy/MM/dd HH:mm', 'zh_TW'),
     AppLocale.vietnam: DateFormat('dd/MM/yyyy HH:mm', 'vi_VN'),
   };
 
@@ -35,7 +35,7 @@ class DateFormatter {
     AppLocale.japan: DateFormat('MM/dd', 'ja_JP'),
     AppLocale.china: DateFormat('MM/dd', 'zh_CN'),
     AppLocale.usa: DateFormat('MM/dd', 'en_US'),
-    AppLocale.euro: DateFormat('dd.MM', 'de_DE'),
+    AppLocale.chinaTraditional: DateFormat('MM/dd', 'zh_TW'),
     AppLocale.vietnam: DateFormat('dd/MM', 'vi_VN'),
   };
 
@@ -74,8 +74,8 @@ class DateFormatter {
           return '${difference.inDays}天前';
         case AppLocale.usa:
           return '${difference.inDays} days ago';
-        case AppLocale.euro:
-          return 'vor ${difference.inDays} Tagen';
+        case AppLocale.chinaTraditional:
+          return '${difference.inDays} 天前';
         case AppLocale.vietnam:
           return '${difference.inDays} ngày trước';
       }
@@ -89,8 +89,8 @@ class DateFormatter {
           return '${difference.inHours}小时前';
         case AppLocale.usa:
           return '${difference.inHours} hours ago';
-        case AppLocale.euro:
-          return 'vor ${difference.inHours} Stunden';
+        case AppLocale.chinaTraditional:
+          return '${difference.inHours} 小時前';
         case AppLocale.vietnam:
           return '${difference.inHours} giờ trước';
       }
@@ -104,8 +104,8 @@ class DateFormatter {
           return '${difference.inMinutes}分钟前';
         case AppLocale.usa:
           return '${difference.inMinutes} minutes ago';
-        case AppLocale.euro:
-          return 'vor ${difference.inMinutes} Minuten';
+        case AppLocale.chinaTraditional:
+          return '${difference.inMinutes} 分鐘前';
         case AppLocale.vietnam:
           return '${difference.inMinutes} phút trước';
       }
@@ -119,8 +119,8 @@ class DateFormatter {
           return '刚刚';
         case AppLocale.usa:
           return 'Just now';
-        case AppLocale.euro:
-          return 'Gerade eben';
+        case AppLocale.chinaTraditional:
+          return '剛剛';
         case AppLocale.vietnam:
           return 'Vừa xong';
       }
@@ -143,8 +143,8 @@ class DateFormatter {
           return '已过期';
         case AppLocale.usa:
           return 'Expired';
-        case AppLocale.euro:
-          return 'Abgelaufen';
+        case AppLocale.chinaTraditional:
+          return '已過期';
         case AppLocale.vietnam:
           return 'Đã hết hạn';
       }
@@ -159,8 +159,8 @@ class DateFormatter {
           return '危险';
         case AppLocale.usa:
           return 'Danger';
-        case AppLocale.euro:
-          return 'Gefahr';
+        case AppLocale.chinaTraditional:
+          return '危險';
         case AppLocale.vietnam:
           return 'Nguy hiểm';
       }
@@ -175,8 +175,8 @@ class DateFormatter {
           return '警告';
         case AppLocale.usa:
           return 'Warning';
-        case AppLocale.euro:
-          return 'Warnung';
+        case AppLocale.chinaTraditional:
+          return '警告';
         case AppLocale.vietnam:
           return 'Cảnh báo';
       }
@@ -191,7 +191,7 @@ class DateFormatter {
           return '正常';
         case AppLocale.usa:
           return 'Normal';
-        case AppLocale.euro:
+        case AppLocale.chinaTraditional:
           return 'Normal';
         case AppLocale.vietnam:
           return 'Bình thường';

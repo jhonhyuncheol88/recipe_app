@@ -13,7 +13,7 @@ mixin AppStringsBase {
         return '原价卡';
       case AppLocale.usa:
         return 'Wonka';
-      case AppLocale.euro:
+      case AppLocale.chinaTraditional:
         return 'Wonka';
       case AppLocale.vietnam:
         return 'Wonka';
