@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../controller/setting/locale_cubit.dart';
+import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import '../../../controller/onboarding/onboarding_cubit.dart';
+import '../../../controller/setting/locale_cubit.dart';
+import '../../../router/app_router.dart';
+import '../../../router/router_helper.dart';
+import '../../../service/startup_app_open_ad.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/app_strings.dart';
-import '../../../router/router_helper.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -17,7 +21,7 @@ class OnboardingPage extends StatefulWidget {
 class _OnboardingPageState extends State<OnboardingPage> {
   late PageController _pageController;
   int _currentPage = 0;
-  static const int _totalPages = 2;
+  static const int _totalPages = 3;
 
   @override
   void initState() {
@@ -50,10 +54,32 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _pageController.jumpToPage(page);
   }
 
-  Future<void> _completeOnboarding() async {
+  Future<void> _completeOnboarding({bool goToPremium = false}) async {
     final onboardingCubit = context.read<OnboardingCubit>();
     await onboardingCubit.completeOnboarding();
-    if (mounted) {
+
+    final logger = Logger(
+      printer: PrettyPrinter(
+        methodCount: 0,
+        errorMethodCount: 8,
+        lineLength: 120,
+        colors: true,
+        printEmojis: true,
+        dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
+      ),
+    );
+
+    // 프리미엄 결제로 진입하는 경로에서는 앱 오픈 광고를 스킵 — 결제 흐름 직전에 전면 광고를 띄우면 UX 이상.
+    if (!goToPremium) {
+      await StartupAppOpenAd.runAppOpenFlow(logger, loadGrace: Duration.zero);
+    }
+
+    if (!mounted) return;
+    if (goToPremium) {
+      // 온보딩 플래그는 이미 저장됐으므로, 결제 페이지로 직접 이동.
+      // 비로그인 상태면 PremiumPage 자체 가드가 /login 으로 redirect.
+      context.go(AppRouter.premium);
+    } else {
       RouterHelper.completeOnboarding(context);
     }
   }
@@ -73,7 +99,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: TextButton(
-                  onPressed: _completeOnboarding,
+                  onPressed: () => _completeOnboarding(),
                   child: Text(
                     AppStrings.getOnboardingSkip(locale),
                     style: AppTextStyles.bodyMedium.copyWith(
@@ -91,6 +117,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 children: [
                   _buildWelcomePage(locale),
                   _buildAdNoticePage(locale),
+                  _buildPremiumPitchPage(locale),
                 ],
               ),
             ),
@@ -145,44 +172,115 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget _buildAdNoticePage(AppLocale locale) {
     final colorScheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.ads_click,
-            size: 48,
+            size: 44,
             color: colorScheme.primary,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Text(
-            AppStrings.getOnboardingAdNoticeTitle(locale),
+            AppStrings.getOnboardingAdsHeading(locale),
             style: AppTextStyles.headline3.copyWith(
               color: colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
               fontSize: 18,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+          const SizedBox(height: 20),
+          _AdInfoCard(
+            icon: Icons.view_carousel_outlined,
+            title: AppStrings.getOnboardingAdBannerTitle(locale),
+            description: AppStrings.getOnboardingAdBannerDesc(locale),
+          ),
           const SizedBox(height: 12),
+          _AdInfoCard(
+            icon: Icons.fullscreen,
+            title: AppStrings.getOnboardingAdNoticeTitle(locale),
+            description: AppStrings.getOnboardingAdNoticePoint(locale),
+          ),
+          const SizedBox(height: 16),
           Text(
-            AppStrings.getOnboardingAdNoticePoint(locale),
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: colorScheme.onSurface.withValues(alpha: 0.7),
-              fontSize: 14,
+            AppStrings.getOnboardingAdNoticeFooter(locale),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: colorScheme.onSurface.withValues(alpha: 0.55),
+              fontSize: 12,
+              height: 1.4,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const Spacer(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumPitchPage(AppLocale locale) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.workspace_premium,
+              size: 36,
+              color: colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            AppStrings.getOnboardingPremiumPitchTitle(locale),
+            style: AppTextStyles.headline3.copyWith(
+              color: colorScheme.onSurface,
+              fontWeight: FontWeight.w700,
+              fontSize: 20,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            AppStrings.getOnboardingPremiumPitchSubtitle(locale),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: colorScheme.onSurface.withValues(alpha: 0.7),
+              fontSize: 13,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 22),
+          _BenefitRow(
+            icon: Icons.block,
+            text: AppStrings.getPremiumBenefitNoAds(locale),
+          ),
+          const SizedBox(height: 10),
+          _BenefitRow(
+            icon: Icons.all_inclusive,
+            text: AppStrings.getPremiumBenefitForever(locale),
+          ),
+          const SizedBox(height: 28),
           SizedBox(
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: _completeOnboarding,
+              onPressed: () => _completeOnboarding(goToPremium: true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorScheme.primary,
                 foregroundColor: colorScheme.onPrimary,
@@ -192,8 +290,23 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 ),
               ),
               child: Text(
-                AppStrings.getOnboardingStart(locale),
+                AppStrings.getPremiumPurchaseButton(locale),
                 style: AppTextStyles.buttonLarge.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: TextButton(
+              onPressed: () => _completeOnboarding(),
+              child: Text(
+                AppStrings.getOnboardingContinueFree(locale),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -279,6 +392,102 @@ class _OnboardingPageState extends State<OnboardingPage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AdInfoCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _AdInfoCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 22, color: colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BenefitRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _BenefitRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Icon(Icons.check_circle, size: 20, color: colorScheme.primary),
+        const SizedBox(width: 10),
+        Icon(icon, size: 18, color: colorScheme.onSurface.withValues(alpha: 0.7)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: colorScheme.onSurface,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

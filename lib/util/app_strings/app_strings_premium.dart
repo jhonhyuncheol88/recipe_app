@@ -87,23 +87,6 @@ mixin AppStringsPremium {
     }
   }
 
-  static String getPremiumBenefitFamilyShare(AppLocale locale) {
-    switch (locale) {
-      case AppLocale.korea:
-        return '가족 공유 지원';
-      case AppLocale.japan:
-        return 'ファミリー共有対応';
-      case AppLocale.china:
-        return '支持家庭共享';
-      case AppLocale.usa:
-        return 'Family Sharing supported';
-      case AppLocale.chinaTraditional:
-        return 'Familienfreigabe unterstützt';
-      case AppLocale.vietnam:
-        return 'Hỗ trợ chia sẻ gia đình';
-    }
-  }
-
   static String getPremiumLoadingPrice(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:

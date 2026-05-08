@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -45,9 +47,42 @@ class AuthRepository {
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
   User? get currentUser => _firebaseAuth.currentUser;
 
-  /// google_sign_in 6.x: [GoogleSignIn.signIn] 후 [GoogleSignInAccount.authentication] 으로 토큰 확보.
-  /// 사용자가 플로우를 닫으면 `signIn()` 이 null 을 돌려 [AuthCancelledException] 으로 매핑한다.
+  /// 매번 계정 선택 화면을 강제로 띄우기 위한 Google 로그인.
+  ///
+  /// - iOS: `google_sign_in_ios` (AppAuth 기반) 가 Safari 쿠키를 공유해
+  ///   계정이 1개 캐시돼 있으면 picker 없이 바로 진행되는 이슈가 있어,
+  ///   Firebase Auth `signInWithProvider` + `prompt=select_account` 로 우회.
+  /// - Android: `google_sign_in.signOut()` 으로 캐시된 계정을 비운 뒤
+  ///   `signIn()` 을 호출하면 항상 계정 선택 시트가 뜬다.
+  /// 사용자가 흐름을 취소하면 [AuthCancelledException] 으로 매핑.
   Future<UserCredential> signInWithGoogle() async {
+    if (!kIsWeb && Platform.isIOS) {
+      final provider = GoogleAuthProvider()
+        ..setCustomParameters({'prompt': 'select_account'})
+        ..addScope('email')
+        ..addScope('profile');
+      final UserCredential userCred;
+      try {
+        userCred = await _firebaseAuth.signInWithProvider(provider);
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'web-context-canceled' ||
+            e.code == 'canceled' ||
+            e.code == 'user-cancelled') {
+          throw const AuthCancelledException();
+        }
+        rethrow;
+      }
+      await _createOrUpdateUserDocument(userCred);
+      return userCred;
+    }
+
+    // Android: 캐시된 계정을 비워야 picker 가 매번 나타난다.
+    try {
+      await _googleSignIn.signOut();
+    } catch (e) {
+      _log.w('[signInWithGoogle] pre-signOut ignore: $e');
+    }
+
     final account = await _googleSignIn.signIn();
     if (account == null) {
       throw const AuthCancelledException();

@@ -187,7 +187,13 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                 ),
                 onSelected: (value) async {
                   if (value == 'share') {
-                    await _share(recipe, locale, formatStyle);
+                    await _share(
+                      recipe,
+                      locale,
+                      formatStyle,
+                      _ingredientsOf(ingredients),
+                      _saucesOf(sauces),
+                    );
                   } else if (value == 'delete') {
                     await _confirmDelete(recipe, locale);
                   }
@@ -299,15 +305,68 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     Recipe recipe,
     AppLocale locale,
     NumberFormatStyle formatStyle,
+    List<Ingredient> ingredients,
+    List<Sauce> sauces,
   ) async {
     final m = RecipeMargin.percent(recipe.sellPrice, recipe.totalCost);
+    final mult = _multiplier;
+    final unit = _multiplierUnit(locale);
     final lines = <String>[
       recipe.name,
       '${AppStrings.getCost(locale)}: ${NumberFormatter.formatCurrency(recipe.totalCost, locale, formatStyle)}',
       '${AppStrings.getSellPrice(locale)}: ${NumberFormatter.formatCurrency(recipe.sellPrice, locale, formatStyle)}',
       '${AppStrings.getMarginRate(locale)}: ${m.toStringAsFixed(0)}%',
     ];
+
+    final hasItems =
+        recipe.ingredients.isNotEmpty || recipe.sauces.isNotEmpty;
+    if (hasItems) {
+      final scaledOutput = recipe.outputAmount * mult;
+      lines.add('');
+      lines.add(
+        '${AppStrings.getMultiplier(locale)}: ${mult.toStringAsFixed(0)}$unit'
+        ' (${_formatShareQty(scaledOutput, formatStyle)}${recipe.outputUnit})',
+      );
+
+      if (recipe.ingredients.isNotEmpty) {
+        lines.add('');
+        lines.add('[${AppStrings.getIngredients(locale)}]');
+        for (final ri in recipe.ingredients) {
+          final name = ingredients
+                  .where((i) => i.id == ri.ingredientId)
+                  .map((i) => i.name)
+                  .firstOrNull ??
+              ri.ingredientId;
+          lines.add(
+            '- $name: ${_formatShareQty(ri.amount * mult, formatStyle)}${ri.unitId}',
+          );
+        }
+      }
+
+      if (recipe.sauces.isNotEmpty) {
+        lines.add('');
+        lines.add('[${AppStrings.getSauces(locale)}]');
+        for (final rs in recipe.sauces) {
+          final name = sauces
+                  .where((s) => s.id == rs.sauceId)
+                  .map((s) => s.name)
+                  .firstOrNull ??
+              rs.sauceId;
+          lines.add(
+            '- $name: ${_formatShareQty(rs.amount * mult, formatStyle)}${rs.unitId}',
+          );
+        }
+      }
+    }
+
     await Share.share(lines.join('\n'));
+  }
+
+  String _formatShareQty(double qty, NumberFormatStyle formatStyle) {
+    if (qty % 1 == 0) {
+      return NumberFormatter.formatNumber(qty.round(), formatStyle);
+    }
+    return qty.toStringAsFixed(1);
   }
 
   Future<void> _confirmDelete(Recipe recipe, AppLocale locale) async {

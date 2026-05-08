@@ -38,6 +38,7 @@ import '../presentation/pages/batch_edit/batch_edit_page.dart';
 import '../screen/pages/settings/recipe_tag_management_page.dart';
 import '../screen/pages/report/report_page.dart';
 import '../screen/pages/premium/premium_page.dart';
+import '../screen/widget/adaptive_banner_ad_widget.dart';
 import '../controller/report/report_cubit.dart';
 
 import '../util/app_locale.dart';
@@ -81,9 +82,24 @@ class AppRouter {
   static const String encyclopediaRecipeDetail = '/encyclopedia/recipe/:number';
   static const String premium = '/premium';
 
-  /// GoRouter 인스턴스 생성
-  static GoRouter get router => GoRouter(
-        initialLocation: home,
+  /// 부팅 시 결정된 시작 경로.
+  /// main() 의 prefs 동기 로드 직후 [bootstrapInitialLocation] 로 1회 설정한다.
+  /// [router] 첫 접근 전에 호출되지 않으면 home(/) 으로 시작해 깜빡임이 발생.
+  static String _initialLocation = home;
+
+  /// 부팅 시 prefs 기반으로 결정된 초기 경로를 라우터에 주입.
+  /// async redirect 가 첫 프레임에 HomePage 를 잠깐 그렸다 다시 navigate 하는
+  /// 깜빡임을 방지하기 위함.
+  static void bootstrapInitialLocation(String location) {
+    _initialLocation = location;
+  }
+
+  /// GoRouter 싱글턴.
+  /// MyApp rebuild(테마/로케일 변경) 마다 새로 만들면 navigation stack 이
+  /// 리셋되므로 static final 로 한 번만 만든다. 첫 접근 시점에 lazy 초기화
+  /// 되며 그때의 [_initialLocation] 을 읽는다.
+  static final GoRouter router = GoRouter(
+        initialLocation: _initialLocation,
         redirect: (context, state) async {
           try {
             // 언어 선택 상태 확인 (SharedPreferences)
@@ -479,6 +495,11 @@ class _HomePageState extends State<HomePage> {
           bottomNavigationBar: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // 적응형 배너 광고 (Premium 사용자/키보드 노출 시 자동 숨김).
+              // 위/아래 1px 구분선 + bgBase 배경으로 콘텐츠/탭바와 분리.
+              const AdaptiveBannerAdWidget(),
+              // 배너와 탭바 사이 8dp 여백 (사고 클릭 방지).
+              const SizedBox(height: 8),
               // 하단 네비게이션 바
               BottomNavigationBar(
                 currentIndex: _currentIndex,

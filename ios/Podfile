@@ -37,6 +37,42 @@ target 'Runner' do
   end
 end
 
+def remove_stale_pods_runner_frameworks
+  project_path = File.join(__dir__, 'Runner.xcodeproj')
+  project = Xcodeproj::Project.open(project_path)
+  stale_frameworks = ['Pods_Runner.framework', 'Pods_RunnerTests.framework']
+  changed = false
+
+  project.targets.each do |target|
+    target.frameworks_build_phase.files.dup.each do |build_file|
+      next unless stale_frameworks.include?(build_file.display_name)
+
+      build_file.remove_from_project
+      changed = true
+    end
+  end
+
+  project.files.each do |file|
+    next unless stale_frameworks.include?(file.display_name) || stale_frameworks.include?(file.path)
+
+    file.remove_from_project
+    changed = true
+  end
+
+  project.targets.each do |target|
+    next unless ['Runner', 'RunnerTests'].include?(target.name)
+
+    target.build_configurations.each do |config|
+      next if config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] == 'arm64'
+
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+      changed = true
+    end
+  end
+
+  project.save if changed
+end
+
 post_install do |installer|
   installer.pods_project.build_configurations.each do |config|
     config.build_settings['EXCLUDED_ARCHS[sdk=iphoneos*]'] = 'armv7'
@@ -55,4 +91,8 @@ post_install do |installer|
       end
     end
   end
+end
+
+post_integrate do |_installer|
+  remove_stale_pods_runner_frameworks
 end

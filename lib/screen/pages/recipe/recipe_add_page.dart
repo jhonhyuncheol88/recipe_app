@@ -40,6 +40,7 @@ class RecipeAddPage extends StatefulWidget {
 class _IngredientLine {
   final Ingredient ingredient;
   final TextEditingController qtyController;
+  final FocusNode qtyFocusNode = FocusNode();
 
   _IngredientLine({required this.ingredient, required double initialQty})
       : qtyController = TextEditingController(text: _formatQty(initialQty));
@@ -57,7 +58,10 @@ class _IngredientLine {
 
   double get lineCost => pricePerInputUnit * qty;
 
-  void dispose() => qtyController.dispose();
+  void dispose() {
+    qtyFocusNode.dispose();
+    qtyController.dispose();
+  }
 
   static String _formatQty(double v) {
     if (v == v.roundToDouble()) return v.toInt().toString();
@@ -68,6 +72,7 @@ class _IngredientLine {
 class _SauceLine {
   final Sauce sauce;
   final TextEditingController qtyController;
+  final FocusNode qtyFocusNode = FocusNode();
 
   /// [initialQty] 는 g 단위 사용량. 기본값은 소스 전체 분량(=sauce.totalWeight).
   _SauceLine({required this.sauce, required double initialQty})
@@ -82,7 +87,10 @@ class _SauceLine {
   /// 라인 원가 = (g당 단가) × (입력 g). sauce.unitCost == totalCost/totalWeight.
   double get lineCost => sauce.unitCost * qty;
 
-  void dispose() => qtyController.dispose();
+  void dispose() {
+    qtyFocusNode.dispose();
+    qtyController.dispose();
+  }
 
   static String _formatQty(double v) {
     if (v == v.roundToDouble()) return v.toInt().toString();
@@ -143,6 +151,16 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
     if (mounted) setState(() {});
   }
 
+  void _requestFocusOnQtyField(FocusNode node, TextEditingController controller) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      node.requestFocus();
+      final t = controller.text;
+      if (t.isEmpty) return;
+      controller.selection = TextSelection(baseOffset: 0, extentOffset: t.length);
+    });
+  }
+
   double get _totalCost {
     final ic =
         _ingredients.fold<double>(0, (sum, l) => sum + l.lineCost);
@@ -165,6 +183,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
     final line = _IngredientLine(ingredient: picked, initialQty: 100);
     line.qtyController.addListener(_onAnyQtyChanged);
     setState(() => _ingredients.add(line));
+    _requestFocusOnQtyField(line.qtyFocusNode, line.qtyController);
   }
 
   Future<void> _pickSauce() async {
@@ -179,6 +198,7 @@ class _RecipeAddPageState extends State<RecipeAddPage> {
     );
     line.qtyController.addListener(_onAnyQtyChanged);
     setState(() => _sauces.add(line));
+    _requestFocusOnQtyField(line.qtyFocusNode, line.qtyController);
   }
 
   /// 신규 소스 행의 기본 사용량(g). 소스 전체 분량(=totalWeight) 을 기본값으로
@@ -454,6 +474,7 @@ class _IngredientsCard extends StatelessWidget {
                 line: lines[i],
                 locale: locale,
                 formatStyle: formatStyle,
+                qtyFocusNode: lines[i].qtyFocusNode,
                 onRemove: () => onRemove(i),
               ),
             ),
@@ -512,6 +533,7 @@ class _SaucesCard extends StatelessWidget {
                 line: lines[i],
                 locale: locale,
                 formatStyle: formatStyle,
+                qtyFocusNode: lines[i].qtyFocusNode,
                 onRemove: () => onRemove(i),
               ),
             ),
@@ -607,12 +629,14 @@ class _IngredientRow extends StatelessWidget {
   final _IngredientLine line;
   final AppLocale locale;
   final NumberFormatStyle formatStyle;
+  final FocusNode qtyFocusNode;
   final VoidCallback onRemove;
 
   const _IngredientRow({
     required this.line,
     required this.locale,
     required this.formatStyle,
+    required this.qtyFocusNode,
     required this.onRemove,
   });
 
@@ -661,6 +685,7 @@ class _IngredientRow extends StatelessWidget {
           SizedBox(
             width: 90,
             child: _OutlinedTextField(
+              focusNode: qtyFocusNode,
               controller: line.qtyController,
               hint: '0',
               keyboardType:
@@ -691,12 +716,14 @@ class _SauceRow extends StatelessWidget {
   final _SauceLine line;
   final AppLocale locale;
   final NumberFormatStyle formatStyle;
+  final FocusNode qtyFocusNode;
   final VoidCallback onRemove;
 
   const _SauceRow({
     required this.line,
     required this.locale,
     required this.formatStyle,
+    required this.qtyFocusNode,
     required this.onRemove,
   });
 
@@ -746,6 +773,7 @@ class _SauceRow extends StatelessWidget {
           SizedBox(
             width: 80,
             child: _OutlinedTextField(
+              focusNode: qtyFocusNode,
               controller: line.qtyController,
               hint: '0',
               keyboardType:
@@ -889,6 +917,7 @@ class _FieldLabel extends StatelessWidget {
 
 class _OutlinedTextField extends StatelessWidget {
   final TextEditingController controller;
+  final FocusNode? focusNode;
   final String hint;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
@@ -898,6 +927,7 @@ class _OutlinedTextField extends StatelessWidget {
   const _OutlinedTextField({
     required this.controller,
     required this.hint,
+    this.focusNode,
     this.keyboardType,
     this.inputFormatters,
     this.suffixText,
@@ -909,6 +939,7 @@ class _OutlinedTextField extends StatelessWidget {
     final tokens = AppColorTokens.of(context);
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       style: AppTypography.body1.copyWith(color: tokens.fgDefault),

@@ -18,6 +18,8 @@ import 'service/recipe_cost_service.dart';
 import 'service/sauce_expiry_service.dart';
 import 'service/admob_forward.dart';
 import 'service/app_open_ad_service.dart';
+import 'service/banner_ad_service.dart';
+import 'service/startup_app_open_ad.dart';
 import 'service/initial_data_service.dart';
 import 'service/purchase_history_service.dart';
 import 'service/revenue_cat_service.dart';
@@ -30,7 +32,6 @@ import 'controller/ocr/ocr_cubit.dart';
 import 'controller/encyclopedia/encyclopedia_cubit.dart';
 import 'service/encyclopedia_service.dart';
 import 'package:logger/logger.dart';
-import 'dart:io' show Platform;
 import 'controller/setting/theme_cubit.dart';
 import 'controller/report/report_cubit.dart';
 import 'firebase_options.dart';
@@ -69,6 +70,11 @@ void main() async {
   // 필수 초기화는 실패해도 앱 실행을 계속함
   await _safePreRunInitialization(logger);
 
+  // 부팅 시 prefs 동기 로드 → 초기 라우트 결정.
+  // go_router 의 async redirect 가 풀리기 전 HomePage 가 잠깐 그려지는
+  // 깜빡임을 방지하기 위해, 첫 프레임부터 올바른 경로로 시작하게 한다.
+  await _bootstrapInitialRoute(logger);
+
   // 타임존 초기화 (zonedSchedule 전 반드시 필요)
   try {
     tz.initializeTimeZones();
@@ -105,7 +111,10 @@ Future<void> _runStartupSequence(Logger logger) async {
     await _initializeInitialData(logger);
 
     logger.i('🚦 [Startup] 4) 앱 열기 광고');
-    await _postAppInitialization(logger);
+    await StartupAppOpenAd.runAppOpenFlow(
+      logger,
+      loadGrace: const Duration(seconds: 2),
+    );
 
     logger.i('🚦 [Startup] 완료');
   } catch (e, st) {
@@ -113,13 +122,13 @@ Future<void> _runStartupSequence(Logger logger) async {
   }
 }
 
-/// `onboarding_completed` prefs 가 true 가 될 때까지 1초 간격으로 polling.
+/// `onboarding_completed` prefs 가 true 가 될 때까지 polling.
 /// 이미 완료된 사용자는 즉시 통과.
 Future<void> _waitUntilOnboardingCompleted() async {
   final prefs = await SharedPreferences.getInstance();
   while (true) {
     if (prefs.getBool('onboarding_completed') ?? false) return;
-    await Future.delayed(const Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(milliseconds: 200));
   }
 }
 
@@ -165,60 +174,23 @@ Future<void> _safePreRunInitialization(Logger logger) async {
   }
 }
 
-Future<void> _postAppInitialization(Logger logger) async {
-  logger.i('📱 AdMob 초기화 시도 (${Platform.operatingSystem}, post-frame)');
-  try {
-    await AdMobForwardService.instance.initialize();
-    logger.i('✅ AdMob 초기화 완료 (광고 미리 로드 시작됨)');
-
-    // preload 는 백그라운드 fire-and-forget — main 이벤트 루프를 길게 잡지 않는다.
-    // _showAppOpenAdWithCooldown 안에서 showIfAvailable() 가 호출되면 같은
-    // _loadCompleter 를 공유해 결과를 받기 때문에 race 가 없다.
-    unawaited(AppOpenAdService.instance.preload());
-    await _showAppOpenAdWithCooldown(logger);
-  } catch (e) {
-    logger.e('⚠️ AdMob 초기화 실패(무시): $e');
-  }
-}
-
-/// 앱 cold start 시 [AppOpenAdService] 로 앱 오픈 광고 1회 노출.
-/// 10분 쿨다운: 빠른 재실행 시 중복 노출 방지.
-/// resume(다른 앱에서 복귀) 에서는 호출하지 않으므로 별도 가드 불필요.
-Future<void> _showAppOpenAdWithCooldown(Logger logger) async {
+/// prefs 의 `language_selected` / `onboarding_completed` 를 동기 로드해
+/// [AppRouter.bootstrapInitialLocation] 에 첫 경로를 주입한다.
+/// 실패해도 앱은 계속 실행 — 그 경우 home(/) 으로 시작.
+Future<void> _bootstrapInitialRoute(Logger logger) async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    const String lastAdShownKey = 'last_ad_shown_time_millis';
+    final languageSelected = prefs.getBool('language_selected') ?? false;
+    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
-    final lastAdShownTimeMillis = prefs.getInt(lastAdShownKey) ?? 0;
-    final currentTimeMillis = DateTime.now().millisecondsSinceEpoch;
-    const tenMinutesInMillis = 10 * 60 * 1000;
-
-    if (currentTimeMillis - lastAdShownTimeMillis < tenMinutesInMillis) {
-      final remainingMinutes =
-          (tenMinutesInMillis - (currentTimeMillis - lastAdShownTimeMillis)) ~/
-              (60 * 1000);
-      logger.d('ℹ️ App Open 광고 쿨다운 중. ${remainingMinutes + 1}분 후 다시 표시 가능.');
-      return;
+    if (!languageSelected) {
+      AppRouter.bootstrapInitialLocation(AppRouter.languageSelection);
+    } else if (!onboardingCompleted) {
+      AppRouter.bootstrapInitialLocation(AppRouter.onboarding);
     }
-
-    logger.i('📺 앱 오픈 광고 표시 시도');
-
-    // 광고가 로드될 시간을 잠시 확보
-    await Future.delayed(const Duration(seconds: 2));
-
-    try {
-      final shown = await AppOpenAdService.instance.showIfAvailable();
-      if (shown) {
-        await prefs.setInt(lastAdShownKey, currentTimeMillis);
-        logger.i('✅ 앱 오픈 광고 표시 완료 (10분 후 다시 표시 가능)');
-      } else {
-        logger.w('⚠️ 앱 오픈 광고 표시 실패 (광고 미준비)');
-      }
-    } catch (e) {
-      logger.w('⚠️ 앱 오픈 광고 표시 중 오류: $e');
-    }
+    logger.i('🧭 초기 라우트: lang=$languageSelected, onboarding=$onboardingCompleted');
   } catch (e) {
-    logger.w('⚠️ 앱 오픈 광고 표시 체크 중 오류 (무시): $e');
+    logger.w('⚠️ 초기 라우트 결정 실패(home 으로 진행): $e');
   }
 }
 
@@ -441,6 +413,8 @@ class MyApp extends StatelessWidget {
             AdMobForwardService.instance
                 .setPremiumGate(() => cubit.state.isPremium);
             AppOpenAdService.instance
+                .setPremiumGate(() => cubit.state.isPremium);
+            BannerAdService.instance
                 .setPremiumGate(() => cubit.state.isPremium);
             return cubit;
           },

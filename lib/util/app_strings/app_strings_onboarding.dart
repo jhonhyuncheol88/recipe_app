@@ -343,6 +343,108 @@ mixin AppStringsOnboarding {
     }
   }
 
+  static String getOnboardingAdsHeading(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이 앱은 두 가지 광고로 운영돼요';
+      case AppLocale.japan:
+        return 'このアプリは2種類の広告で運営されています';
+      case AppLocale.china:
+        return '本应用通过两种广告维持运营';
+      case AppLocale.usa:
+        return 'This app is supported by two kinds of ads';
+      case AppLocale.chinaTraditional:
+        return 'This app is supported by two kinds of ads';
+      case AppLocale.vietnam:
+        return 'This app is supported by two kinds of ads';
+    }
+  }
+
+  static String getOnboardingAdBannerTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '하단 배너 광고';
+      case AppLocale.japan:
+        return '下部のバナー広告';
+      case AppLocale.china:
+        return '底部横幅广告';
+      case AppLocale.usa:
+        return 'Bottom banner ad';
+      case AppLocale.chinaTraditional:
+        return 'Bottom banner ad';
+      case AppLocale.vietnam:
+        return 'Bottom banner ad';
+    }
+  }
+
+  static String getOnboardingAdBannerDesc(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '앱 사용 중 화면 하단에 작게 표시됩니다.';
+      case AppLocale.japan:
+        return 'アプリの利用中、画面下部に小さく表示されます。';
+      case AppLocale.china:
+        return '使用应用时，会在屏幕底部以小尺寸显示。';
+      case AppLocale.usa:
+        return 'A small banner appears at the bottom while you use the app.';
+      case AppLocale.chinaTraditional:
+        return 'A small banner appears at the bottom while you use the app.';
+      case AppLocale.vietnam:
+        return 'A small banner appears at the bottom while you use the app.';
+    }
+  }
+
+  static String getOnboardingPremiumPitchTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '광고 없이 사용하시겠어요?';
+      case AppLocale.japan:
+        return '広告なしで使いますか？';
+      case AppLocale.china:
+        return '想要无广告使用吗？';
+      case AppLocale.usa:
+        return 'Want to use the app ad-free?';
+      case AppLocale.chinaTraditional:
+        return 'Want to use the app ad-free?';
+      case AppLocale.vietnam:
+        return 'Want to use the app ad-free?';
+    }
+  }
+
+  static String getOnboardingPremiumPitchSubtitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '한 번 결제로 모든 광고가 사라져요. 평생 사용할 수 있어요.';
+      case AppLocale.japan:
+        return '一度の購入ですべての広告が消えます。永久に使えます。';
+      case AppLocale.china:
+        return '一次付费即可移除所有广告，永久使用。';
+      case AppLocale.usa:
+        return 'One purchase removes all ads — forever.';
+      case AppLocale.chinaTraditional:
+        return 'One purchase removes all ads — forever.';
+      case AppLocale.vietnam:
+        return 'One purchase removes all ads — forever.';
+    }
+  }
+
+  static String getOnboardingContinueFree(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '광고와 함께 무료로 시작';
+      case AppLocale.japan:
+        return '広告ありで無料で始める';
+      case AppLocale.china:
+        return '免费使用（含广告）';
+      case AppLocale.usa:
+        return 'Continue free with ads';
+      case AppLocale.chinaTraditional:
+        return 'Continue free with ads';
+      case AppLocale.vietnam:
+        return 'Continue free with ads';
+    }
+  }
+
   static String getRecipeShareCopied(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:

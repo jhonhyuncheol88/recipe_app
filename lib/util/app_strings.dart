@@ -634,6 +634,18 @@ class AppStrings {
       AppStringsOnboarding.getOnboardingAdNoticePoint(locale);
   static String getOnboardingAdNoticeTitle(AppLocale locale) =>
       AppStringsOnboarding.getOnboardingAdNoticeTitle(locale);
+  static String getOnboardingAdsHeading(AppLocale locale) =>
+      AppStringsOnboarding.getOnboardingAdsHeading(locale);
+  static String getOnboardingAdBannerTitle(AppLocale locale) =>
+      AppStringsOnboarding.getOnboardingAdBannerTitle(locale);
+  static String getOnboardingAdBannerDesc(AppLocale locale) =>
+      AppStringsOnboarding.getOnboardingAdBannerDesc(locale);
+  static String getOnboardingPremiumPitchTitle(AppLocale locale) =>
+      AppStringsOnboarding.getOnboardingPremiumPitchTitle(locale);
+  static String getOnboardingPremiumPitchSubtitle(AppLocale locale) =>
+      AppStringsOnboarding.getOnboardingPremiumPitchSubtitle(locale);
+  static String getOnboardingContinueFree(AppLocale locale) =>
+      AppStringsOnboarding.getOnboardingContinueFree(locale);
   static String getOnboardingAfter(AppLocale locale) =>
       AppStringsOnboarding.getOnboardingAfter(locale);
   static String getOnboardingAiRecipe(AppLocale locale) =>
@@ -1269,8 +1281,6 @@ class AppStrings {
       AppStringsPremium.getPremiumBenefitNoAds(locale);
   static String getPremiumBenefitForever(AppLocale locale) =>
       AppStringsPremium.getPremiumBenefitForever(locale);
-  static String getPremiumBenefitFamilyShare(AppLocale locale) =>
-      AppStringsPremium.getPremiumBenefitFamilyShare(locale);
   static String getPremiumLoadingPrice(AppLocale locale) =>
       AppStringsPremium.getPremiumLoadingPrice(locale);
   static String getPremiumPriceUnavailable(AppLocale locale) =>

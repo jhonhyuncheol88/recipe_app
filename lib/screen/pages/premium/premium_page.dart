@@ -464,7 +464,6 @@ class _BenefitList extends StatelessWidget {
     final benefits = [
       AppStrings.getPremiumBenefitNoAds(locale),
       AppStrings.getPremiumBenefitForever(locale),
-      AppStrings.getPremiumBenefitFamilyShare(locale),
     ];
 
     return Container(

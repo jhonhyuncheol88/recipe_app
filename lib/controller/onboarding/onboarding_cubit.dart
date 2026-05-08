@@ -51,11 +51,11 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     try {
       emit(OnboardingLoading());
 
+      // prefs 는 초기 데이터 삽입 후에만 true — 부팅 시퀀스·앱 오픈 광고와 경합 방지
+      await _insertInitialDataIfNeeded();
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_prefsKey, true);
-
-      // 온보딩 완료 후 초기 데이터 삽입
-      await _insertInitialDataIfNeeded();
 
       emit(OnboardingCompleted());
     } catch (e) {
