@@ -47,3 +47,6 @@ export 'report/report_state.dart';
 // 광고 제거 (RevenueCat) 관련
 export 'premium/premium_cubit.dart';
 export 'premium/premium_state.dart';
+
+// 재고 관련
+export 'inventory/inventory_cubit.dart';
