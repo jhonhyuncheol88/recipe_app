@@ -1,0 +1,84 @@
+# RevenueCat Phase 9 외부 등록 상태 점검용 레인.
+#
+# 사용법:
+#   iOS  : fastlane ios check_iap
+#          (환경변수 ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_PATH 필요 — App Store
+#           Connect → Users and Access → Integrations → API 에서 발급한 .p8)
+#   And  : fastlane android check_iap
+#          (환경변수 PLAY_JSON_KEY_PATH 필요 — Play Console 연동 service account JSON)
+
+IOS_BUNDLE_ID = "com.jalam.recipeapp".freeze
+ANDROID_PACKAGE = "com.jalam.recipeapp".freeze
+EXPECTED_IOS_PRODUCT = "com.recipeapp.adfree.lifetime".freeze
+EXPECTED_ANDROID_PRODUCT = "adfree_lifetime".freeze
+
+platform :ios do
+  desc "App Store Connect 에서 인앱 상품 등록 상태 확인"
+  lane :check_iap do
+    key_id = ENV["ASC_KEY_ID"]
+    issuer_id = ENV["ASC_ISSUER_ID"]
+    key_path = ENV["ASC_KEY_PATH"]
+    UI.user_error!("ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_PATH 환경변수를 설정하세요") if key_id.to_s.empty? || issuer_id.to_s.empty? || key_path.to_s.empty?
+
+    require "spaceship"
+    token = Spaceship::ConnectAPI::Token.create(
+      key_id: key_id,
+      issuer_id: issuer_id,
+      filepath: File.expand_path(key_path),
+    )
+    Spaceship::ConnectAPI.token = token
+
+    app = Spaceship::ConnectAPI::App.find(IOS_BUNDLE_ID)
+    UI.user_error!("앱을 찾을 수 없음: #{IOS_BUNDLE_ID}") if app.nil?
+    UI.success("앱 확인: #{app.name} (#{IOS_BUNDLE_ID})")
+
+    # In-App Purchases (v2) 조회
+    iaps = Spaceship::ConnectAPI.get_in_app_purchases(app_id: app.id).all_pages.flat_map(&:to_models)
+    if iaps.empty?
+      UI.important("등록된 인앱 상품이 없습니다 — Phase 9 미진행")
+    else
+      iaps.each do |iap|
+        marker = iap.product_id == EXPECTED_IOS_PRODUCT ? "★" : " "
+        UI.message("#{marker} #{iap.product_id} | #{iap.name} | type=#{iap.in_app_purchase_type} | state=#{iap.state}")
+      end
+      found = iaps.any? { |i| i.product_id == EXPECTED_IOS_PRODUCT }
+      found ? UI.success("기대 product '#{EXPECTED_IOS_PRODUCT}' 등록됨") : UI.important("기대 product '#{EXPECTED_IOS_PRODUCT}' 미등록")
+    end
+  end
+end
+
+platform :android do
+  desc "Google Play Console 에서 인앱 상품 등록 상태 확인"
+  lane :check_iap do
+    json_key = ENV["PLAY_JSON_KEY_PATH"]
+    UI.user_error!("PLAY_JSON_KEY_PATH 환경변수를 설정하세요 (service account JSON)") if json_key.to_s.empty?
+
+    require "googleauth"
+    require "net/http"
+    require "json"
+
+    credentials = Google::Auth::ServiceAccountCredentials.make_creds(
+      json_key_io: File.open(File.expand_path(json_key)),
+      scope: "https://www.googleapis.com/auth/androidpublisher",
+    )
+    token = credentials.fetch_access_token!["access_token"]
+
+    uri = URI("https://androidpublisher.googleapis.com/androidpublisher/v3/applications/#{ANDROID_PACKAGE}/inappproducts")
+    req = Net::HTTP::Get.new(uri)
+    req["Authorization"] = "Bearer #{token}"
+    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+    UI.user_error!("Play API 오류 #{res.code}: #{res.body}") unless res.code == "200"
+    products = JSON.parse(res.body)["inappproduct"] || []
+    if products.empty?
+      UI.important("등록된 인앱 상품이 없습니다 — Phase 9 미진행")
+    else
+      products.each do |p|
+        marker = p["sku"] == EXPECTED_ANDROID_PRODUCT ? "★" : " "
+        UI.message("#{marker} #{p["sku"]} | #{p.dig("listings", "ko-KR", "title") || p.dig("defaultLanguage")} | status=#{p["status"]} | type=#{p["purchaseType"]}")
+      end
+      found = products.any? { |p| p["sku"] == EXPECTED_ANDROID_PRODUCT }
+      found ? UI.success("기대 product '#{EXPECTED_ANDROID_PRODUCT}' 등록됨") : UI.important("기대 product '#{EXPECTED_ANDROID_PRODUCT}' 미등록")
+    end
+  end
+end
