@@ -152,6 +152,63 @@ void main() {
     expect(purchases.every((t) => t.type == InventoryTxType.purchase), true);
   });
 
+  test('updatePurchase: 수량 차이만큼 잔량 보정 + tx 갱신', () async {
+    await repo.recordPurchase(ingredientId: 'ing1', qty: 2.0, price: 5000);
+    final purchases = await repo.getTodayPurchases();
+    final txId = purchases.single.id;
+
+    // 2 → 5 로 수정: 잔량 +3, 금액 7000 으로
+    await repo.updatePurchase(txId: txId, qty: 5.0, price: 7000);
+
+    final items = await repo.getAllItems();
+    expect(items['ing1']!.currentQty, 5.0);
+
+    final updated = (await repo.getTodayPurchases()).single;
+    expect(updated.qtyDelta, 5.0);
+    expect(updated.price, 7000);
+    expect(updated.resultingQty, 5.0);
+
+    // 5 → 1 로 수정: 잔량 -4
+    await repo.updatePurchase(txId: txId, qty: 1.0, price: 7000);
+    expect((await repo.getAllItems())['ing1']!.currentQty, 1.0);
+  });
+
+  test('deletePurchase: 잔량 롤백(clamp) + tx 삭제', () async {
+    await repo.recordPurchase(ingredientId: 'ing1', qty: 3.0, price: 5000);
+    // 소비로 잔량 1 로 줄인 뒤 구매 삭제 → 1-3 = -2 → clamp 0
+    await repo.changeQuantity(
+        ingredientId: 'ing1', delta: -2.0, type: InventoryTxType.consume);
+
+    final purchase = (await repo.getTodayPurchases()).single;
+    await repo.deletePurchase(purchase.id);
+
+    expect((await repo.getAllItems())['ing1']!.currentQty, 0.0);
+    expect(await repo.getTodayPurchases(), isEmpty);
+  });
+
+  test('getAllPurchases: purchase 만 최신순', () async {
+    final db = await DatabaseHelper().database;
+    await repo.recordPurchase(ingredientId: 'ing1', qty: 1, price: 100);
+    await db.insert('inventory_transactions', {
+      'id': 'tx-old',
+      'ingredient_id': 'ing2',
+      'type': 'purchase',
+      'qty_delta': 1.0,
+      'resulting_qty': 1.0,
+      'price': 200.0,
+      'created_at': DateTime.now()
+          .subtract(const Duration(days: 3))
+          .toIso8601String(),
+    });
+    await repo.setQuantity(
+        ingredientId: 'ing1', newQty: 9, type: InventoryTxType.adjust);
+
+    final all = await repo.getAllPurchases();
+    expect(all.length, 2);
+    expect(all.first.ingredientId, 'ing1'); // 최신순
+    expect(all.last.id, 'tx-old');
+  });
+
   test('getPurchaseTotals: 일/월/연 그룹 합산', () async {
     final db = await DatabaseHelper().database;
     Future<void> insertPurchase(String id, DateTime at, double price) =>

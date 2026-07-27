@@ -182,6 +182,122 @@ class InventoryRepository {
     }
   }
 
+  /// 전체 구매 트랜잭션 (최신순)
+  Future<List<InventoryTransaction>> getAllPurchases() async {
+    try {
+      final db = await _databaseHelper.database;
+      final rows = await db.query(
+        'inventory_transactions',
+        where: 'type = ?',
+        whereArgs: [InventoryTxType.purchase.dbValue],
+        orderBy: 'created_at DESC',
+      );
+      return rows.map(InventoryTransaction.fromJson).toList();
+    } catch (e) {
+      developer.log('전체 구매 내역 조회 실패: $e', name: 'InventoryRepository');
+      rethrow;
+    }
+  }
+
+  /// 구매 기록 수정: 수량 차이만큼 잔량 보정(0 미만 clamp) + tx 행 갱신.
+  /// 모두 하나의 DB 트랜잭션 안에서 수행.
+  Future<void> updatePurchase({
+    required String txId,
+    required double qty,
+    required double price,
+  }) async {
+    try {
+      final db = await _databaseHelper.database;
+      await db.transaction((txn) async {
+        final txRows = await txn.query(
+          'inventory_transactions',
+          where: 'id = ?',
+          whereArgs: [txId],
+        );
+        if (txRows.isEmpty) return;
+        final tx = InventoryTransaction.fromJson(txRows.first);
+
+        final itemRows = await txn.query(
+          'inventory_items',
+          where: 'ingredient_id = ?',
+          whereArgs: [tx.ingredientId],
+        );
+        final current = itemRows.isEmpty
+            ? 0.0
+            : (itemRows.first['current_qty'] as num).toDouble();
+        final newBalance = current + (qty - tx.qtyDelta);
+        final clamped = newBalance < 0 ? 0.0 : newBalance;
+
+        await txn.update(
+          'inventory_items',
+          {
+            'current_qty': clamped,
+            'updated_at': DateTime.now().toIso8601String(),
+          },
+          where: 'ingredient_id = ?',
+          whereArgs: [tx.ingredientId],
+        );
+        await txn.update(
+          'inventory_transactions',
+          {
+            'qty_delta': qty,
+            'price': price,
+            'resulting_qty': clamped,
+          },
+          where: 'id = ?',
+          whereArgs: [txId],
+        );
+      });
+    } catch (e) {
+      developer.log('구매 기록 수정 실패: $e', name: 'InventoryRepository');
+      rethrow;
+    }
+  }
+
+  /// 구매 기록 삭제: 해당 구매 수량만큼 잔량 롤백(0 미만 clamp) + tx 행 삭제.
+  Future<void> deletePurchase(String txId) async {
+    try {
+      final db = await _databaseHelper.database;
+      await db.transaction((txn) async {
+        final txRows = await txn.query(
+          'inventory_transactions',
+          where: 'id = ?',
+          whereArgs: [txId],
+        );
+        if (txRows.isEmpty) return;
+        final tx = InventoryTransaction.fromJson(txRows.first);
+
+        final itemRows = await txn.query(
+          'inventory_items',
+          where: 'ingredient_id = ?',
+          whereArgs: [tx.ingredientId],
+        );
+        if (itemRows.isNotEmpty) {
+          final current =
+              (itemRows.first['current_qty'] as num).toDouble();
+          final newBalance = current - tx.qtyDelta;
+          await txn.update(
+            'inventory_items',
+            {
+              'current_qty': newBalance < 0 ? 0.0 : newBalance,
+              'updated_at': DateTime.now().toIso8601String(),
+            },
+            where: 'ingredient_id = ?',
+            whereArgs: [tx.ingredientId],
+          );
+        }
+        await txn.delete(
+          'inventory_transactions',
+          where: 'id = ?',
+          whereArgs: [txId],
+        );
+      });
+    } catch (e) {
+      developer.log('구매 기록 삭제 실패: $e', name: 'InventoryRepository');
+      rethrow;
+    }
+  }
+
   /// 구매 금액을 기간 단위로 집계 (label 오름차순).
   /// daily: 최근 30일(yyyy-MM-dd) / monthly: 최근 12개월(yyyy-MM) / yearly: 전체(yyyy)
   /// created_at 은 로컬 기준 ISO8601 로 저장되므로 substr prefix 그룹이 로컬 날짜와 일치.
