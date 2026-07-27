@@ -444,4 +444,140 @@ mixin AppStringsInventory {
         return '$count thay đổi';
     }
   }
+
+  static String getPurchaseReportTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '구매 지출';
+      case AppLocale.japan:
+        return '購入支出';
+      case AppLocale.china:
+        return '采购支出';
+      case AppLocale.chinaTraditional:
+        return '採購支出';
+      case AppLocale.usa:
+        return 'Purchase Spending';
+      case AppLocale.vietnam:
+        return 'Chi tiêu mua hàng';
+    }
+  }
+
+  static String getPurchaseDaily(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '일';
+      case AppLocale.japan:
+        return '日';
+      case AppLocale.china:
+        return '日';
+      case AppLocale.chinaTraditional:
+        return '日';
+      case AppLocale.usa:
+        return 'Daily';
+      case AppLocale.vietnam:
+        return 'Ngày';
+    }
+  }
+
+  static String getPurchaseMonthly(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '월';
+      case AppLocale.japan:
+        return '月';
+      case AppLocale.china:
+        return '月';
+      case AppLocale.chinaTraditional:
+        return '月';
+      case AppLocale.usa:
+        return 'Monthly';
+      case AppLocale.vietnam:
+        return 'Tháng';
+    }
+  }
+
+  static String getPurchaseYearly(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '연';
+      case AppLocale.japan:
+        return '年';
+      case AppLocale.china:
+        return '年';
+      case AppLocale.chinaTraditional:
+        return '年';
+      case AppLocale.usa:
+        return 'Yearly';
+      case AppLocale.vietnam:
+        return 'Năm';
+    }
+  }
+
+  static String getTodayPurchasesTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '오늘 구매 내역';
+      case AppLocale.japan:
+        return '本日の購入履歴';
+      case AppLocale.china:
+        return '今日采购明细';
+      case AppLocale.chinaTraditional:
+        return '今日採購明細';
+      case AppLocale.usa:
+        return "Today's Purchases";
+      case AppLocale.vietnam:
+        return 'Mua hàng hôm nay';
+    }
+  }
+
+  static String getViewPurchaseReport(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '기간별 리포트 보기';
+      case AppLocale.japan:
+        return '期間別レポートを見る';
+      case AppLocale.china:
+        return '查看周期报告';
+      case AppLocale.chinaTraditional:
+        return '查看期間報告';
+      case AppLocale.usa:
+        return 'View period report';
+      case AppLocale.vietnam:
+        return 'Xem báo cáo theo kỳ';
+    }
+  }
+
+  static String getNoTodayPurchases(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '오늘 구매 내역이 없습니다';
+      case AppLocale.japan:
+        return '本日の購入履歴がありません';
+      case AppLocale.china:
+        return '今日没有采购记录';
+      case AppLocale.chinaTraditional:
+        return '今日沒有採購記錄';
+      case AppLocale.usa:
+        return 'No purchases today';
+      case AppLocale.vietnam:
+        return 'Chưa mua hàng hôm nay';
+    }
+  }
+
+  static String getNoPurchaseData(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '재고 탭에서 구매를 기록해보세요';
+      case AppLocale.japan:
+        return '在庫タブで購入を記録してみましょう';
+      case AppLocale.china:
+        return '在库存标签页记录采购吧';
+      case AppLocale.chinaTraditional:
+        return '在庫存標籤頁記錄採購吧';
+      case AppLocale.usa:
+        return 'Record purchases in the Inventory tab';
+      case AppLocale.vietnam:
+        return 'Hãy ghi lại mua hàng ở tab Tồn kho';
+    }
+  }
 }

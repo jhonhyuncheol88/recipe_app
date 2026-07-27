@@ -473,12 +473,38 @@ class AppRouter {
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+  /// 외부(바텀시트 등)에서 하단 탭 전환을 요청하는 통로.
+  /// 값에 탭 인덱스를 넣으면 HomePage 가 전환 후 null 로 복원한다.
+  /// (탭 순서: 0 재료 · 1 재고 · 2 레시피 · 3 리포트 · 4 설정)
+  static final ValueNotifier<int?> tabRequest = ValueNotifier<int?>(null);
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    HomePage.tabRequest.addListener(_onTabRequest);
+  }
+
+  @override
+  void dispose() {
+    HomePage.tabRequest.removeListener(_onTabRequest);
+    super.dispose();
+  }
+
+  void _onTabRequest() {
+    final requested = HomePage.tabRequest.value;
+    if (requested == null || !mounted) return;
+    if (requested >= 0 && requested < _pages.length) {
+      setState(() => _currentIndex = requested);
+    }
+    HomePage.tabRequest.value = null;
+  }
 
   final List<Widget> _pages = [
     const IngredientMainPage(),

@@ -12,6 +12,7 @@ import '../../../util/app_strings.dart';
 import '../../../util/number_formatter.dart';
 import 'inventory_ai_preview_page.dart';
 import 'purchase_record_sheet.dart';
+import 'today_purchases_sheet.dart';
 
 /// 재고 탭 메인. 위치 세그먼트 + 인라인 스테퍼 목록 + 하단 액션.
 class InventoryMainPage extends StatelessWidget {
@@ -55,7 +56,7 @@ class InventoryMainPage extends StatelessWidget {
   }
 }
 
-/// 상단 요약: 오늘 구매 총액 · 변동 건수
+/// 상단 요약: 오늘 구매 총액. 탭하면 오늘 구매 내역 시트.
 class _SummaryCard extends StatelessWidget {
   final InventoryState state;
   final AppLocale locale;
@@ -68,22 +69,31 @@ class _SummaryCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(
           AppSpacing.s16, AppSpacing.s8, AppSpacing.s16, AppSpacing.s8),
-      padding: const EdgeInsets.all(AppSpacing.s16),
       decoration: BoxDecoration(
         color: tokens.bgElev1,
         borderRadius: AppRadius.brR12,
         border: Border.all(color: tokens.borderSubtle),
       ),
-      child: Row(
-        children: [
-          Icon(Icons.shopping_cart_outlined, size: 20, color: tokens.primary),
-          const SizedBox(width: AppSpacing.s8),
-          Text(
-            '${AppStrings.getInventoryTodayPurchase(locale)} '
-            '${NumberFormatter.formatCurrency(state.todayPurchaseTotal, locale, formatStyle)}',
-            style: AppTypography.label1.copyWith(color: tokens.fgStrong),
+      child: InkWell(
+        borderRadius: AppRadius.brR12,
+        onTap: () => showTodayPurchasesSheet(context, locale),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.s16),
+          child: Row(
+            children: [
+              Icon(Icons.shopping_cart_outlined,
+                  size: 20, color: tokens.primary),
+              const SizedBox(width: AppSpacing.s8),
+              Text(
+                '${AppStrings.getInventoryTodayPurchase(locale)} '
+                '${NumberFormatter.formatCurrency(state.todayPurchaseTotal, locale, formatStyle)}',
+                style: AppTypography.label1.copyWith(color: tokens.fgStrong),
+              ),
+              const Spacer(),
+              Icon(Icons.chevron_right, size: 20, color: tokens.fgTertiary),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

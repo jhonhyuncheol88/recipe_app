@@ -572,6 +572,22 @@ class AppStrings {
       AppStringsInventory.getInventoryTodayPurchase(locale);
   static String getInventoryUnsorted(AppLocale locale) =>
       AppStringsInventory.getInventoryUnsorted(locale);
+  static String getPurchaseReportTitle(AppLocale locale) =>
+      AppStringsInventory.getPurchaseReportTitle(locale);
+  static String getPurchaseDaily(AppLocale locale) =>
+      AppStringsInventory.getPurchaseDaily(locale);
+  static String getPurchaseMonthly(AppLocale locale) =>
+      AppStringsInventory.getPurchaseMonthly(locale);
+  static String getPurchaseYearly(AppLocale locale) =>
+      AppStringsInventory.getPurchaseYearly(locale);
+  static String getTodayPurchasesTitle(AppLocale locale) =>
+      AppStringsInventory.getTodayPurchasesTitle(locale);
+  static String getViewPurchaseReport(AppLocale locale) =>
+      AppStringsInventory.getViewPurchaseReport(locale);
+  static String getNoTodayPurchases(AppLocale locale) =>
+      AppStringsInventory.getNoTodayPurchases(locale);
+  static String getNoPurchaseData(AppLocale locale) =>
+      AppStringsInventory.getNoPurchaseData(locale);
   static String getInputAmount(AppLocale locale) =>
       AppStringsCommon.getInputAmount(locale);
   static String getInvalidFileFormat(AppLocale locale) =>

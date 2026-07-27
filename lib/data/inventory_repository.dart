@@ -160,4 +160,76 @@ class InventoryRepository {
       rethrow;
     }
   }
+
+  /// 오늘(로컬 자정 기준)의 구매 트랜잭션 목록 (시간순)
+  Future<List<InventoryTransaction>> getTodayPurchases() async {
+    try {
+      final db = await _databaseHelper.database;
+      final now = DateTime.now();
+      final startOfDay =
+          DateTime(now.year, now.month, now.day).toIso8601String();
+
+      final rows = await db.query(
+        'inventory_transactions',
+        where: 'created_at >= ? AND type = ?',
+        whereArgs: [startOfDay, InventoryTxType.purchase.dbValue],
+        orderBy: 'created_at ASC',
+      );
+      return rows.map(InventoryTransaction.fromJson).toList();
+    } catch (e) {
+      developer.log('오늘 구매 내역 조회 실패: $e', name: 'InventoryRepository');
+      rethrow;
+    }
+  }
+
+  /// 구매 금액을 기간 단위로 집계 (label 오름차순).
+  /// daily: 최근 30일(yyyy-MM-dd) / monthly: 최근 12개월(yyyy-MM) / yearly: 전체(yyyy)
+  /// created_at 은 로컬 기준 ISO8601 로 저장되므로 substr prefix 그룹이 로컬 날짜와 일치.
+  Future<List<({String label, double total})>> getPurchaseTotals(
+      PurchasePeriod period) async {
+    try {
+      final db = await _databaseHelper.database;
+      final now = DateTime.now();
+
+      final int prefixLength;
+      final String since;
+      switch (period) {
+        case PurchasePeriod.daily:
+          prefixLength = 10;
+          since =
+              DateTime(now.year, now.month, now.day - 29).toIso8601String();
+        case PurchasePeriod.monthly:
+          prefixLength = 7;
+          since = DateTime(now.year, now.month - 11, 1).toIso8601String();
+        case PurchasePeriod.yearly:
+          prefixLength = 4;
+          since = '';
+      }
+
+      final rows = await db.rawQuery(
+        '''
+        SELECT substr(created_at, 1, $prefixLength) AS label,
+               SUM(COALESCE(price, 0)) AS total
+        FROM inventory_transactions
+        WHERE type = ? ${since.isEmpty ? '' : 'AND created_at >= ?'}
+        GROUP BY label
+        ORDER BY label ASC
+        ''',
+        [
+          InventoryTxType.purchase.dbValue,
+          if (since.isNotEmpty) since,
+        ],
+      );
+
+      return rows
+          .map((row) => (
+                label: row['label'] as String,
+                total: (row['total'] as num?)?.toDouble() ?? 0.0,
+              ))
+          .toList();
+    } catch (e) {
+      developer.log('구매 집계 조회 실패: $e', name: 'InventoryRepository');
+      rethrow;
+    }
+  }
 }

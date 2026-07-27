@@ -15,3 +15,4 @@ export 'ai_recipe.dart';
 export 'storage_location.dart';
 export 'inventory_item.dart';
 export 'inventory_transaction.dart';
+export 'purchase_period.dart';

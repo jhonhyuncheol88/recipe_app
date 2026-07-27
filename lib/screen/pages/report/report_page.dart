@@ -15,6 +15,7 @@ import '../../../util/number_format_style.dart';
 import '../../../util/number_formatter.dart';
 import '../../../util/recipe_margin.dart';
 import '../../widget/segment_control.dart';
+import 'purchase_report_card.dart';
 
 class ReportPage extends StatelessWidget {
   const ReportPage({super.key});
@@ -85,6 +86,21 @@ class _ReportScaffold extends StatelessWidget {
               )
             else
               SliverToBoxAdapter(child: _buildEmptyInitial(tokens)),
+            // 구매 지출 카드 — 기존 리포트 상태와 무관하게 항상 표시
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.s20,
+                  0,
+                  AppSpacing.s20,
+                  AppSpacing.s32,
+                ),
+                child: PurchaseReportCard(
+                  locale: locale,
+                  formatStyle: formatStyle,
+                ),
+              ),
+            ),
           ],
         ),
       ),
