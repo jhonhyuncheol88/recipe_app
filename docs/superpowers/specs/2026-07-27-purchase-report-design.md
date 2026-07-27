@@ -59,3 +59,25 @@ getNoPurchaseData(재고 탭에서 구매를 기록해보세요)
 ## 검증 기준
 - `flutter analyze` 신규 에러 0, 기존+신규 테스트 전체 PASS
 - 수동: 구매 기록 → 요약 카드 탭 → 시트 확인 → 리포트 이동 → 카드 일/월/연 전환
+
+## 추가 라운드 (2026-07-28): 구매내역 CRUD + 백업 스키마 동기화
+
+사용자 결정: 수정/삭제는 **전체 내역 페이지**에서 (오늘 시트 하단 진입).
+
+### BackupService v9 동기화 (버그 수정)
+백업은 DB 파일 전체 복사 방식이라 inventory 테이블은 자동 포함되나,
+`BackupService.schemaVersion = 8` 하드코딩 탓에 v9 백업 가져오기가 거절되는 버그.
+→ `DatabaseHelper.schemaVersion = 9` 상수를 신설해 양쪽(openDatabase version,
+BackupService)이 참조 — 하드코딩 재발 방지.
+
+### Repository
+- `getAllPurchases()` — 전체 purchase, created_at DESC
+- `updatePurchase(txId, {qty, price})` — DB 트랜잭션: 잔량 += (newQty-oldQty) clamp≥0,
+  tx 행의 qty_delta/price/resulting_qty 갱신
+- `deletePurchase(txId)` — DB 트랜잭션: 잔량 -= qty_delta clamp≥0, tx 행 삭제
+
+### 전체 내역 페이지 (`purchase_history_page.dart`)
+- 진입: 오늘 구매 시트 하단 "전체 내역" 텍스트 버튼 → push
+- 날짜별 그룹 (헤더: 날짜 + 일 합계), 최신순
+- 항목 탭 → 수량/금액 수정 다이얼로그 (프리필) / Dismissible 스와이프 → 확인 후 삭제
+- 수정/삭제 후 InventoryCubit.load() 로 재고 탭 동기화. 성공 스낵바 없음(정책), 실패만
