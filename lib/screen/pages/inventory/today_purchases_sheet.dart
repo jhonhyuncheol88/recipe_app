@@ -4,6 +4,7 @@ import '../../../controller/index.dart';
 import '../../../data/index.dart';
 import '../../../model/index.dart';
 import '../../../router/app_router.dart';
+import 'purchase_history_page.dart';
 import '../../../theme/tokens/tokens.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/app_strings.dart';
@@ -159,6 +160,23 @@ class _TodayPurchasesBody extends StatelessWidget {
               icon: const Icon(Icons.bar_chart, size: 20),
               label: Text(AppStrings.getViewPurchaseReport(locale),
                   style: AppTypography.label1),
+            ),
+            // 전체 내역 (수정/삭제)
+            TextButton.icon(
+              onPressed: () {
+                final navigator = Navigator.of(context, rootNavigator: true);
+                Navigator.of(context).pop();
+                navigator.push(MaterialPageRoute<void>(
+                  builder: (_) => PurchaseHistoryPage(locale: locale),
+                ));
+              },
+              icon: Icon(Icons.receipt_long_outlined,
+                  size: 18, color: tokens.fgSecondary),
+              label: Text(
+                AppStrings.getViewAllPurchases(locale),
+                style:
+                    AppTypography.label2.copyWith(color: tokens.fgSecondary),
+              ),
             ),
           ],
         ),

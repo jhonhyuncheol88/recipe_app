@@ -588,6 +588,12 @@ class AppStrings {
       AppStringsInventory.getNoTodayPurchases(locale);
   static String getNoPurchaseData(AppLocale locale) =>
       AppStringsInventory.getNoPurchaseData(locale);
+  static String getAllPurchasesTitle(AppLocale locale) =>
+      AppStringsInventory.getAllPurchasesTitle(locale);
+  static String getViewAllPurchases(AppLocale locale) =>
+      AppStringsInventory.getViewAllPurchases(locale);
+  static String getDeletePurchaseConfirm(AppLocale locale) =>
+      AppStringsInventory.getDeletePurchaseConfirm(locale);
   static String getInputAmount(AppLocale locale) =>
       AppStringsCommon.getInputAmount(locale);
   static String getInvalidFileFormat(AppLocale locale) =>

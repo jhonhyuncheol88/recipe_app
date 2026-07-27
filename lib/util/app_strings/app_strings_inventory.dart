@@ -580,4 +580,55 @@ mixin AppStringsInventory {
         return 'Hãy ghi lại mua hàng ở tab Tồn kho';
     }
   }
+
+  static String getAllPurchasesTitle(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '전체 구매 내역';
+      case AppLocale.japan:
+        return '全購入履歴';
+      case AppLocale.china:
+        return '全部采购明细';
+      case AppLocale.chinaTraditional:
+        return '全部採購明細';
+      case AppLocale.usa:
+        return 'All Purchases';
+      case AppLocale.vietnam:
+        return 'Tất cả mua hàng';
+    }
+  }
+
+  static String getViewAllPurchases(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '전체 내역';
+      case AppLocale.japan:
+        return '全履歴';
+      case AppLocale.china:
+        return '全部明细';
+      case AppLocale.chinaTraditional:
+        return '全部明細';
+      case AppLocale.usa:
+        return 'View all';
+      case AppLocale.vietnam:
+        return 'Tất cả';
+    }
+  }
+
+  static String getDeletePurchaseConfirm(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '이 구매 기록을 삭제할까요? 재고 잔량도 함께 보정됩니다';
+      case AppLocale.japan:
+        return 'この購入記録を削除しますか？在庫残量も調整されます';
+      case AppLocale.china:
+        return '要删除这条采购记录吗？库存余量也会一并调整';
+      case AppLocale.chinaTraditional:
+        return '要刪除這條採購記錄嗎？庫存餘量也會一併調整';
+      case AppLocale.usa:
+        return 'Delete this purchase? Stock quantity will be adjusted';
+      case AppLocale.vietnam:
+        return 'Xóa bản ghi mua này? Tồn kho sẽ được điều chỉnh';
+    }
+  }
 }
