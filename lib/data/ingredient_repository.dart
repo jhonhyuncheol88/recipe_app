@@ -122,6 +122,9 @@ class IngredientRepository {
   Future<void> deleteIngredient(String id) async {
     final db = await _databaseHelper.database;
     await db.delete('ingredients', where: 'id = ?', whereArgs: [id]);
+    // 재고·이력 명시 정리 (PRAGMA foreign_keys 미사용 — FK CASCADE 대체)
+    await db.delete('inventory_transactions', where: 'ingredient_id = ?', whereArgs: [id]);
+    await db.delete('inventory_items', where: 'ingredient_id = ?', whereArgs: [id]);
   }
 
   // 유통기한이 임박한 재료 조회

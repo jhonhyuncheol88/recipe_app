@@ -8,3 +8,4 @@ export 'tag_repository.dart';
 export 'sauce_repository.dart';
 export 'ai_recipe_repository.dart';
 export 'auth_repository.dart';
+export 'inventory_repository.dart';
