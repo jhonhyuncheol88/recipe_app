@@ -285,3 +285,23 @@ Bearer 07b99eb4ca857881be0c21e873747f6e2df9d41a1af48e9cb3ff292e805c32a0
 - **익명 → 로그인 마이그레이션**: 비로그인 사용자가 로그인할 때 로컬 sqflite 데이터를 어떻게 다룰지 결정 안 됨 (현재 그대로 유지). 클라우드 동기화는 별개
 - **Apple deleteAccount reauth**: `requires-recent-login` 시 `authReauthRequiredSentinel` emit. UI 가 sentinel 받아 reauthenticate 다이얼로그 띄우는 로직 미구현 (Phase 4 또는 별도)
 - **`account_info_page.dart`** 비로그인 redirect 가 `WidgetsBinding.addPostFrameCallback` 안에서 `context.go('/login')` — returnTo 미전달. Phase 4 에서 `state.extra: '/account-info'` 로 교체
+
+---
+
+## 2026-07-28 스토어 등록 상태 점검 (fastlane)
+
+`fastlane/Fastfile` 에 점검 레인 추가됨 (`fastlane ios check_iap` / `fastlane android check_iap`).
+
+### iOS (App Store Connect) — 확인 완료
+- 앱: 원가 계산기 원까 (com.jalam.recipeapp) ✅
+- 기존 인앱 상품: `wonkka22000` — **CONSUMABLE + MISSING_METADATA** → 타입이 잘못됨(소모성), 재활용 불가. 삭제 권장
+- `com.recipeapp.adfree.lifetime` (Non-Consumable) **미등록** → 신규 생성 필요
+- 인증: ASC API Team Key (Key ID H48AA6AMDG, ~/Downloads/AuthKey_H48AA6AMDG.p8, Issuer bc479708-d6d3-4360-93ae-2834799fdcc0)
+
+### Android (Play Console) — 권한 전파 대기
+- 서비스 계정 wonkka@recipeapp-eec6c.iam.gserviceaccount.com 생성 + JSON 키
+  (~/Downloads/recipeapp-eec6c-3c73aa25c43e.json) + Play Console 관리자 초대 완료
+- androidpublisher API 는 GCP 프로젝트(recipeapp-eec6c)에 활성화 확인됨
+- inappproducts.list 가 계속 403 — 신규 서비스 계정 권한 전파 지연(최대 24~48h 사례 흔함).
+  촉진: Play Console 에서 아무 변경 저장(인앱 상품 생성 등) 시 반영되는 사례 다수
+- 재시도: `PLAY_JSON_KEY_PATH=~/Downloads/recipeapp-eec6c-3c73aa25c43e.json fastlane android check_iap`
