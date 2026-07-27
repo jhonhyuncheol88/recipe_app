@@ -247,37 +247,77 @@ class _StepperRow extends StatelessWidget {
 
   /// 숫자패드 직접 입력
   void _showQtyInputDialog(BuildContext context, InventoryCubit cubit) {
-    final controller = TextEditingController();
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(AppStrings.getInventoryEnterQty(locale)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(
-            suffixText:
-                cubit.state.unitsById[ingredient.purchaseUnitId]?.name ?? '',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(AppStrings.getCancel(locale)),
-          ),
-          TextButton(
-            onPressed: () {
-              final qty = double.tryParse(controller.text);
-              if (qty != null) {
-                cubit.setQuantity(ingredient.id, qty);
-              }
-              Navigator.of(dialogContext).pop();
-            },
-            child: Text(AppStrings.getConfirm(locale)),
-          ),
-        ],
+      builder: (_) => _QtyInputDialog(
+        title: AppStrings.getInventoryEnterQty(locale),
+        unitSuffix:
+            cubit.state.unitsById[ingredient.purchaseUnitId]?.name ?? '',
+        cancelLabel: AppStrings.getCancel(locale),
+        confirmLabel: AppStrings.getConfirm(locale),
+        onSubmit: (qty) => cubit.setQuantity(ingredient.id, qty),
       ),
+    );
+  }
+}
+
+/// 잔량 직접 입력 다이얼로그.
+/// StatefulWidget 으로 분리해 확인/취소/바깥탭 dismiss 모든 경로에서
+/// [TextEditingController] 가 dispose 되도록 한다.
+class _QtyInputDialog extends StatefulWidget {
+  final String title;
+  final String unitSuffix;
+  final String cancelLabel;
+  final String confirmLabel;
+  final ValueChanged<double> onSubmit;
+
+  const _QtyInputDialog({
+    required this.title,
+    required this.unitSuffix,
+    required this.cancelLabel,
+    required this.confirmLabel,
+    required this.onSubmit,
+  });
+
+  @override
+  State<_QtyInputDialog> createState() => _QtyInputDialogState();
+}
+
+class _QtyInputDialogState extends State<_QtyInputDialog> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        decoration: InputDecoration(suffixText: widget.unitSuffix),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(widget.cancelLabel),
+        ),
+        TextButton(
+          onPressed: () {
+            final qty = double.tryParse(_controller.text);
+            if (qty != null) {
+              widget.onSubmit(qty);
+            }
+            Navigator.of(context).pop();
+          },
+          child: Text(widget.confirmLabel),
+        ),
+      ],
     );
   }
 }
