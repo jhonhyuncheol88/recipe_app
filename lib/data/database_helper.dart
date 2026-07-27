@@ -7,6 +7,11 @@ import '../model/index.dart';
 import '../util/app_locale.dart';
 
 class DatabaseHelper {
+  /// 현재 스키마 버전. openDatabase 와 BackupService 가 함께 참조 —
+  /// 마이그레이션 추가 시 여기만 올리면 된다.
+  /// v9: 재고조사 (inventory_items/transactions + ingredients.storage_location)
+  static const int schemaVersion = 9;
+
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
 
@@ -28,7 +33,7 @@ class DatabaseHelper {
 
       final database = await openDatabase(
         path,
-        version: 9, // 버전 업데이트 (재고조사: inventory 테이블 + storage_location)
+        version: schemaVersion,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       );
