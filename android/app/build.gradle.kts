@@ -46,17 +46,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
         isCoreLibraryDesugaringEnabled = true
-        
-        // 컴파일 최적화
-        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
-        
+
         // Kotlin 컴파일 최적화
         freeCompilerArgs += listOf(
-            "-Xopt-in=kotlin.RequiresOptIn",
             "-Xjvm-default=all"
         )
     }
@@ -64,7 +60,9 @@ android {
     defaultConfig {
         applicationId = "com.jalam.recipeapp"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        // Google Play 제출용 API 36 (Android 16) 타깃 고정.
+        // Flutter 기본값 의존 대신 명시적으로 지정해 버전 변경에도 유지.
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         
