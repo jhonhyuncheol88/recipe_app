@@ -80,11 +80,8 @@ class _PurchaseSheetBodyState extends State<_PurchaseSheetBody> {
         ));
         return;
       }
+      // 성공 — 시트 닫힘 + 잔량/오늘 구매 총액 갱신이 곧 피드백 (스낵바 없음)
       Navigator.of(context).pop();
-      messenger.showSnackBar(SnackBar(
-        content: Text(AppStrings.getInventoryPurchaseSaved(widget.locale)),
-        duration: const Duration(seconds: 2),
-      ));
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);

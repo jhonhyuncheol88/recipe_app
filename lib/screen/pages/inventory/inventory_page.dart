@@ -209,8 +209,7 @@ class _StepperRow extends StatelessWidget {
           ),
           _RoundIconButton(
             icon: Icons.remove,
-            onTap: () =>
-                _changeWithUndo(context, () => cubit.decrement(ingredient.id)),
+            onTap: () => cubit.decrement(ingredient.id),
           ),
           GestureDetector(
             onTap: () => _showQtyInputDialog(context, cubit),
@@ -224,31 +223,11 @@ class _StepperRow extends StatelessWidget {
           ),
           _RoundIconButton(
             icon: Icons.add,
-            onTap: () =>
-                _changeWithUndo(context, () => cubit.increment(ingredient.id)),
+            onTap: () => cubit.increment(ingredient.id),
           ),
         ],
       ),
     );
-  }
-
-  /// 변경 실행 + 실행취소 스낵바 (이전 잔량으로 setQuantity 복원)
-  void _changeWithUndo(
-      BuildContext context, Future<void> Function() action) async {
-    final cubit = context.read<InventoryCubit>();
-    final previousQty = cubit.state.items[ingredient.id]?.currentQty ?? 0.0;
-    await action();
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(AppStrings.getInventoryQtyUpdated(locale)),
-        duration: const Duration(seconds: 2),
-        action: SnackBarAction(
-          label: AppStrings.getUndo(locale),
-          onPressed: () => cubit.setQuantity(ingredient.id, previousQty),
-        ),
-      ));
   }
 
   /// 숫자패드 직접 입력
