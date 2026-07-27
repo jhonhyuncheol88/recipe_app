@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:recipe_app/controller/inventory/inventory_cubit.dart';
-import 'package:recipe_app/data/database_helper.dart';
 import 'package:recipe_app/data/index.dart';
 import 'package:recipe_app/model/index.dart';
 
@@ -52,9 +51,20 @@ void main() {
     await cubit.load();
     await cubit.setQuantity('ing1', 3.0);
     expect(cubit.state.items['ing1']!.currentQty, 3.0);
+    expect(cubit.state.error, isNull); // 변경 성공 시 에러 없음(클리어 규약)
 
     await cubit.decrement('ing1'); // 양파 단위 조회 실패 시 기본 스텝 1
     expect(cubit.state.items['ing1']!.currentQty, 2.0);
+  });
+
+  test('error 라이프사이클: copyWith 보존/클리어 규약', () async {
+    await cubit.load();
+    final errored = cubit.state.copyWith(error: () => 'boom');
+    expect(errored.error, 'boom');
+    // 미지정 시 보존
+    expect(errored.copyWith(isLoading: true).error, 'boom');
+    // 명시적 클리어
+    expect(errored.copyWith(error: () => null).error, isNull);
   });
 
   test('recordPurchase: 잔량 증가 + 오늘 구매 총액 갱신', () async {

@@ -60,7 +60,7 @@ class InventoryState extends Equatable {
       unitsById: unitsById ?? this.unitsById,
       todayPurchaseTotal: todayPurchaseTotal ?? this.todayPurchaseTotal,
       todayTxCount: todayTxCount ?? this.todayTxCount,
-      error: error != null ? error() : null,
+      error: error != null ? error() : this.error,
     );
   }
 
@@ -211,6 +211,7 @@ class InventoryCubit extends Cubit<InventoryState> {
       items: {...state.items, ingredientId: item},
       todayPurchaseTotal: summary.totalPurchase,
       todayTxCount: summary.txCount,
+      error: () => null, // 변경 성공 시 이전 에러 클리어
     ));
   }
 }
