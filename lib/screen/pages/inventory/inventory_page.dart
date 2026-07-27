@@ -6,6 +6,7 @@ import '../../../theme/tokens/tokens.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/number_formatter.dart';
+import 'purchase_record_sheet.dart';
 
 /// 재고 탭 메인. 위치 세그먼트 + 인라인 스테퍼 목록 + 하단 액션.
 class InventoryMainPage extends StatelessWidget {
@@ -463,6 +464,8 @@ class _BottomActions extends StatelessWidget {
   /// Task 9 에서 실제 흐름으로 교체. 이 Task 에서는 no-op.
   void onAiScanPressed(BuildContext context, AppLocale locale) {}
 
-  /// Task 7 에서 실제 흐름으로 교체. 이 Task 에서는 no-op.
-  void onPurchasePressed(BuildContext context, AppLocale locale) {}
+  /// Task 7: 구매 기록 바텀시트 열기.
+  void onPurchasePressed(BuildContext context, AppLocale locale) {
+    showPurchaseRecordSheet(context, locale);
+  }
 }
