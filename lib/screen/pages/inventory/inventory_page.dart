@@ -120,7 +120,7 @@ class _LocationSegments extends StatelessWidget {
             child: Text(
               badge != null && badge > 0 ? '$label($badge)' : label,
               style: AppTypography.label2.copyWith(
-                color: selected ? Colors.white : tokens.fgSecondary,
+                color: selected ? tokens.fgOnPrimary : tokens.fgSecondary,
               ),
             ),
           ),

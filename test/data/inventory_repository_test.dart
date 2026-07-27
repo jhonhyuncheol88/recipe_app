@@ -1,16 +1,22 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:recipe_app/data/database_helper.dart';
 import 'package:recipe_app/data/inventory_repository.dart';
 import 'package:recipe_app/model/index.dart';
 import 'package:recipe_app/data/ingredient_repository.dart';
+import 'package:recipe_app/data/repositories/ingredient_repository_impl.dart';
 
 void main() {
   late InventoryRepository repo;
 
-  setUpAll(() {
+  setUpAll(() async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+    // 병렬 isolate 간 DB 파일 충돌(flake) 방지: 파일별 고유 임시 경로
+    await databaseFactory.setDatabasesPath(
+      Directory.systemTemp.createTempSync('inv_test_repo_').path,
+    );
   });
 
   setUp(() async {
@@ -89,5 +95,34 @@ void main() {
     final txs = await db.query('inventory_transactions',
         where: "ingredient_id = 'ing-del'");
     expect(txs, isEmpty);
+  });
+
+  test(
+      'IngredientRepositoryImpl.updateIngredientsBatch: idsToDelete 삭제 경로도 재고·이력 정리',
+      () async {
+    final db = await DatabaseHelper().database;
+    final ingredientRepo = IngredientRepository();
+    await ingredientRepo.insertIngredient(Ingredient(
+      id: 'ing-batch-del',
+      name: '배치삭제재료',
+      purchasePrice: 0,
+      purchaseAmount: 1,
+      purchaseUnitId: 'u1',
+      createdAt: DateTime.now(),
+      tagIds: const [],
+    ));
+    await repo.recordPurchase(ingredientId: 'ing-batch-del', qty: 1, price: 100);
+
+    final impl = IngredientRepositoryImpl(DatabaseHelper());
+    await impl.updateIngredientsBatch(const [], ['ing-batch-del']);
+
+    final items = await repo.getAllItems();
+    expect(items['ing-batch-del'], isNull);
+    final txs = await db.query('inventory_transactions',
+        where: "ingredient_id = 'ing-batch-del'");
+    expect(txs, isEmpty);
+    final ingredientRows = await db.query('ingredients',
+        where: "id = 'ing-batch-del'");
+    expect(ingredientRows, isEmpty);
   });
 }

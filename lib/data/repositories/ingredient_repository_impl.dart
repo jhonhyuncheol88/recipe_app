@@ -33,11 +33,25 @@ class IngredientRepositoryImpl implements IngredientRepository {
   @override
   Future<void> deleteIngredient(String id) async {
     final db = await databaseHelper.database;
-    await db.delete(
-      'ingredients',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.transaction((txn) async {
+      // 재고·이력 명시 정리 (PRAGMA foreign_keys 미사용 — FK CASCADE 대체)
+      // 자식(inventory) 먼저 → 부모(ingredients) 나중
+      await txn.delete(
+        'inventory_transactions',
+        where: 'ingredient_id = ?',
+        whereArgs: [id],
+      );
+      await txn.delete(
+        'inventory_items',
+        where: 'ingredient_id = ?',
+        whereArgs: [id],
+      );
+      await txn.delete(
+        'ingredients',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    });
   }
 
   @override
@@ -48,6 +62,18 @@ class IngredientRepositoryImpl implements IngredientRepository {
     await db.transaction((txn) async {
       // Delete marked items
       for (final id in idsToDelete) {
+        // 재고·이력 명시 정리 (PRAGMA foreign_keys 미사용 — FK CASCADE 대체)
+        // 자식(inventory) 먼저 → 부모(ingredients) 나중
+        await txn.delete(
+          'inventory_transactions',
+          where: 'ingredient_id = ?',
+          whereArgs: [id],
+        );
+        await txn.delete(
+          'inventory_items',
+          where: 'ingredient_id = ?',
+          whereArgs: [id],
+        );
         await txn.delete(
           'ingredients',
           where: 'id = ?',

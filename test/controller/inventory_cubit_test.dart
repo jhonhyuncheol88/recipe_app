@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:recipe_app/controller/inventory/inventory_cubit.dart';
@@ -5,9 +6,13 @@ import 'package:recipe_app/data/index.dart';
 import 'package:recipe_app/model/index.dart';
 
 void main() {
-  setUpAll(() {
+  setUpAll(() async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+    // 병렬 isolate 간 DB 파일 충돌(flake) 방지: 파일별 고유 임시 경로
+    await databaseFactory.setDatabasesPath(
+      Directory.systemTemp.createTempSync('inv_test_cubit_').path,
+    );
   });
 
   late InventoryCubit cubit;
