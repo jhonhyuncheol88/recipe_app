@@ -32,6 +32,7 @@ class _PurchaseSheetBodyState extends State<_PurchaseSheetBody> {
   final TextEditingController _qtyController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   Ingredient? _selected;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -57,21 +58,38 @@ class _PurchaseSheetBodyState extends State<_PurchaseSheetBody> {
   }
 
   Future<void> _save() async {
+    if (_isSaving) return;
     final ingredient = _selected;
     if (ingredient == null) return;
     final qty = double.tryParse(_qtyController.text) ?? 0;
     final price = double.tryParse(_priceController.text) ?? 0;
     if (qty <= 0) return;
 
-    final cubit = context.read<InventoryCubit>();
-    await cubit.recordPurchase(
-        ingredientId: ingredient.id, qty: qty, price: price);
-    if (!mounted) return;
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(AppStrings.getInventoryPurchaseSaved(widget.locale)),
-      duration: const Duration(seconds: 2),
-    ));
+    setState(() => _isSaving = true);
+    try {
+      final cubit = context.read<InventoryCubit>();
+      await cubit.recordPurchase(
+          ingredientId: ingredient.id, qty: qty, price: price);
+      if (!mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      if (cubit.state.error != null) {
+        // 실패 — 시트 유지, 사용자가 재시도 가능
+        messenger.showSnackBar(SnackBar(
+          content: Text(AppStrings.getInventoryError(widget.locale)),
+          duration: const Duration(seconds: 3),
+        ));
+        return;
+      }
+      Navigator.of(context).pop();
+      messenger.showSnackBar(SnackBar(
+        content: Text(AppStrings.getInventoryPurchaseSaved(widget.locale)),
+        duration: const Duration(seconds: 2),
+      ));
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   @override
@@ -192,7 +210,7 @@ class _PurchaseSheetBodyState extends State<_PurchaseSheetBody> {
                   padding:
                       const EdgeInsets.symmetric(vertical: AppSpacing.s12),
                 ),
-                onPressed: _save,
+                onPressed: _isSaving ? null : _save,
                 child: Text(AppStrings.getSave(widget.locale),
                     style: AppTypography.label1),
               ),
