@@ -121,10 +121,11 @@ class IngredientRepository {
   // 재료 삭제
   Future<void> deleteIngredient(String id) async {
     final db = await _databaseHelper.database;
-    await db.delete('ingredients', where: 'id = ?', whereArgs: [id]);
     // 재고·이력 명시 정리 (PRAGMA foreign_keys 미사용 — FK CASCADE 대체)
+    // 자식(inventory) 먼저 → 부모(ingredients) 나중: FK 강제 활성화 시에도 안전
     await db.delete('inventory_transactions', where: 'ingredient_id = ?', whereArgs: [id]);
     await db.delete('inventory_items', where: 'ingredient_id = ?', whereArgs: [id]);
+    await db.delete('ingredients', where: 'id = ?', whereArgs: [id]);
   }
 
   // 유통기한이 임박한 재료 조회

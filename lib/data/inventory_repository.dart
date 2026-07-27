@@ -22,6 +22,64 @@ class InventoryRepository {
     }
   }
 
+  /// 트랜잭션 안에서 읽기-계산-쓰기: 현재 잔량을 읽어 compute 로 새 잔량을
+  /// 계산하고 (0 미만 clamp), 행이 없으면 lazy 생성 후 변동량을 트랜잭션으로 기록.
+  Future<InventoryItem> _writeQuantity({
+    required String ingredientId,
+    required double Function(double current) compute,
+    required InventoryTxType type,
+    double? price,
+  }) async {
+    final db = await _databaseHelper.database;
+    return db.transaction((txn) async {
+      final existing = await txn.query(
+        'inventory_items',
+        where: 'ingredient_id = ?',
+        whereArgs: [ingredientId],
+      );
+
+      final now = DateTime.now();
+      final double previousQty = existing.isEmpty
+          ? 0.0
+          : (existing.first['current_qty'] as num).toDouble();
+
+      final newQty = compute(previousQty);
+      final clamped = newQty < 0 ? 0.0 : newQty;
+
+      final InventoryItem item;
+      if (existing.isEmpty) {
+        item = InventoryItem(
+          id: _uuid.v4(),
+          ingredientId: ingredientId,
+          currentQty: clamped,
+          updatedAt: now,
+        );
+        await txn.insert('inventory_items', item.toJson());
+      } else {
+        item = InventoryItem.fromJson(existing.first)
+            .copyWith(currentQty: clamped, updatedAt: now);
+        await txn.update(
+          'inventory_items',
+          item.toJson(),
+          where: 'ingredient_id = ?',
+          whereArgs: [ingredientId],
+        );
+      }
+
+      final tx = InventoryTransaction(
+        id: _uuid.v4(),
+        ingredientId: ingredientId,
+        type: type,
+        qtyDelta: clamped - previousQty,
+        resultingQty: clamped,
+        price: price,
+        createdAt: now,
+      );
+      await txn.insert('inventory_transactions', tx.toJson());
+      return item;
+    });
+  }
+
   /// 잔량을 newQty 로 설정 (행 없으면 lazy 생성). 변동량을 트랜잭션으로 기록.
   Future<InventoryItem> setQuantity({
     required String ingredientId,
@@ -29,74 +87,37 @@ class InventoryRepository {
     required InventoryTxType type,
     double? price,
   }) async {
-    final clamped = newQty < 0 ? 0.0 : newQty;
     try {
-      final db = await _databaseHelper.database;
-      return await db.transaction((txn) async {
-        final existing = await txn.query(
-          'inventory_items',
-          where: 'ingredient_id = ?',
-          whereArgs: [ingredientId],
-        );
-
-        final now = DateTime.now();
-        final double previousQty = existing.isEmpty
-            ? 0.0
-            : (existing.first['current_qty'] as num).toDouble();
-
-        final InventoryItem item;
-        if (existing.isEmpty) {
-          item = InventoryItem(
-            id: _uuid.v4(),
-            ingredientId: ingredientId,
-            currentQty: clamped,
-            updatedAt: now,
-          );
-          await txn.insert('inventory_items', item.toJson());
-        } else {
-          item = InventoryItem.fromJson(existing.first)
-              .copyWith(currentQty: clamped, updatedAt: now);
-          await txn.update(
-            'inventory_items',
-            item.toJson(),
-            where: 'ingredient_id = ?',
-            whereArgs: [ingredientId],
-          );
-        }
-
-        final tx = InventoryTransaction(
-          id: _uuid.v4(),
-          ingredientId: ingredientId,
-          type: type,
-          qtyDelta: clamped - previousQty,
-          resultingQty: clamped,
-          price: price,
-          createdAt: now,
-        );
-        await txn.insert('inventory_transactions', tx.toJson());
-        return item;
-      });
+      return await _writeQuantity(
+        ingredientId: ingredientId,
+        compute: (_) => newQty,
+        type: type,
+        price: price,
+      );
     } catch (e) {
       developer.log('재고 설정 실패: $e', name: 'InventoryRepository');
       rethrow;
     }
   }
 
-  /// 현재 잔량에 delta 를 더함 (0 미만 clamp).
+  /// 현재 잔량에 delta 를 더함 (0 미만 clamp). 읽기-계산-쓰기가 한 트랜잭션.
   Future<InventoryItem> changeQuantity({
     required String ingredientId,
     required double delta,
     required InventoryTxType type,
     double? price,
   }) async {
-    final items = await getAllItems();
-    final current = items[ingredientId]?.currentQty ?? 0.0;
-    return setQuantity(
-      ingredientId: ingredientId,
-      newQty: current + delta,
-      type: type,
-      price: price,
-    );
+    try {
+      return await _writeQuantity(
+        ingredientId: ingredientId,
+        compute: (current) => current + delta,
+        type: type,
+        price: price,
+      );
+    } catch (e) {
+      developer.log('재고 변경 실패: $e', name: 'InventoryRepository');
+      rethrow;
+    }
   }
 
   /// 구매 기록: 잔량 증가 + purchase 트랜잭션(금액 포함)

@@ -43,6 +43,20 @@ void main() {
     expect(item.currentQty, 0.0);
   });
 
+  test('changeQuantity: 동시 호출 시 lost update 없음 (트랜잭션 내 read-modify-write)',
+      () async {
+    await Future.wait([
+      for (var i = 0; i < 10; i++)
+        repo.changeQuantity(
+          ingredientId: 'ing-race',
+          delta: 1.0,
+          type: InventoryTxType.purchase,
+        ),
+    ]);
+    final items = await repo.getAllItems();
+    expect(items['ing-race']!.currentQty, 10.0);
+  });
+
   test('recordPurchase: 잔량 증가 + 오늘 구매 합산', () async {
     await repo.recordPurchase(ingredientId: 'ing1', qty: 2.0, price: 5000);
     await repo.recordPurchase(ingredientId: 'ing2', qty: 1.0, price: 3000);
