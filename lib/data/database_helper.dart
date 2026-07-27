@@ -28,7 +28,7 @@ class DatabaseHelper {
 
       final database = await openDatabase(
         path,
-        version: 8, // 버전 업데이트 (가격 히스토리에 sell_price 컬럼 추가)
+        version: 9, // 버전 업데이트 (재고조사: inventory 테이블 + storage_location)
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       );
@@ -84,7 +84,8 @@ class DatabaseHelper {
           tag_ids TEXT DEFAULT '[]',
           animation_x REAL,
           animation_y REAL,
-          is_animation_settled INTEGER DEFAULT 0
+          is_animation_settled INTEGER DEFAULT 0,
+          storage_location TEXT
         )
       ''');
 
@@ -230,6 +231,38 @@ class DatabaseHelper {
       );
       await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_recipe_price_history_recorded_at ON recipe_price_history(recorded_at)',
+      );
+
+      // 재고 잔량 (재료당 1행)
+      developer.log('Inventory 테이블 생성', name: 'DatabaseHelper');
+      await db.execute('''
+        CREATE TABLE inventory_items (
+          id TEXT PRIMARY KEY,
+          ingredient_id TEXT NOT NULL UNIQUE,
+          current_qty REAL NOT NULL DEFAULT 0,
+          updated_at TEXT NOT NULL,
+          FOREIGN KEY (ingredient_id) REFERENCES ingredients (id) ON DELETE CASCADE
+        )
+      ''');
+
+      // 재고 변동 이력
+      await db.execute('''
+        CREATE TABLE inventory_transactions (
+          id TEXT PRIMARY KEY,
+          ingredient_id TEXT NOT NULL,
+          type TEXT NOT NULL,
+          qty_delta REAL NOT NULL,
+          resulting_qty REAL NOT NULL,
+          price REAL,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY (ingredient_id) REFERENCES ingredients (id) ON DELETE CASCADE
+        )
+      ''');
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_inventory_tx_ingredient_id ON inventory_transactions(ingredient_id)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_inventory_tx_created_at ON inventory_transactions(created_at)',
       );
 
       // 기본 단위 데이터 삽입
@@ -503,6 +536,46 @@ class DatabaseHelper {
             name: 'DatabaseHelper',
           );
         }
+      }
+
+      if (oldVersion < 9) {
+        // 버전 9: 재고조사 — storage_location 컬럼 + inventory 테이블
+        developer.log('재고조사 테이블 추가 시작', name: 'DatabaseHelper');
+
+        await db.execute(
+          'ALTER TABLE ingredients ADD COLUMN storage_location TEXT',
+        );
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS inventory_items (
+            id TEXT PRIMARY KEY,
+            ingredient_id TEXT NOT NULL UNIQUE,
+            current_qty REAL NOT NULL DEFAULT 0,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (ingredient_id) REFERENCES ingredients (id) ON DELETE CASCADE
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS inventory_transactions (
+            id TEXT PRIMARY KEY,
+            ingredient_id TEXT NOT NULL,
+            type TEXT NOT NULL,
+            qty_delta REAL NOT NULL,
+            resulting_qty REAL NOT NULL,
+            price REAL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (ingredient_id) REFERENCES ingredients (id) ON DELETE CASCADE
+          )
+        ''');
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_inventory_tx_ingredient_id ON inventory_transactions(ingredient_id)',
+        );
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_inventory_tx_created_at ON inventory_transactions(created_at)',
+        );
+
+        developer.log('재고조사 테이블 추가 완료', name: 'DatabaseHelper');
       }
     } catch (e) {
       developer.log('데이터베이스 업그레이드 실패: $e', name: 'DatabaseHelper');
