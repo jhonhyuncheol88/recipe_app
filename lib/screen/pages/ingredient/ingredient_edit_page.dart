@@ -89,7 +89,6 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
 
   Future<void> _save() async {
     final locale = context.read<LocaleCubit>().state;
-    final tokens = AppColorTokens.of(context);
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
@@ -105,14 +104,6 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
       );
       await context.read<IngredientCubit>().updateIngredient(updated);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppStrings.getIngredientUpdatedSuccessfully(locale),
-          ),
-          backgroundColor: tokens.primary,
-        ),
-      );
       context.pop();
     } catch (_) {
       if (!mounted) return;
@@ -171,9 +162,6 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         );
     if (!mounted) return;
     context.pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppStrings.getIngredientDeleted(locale))),
-    );
   }
 
   @override

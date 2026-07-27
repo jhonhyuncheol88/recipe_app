@@ -290,9 +290,6 @@ class _SauceEditPageState extends State<SauceEditPage> {
     final cubit = context.read<SauceCubit>();
     await cubit.deleteSauce(widget.sauce.id);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppStrings.getSauceDeleted(locale))),
-    );
     context.pop(true);
   }
 

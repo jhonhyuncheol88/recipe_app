@@ -222,15 +222,6 @@ class _OcrResultPageState extends State<OcrResultPage> {
 
       _editableIngredients.removeAt(index);
     });
-
-    final colorScheme = Theme.of(context).colorScheme;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('재료가 삭제되었습니다.'),
-        backgroundColor: colorScheme.secondary,
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   bool _validateIngredients() {
@@ -310,12 +301,6 @@ class _OcrResultPageState extends State<OcrResultPage> {
       if (mounted) {
         final colorScheme = Theme.of(context).colorScheme;
         if (successCount > 0) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$successCount개 재료가 성공적으로 추가되었습니다.'),
-              backgroundColor: colorScheme.primary,
-            ),
-          );
           Navigator.of(context).pop();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

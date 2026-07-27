@@ -776,14 +776,6 @@ class _AiRecipeDetailPageState extends State<AiRecipeDetailPage> {
           );
 
       if (success && mounted) {
-        final locale = context.read<LocaleCubit>().state;
-        final colorScheme = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.getRecipeConverted(locale)),
-            backgroundColor: colorScheme.secondary,
-          ),
-        );
         context.pop();
       }
     } catch (e) {

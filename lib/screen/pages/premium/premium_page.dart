@@ -137,13 +137,9 @@ class _PremiumPageState extends State<PremiumPage> {
       return;
     }
 
-    // 복원 직후 결과 안내
-    if (state is PremiumActive) {
-      messenger.showSnackBar(SnackBar(
-        content: Text(AppStrings.getPremiumRestoreSuccess(locale)),
-        backgroundColor: tokens.positive,
-      ));
-    } else if (state is PremiumFree) {
+    // 복원 직후 결과 안내 (PremiumActive 는 _AlreadyOwnedView 로 화면이 바뀌어
+    // 이미 결과가 드러나므로 스낵바 불필요. PremiumFree 는 화면 변화가 없어 유지.)
+    if (state is PremiumFree) {
       messenger.showSnackBar(SnackBar(
         content: Text(AppStrings.getPremiumRestoreNoPurchase(locale)),
       ));

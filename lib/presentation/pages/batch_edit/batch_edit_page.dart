@@ -63,9 +63,6 @@ class BatchEditView extends StatelessWidget {
       body: BlocConsumer<BatchEditBloc, BatchEditState>(
         listener: (context, state) {
           if (state.status == BatchEditStatus.success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('저장되었습니다.')),
-            );
             Navigator.pop(context);
           } else if (state.status == BatchEditStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(

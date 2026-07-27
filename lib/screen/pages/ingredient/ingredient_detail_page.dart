@@ -226,9 +226,6 @@ class _IngredientDetailPageState extends State<IngredientDetailPage> {
         );
     if (!mounted) return;
     context.pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppStrings.getIngredientDeleted(locale))),
-    );
   }
 }
 

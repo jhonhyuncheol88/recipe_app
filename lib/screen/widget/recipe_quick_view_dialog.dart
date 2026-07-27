@@ -638,43 +638,6 @@ class _RecipeQuickViewContentState extends State<RecipeQuickViewContent> {
   Future<void> _copyRecipeText() async {
     final text = _buildRecipeShareText();
     await Clipboard.setData(ClipboardData(text: text));
-
-    if (!mounted) return;
-
-    final colorScheme = Theme.of(context).colorScheme;
-
-    // 바텀시트 내부에서는 부모 Scaffold의 context를 사용
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    scaffoldMessenger.showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              Icons.check_circle,
-              color: colorScheme.onPrimaryContainer,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                AppStrings.getRecipeShareCopied(widget.locale),
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: colorScheme.primaryContainer,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
   }
 
   String _buildRecipeShareText() {

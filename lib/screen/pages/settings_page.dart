@@ -527,15 +527,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (!mounted) return;
       await _reloadAllState();
-
-      if (!mounted) return;
-      final currentLocale = context.read<LocaleCubit>().state;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppStrings.getImportComplete(currentLocale)),
-          backgroundColor: tokens.primary,
-        ),
-      );
     } catch (e) {
       if (!mounted) return;
       final currentLocale = context.read<LocaleCubit>().state;
@@ -602,15 +593,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
                 if (!mounted) return;
                 Navigator.pop(context);
-                final currentLocale = context.read<LocaleCubit>().state;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      AppStrings.getDataResetSuccess(currentLocale),
-                    ),
-                    backgroundColor: tokens.primary,
-                  ),
-                );
               } catch (e) {
                 if (!mounted) return;
                 Navigator.pop(context);
