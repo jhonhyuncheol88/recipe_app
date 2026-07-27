@@ -346,6 +346,15 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
+        // 재고조사 Cubit
+        BlocProvider<InventoryCubit>(
+          create: (context) => InventoryCubit(
+            inventoryRepository: InventoryRepository(),
+            ingredientRepository: context.read<IngredientRepository>(),
+            unitRepository: context.read<UnitRepository>(),
+          ),
+        ),
+
         // 온보딩 관련 Cubit (라우터에서 사용되므로 먼저 초기화)
         BlocProvider<OnboardingCubit>(create: (context) => OnboardingCubit()),
 

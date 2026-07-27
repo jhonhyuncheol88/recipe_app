@@ -7,11 +7,13 @@ import 'package:recipe_app/util/app_strings.dart';
 import '../controller/setting/locale_cubit.dart';
 import '../controller/recipe/recipe_cubit.dart';
 import '../controller/ingredient/ingredient_cubit.dart';
+import '../controller/inventory/inventory_cubit.dart';
 import '../screen/pages/ingredient/ingredient_main_page.dart';
 import '../screen/pages/ingredient/ingredient_add_page.dart';
 import '../screen/pages/ingredient/ingredient_bulk_add_page.dart';
 import '../screen/pages/ingredient/ingredient_detail_page.dart';
 import '../screen/pages/ingredient/ingredient_edit_page.dart';
+import '../screen/pages/inventory/inventory_page.dart';
 import '../screen/pages/recipe/recipe_main_page.dart';
 import '../screen/pages/recipe/recipe_add_page.dart';
 import '../screen/pages/recipe/recipe_detail_page.dart';
@@ -480,6 +482,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = [
     const IngredientMainPage(),
+    const InventoryMainPage(),
     const RecipeMainPage(),
     const ReportPage(),
     const SettingsPage(),
@@ -509,13 +512,16 @@ class _HomePageState extends State<HomePage> {
                   });
 
                   // 탭 변경 시 해당 페이지 데이터 새로고침
-                  if (index == 1) {
-                    // 레시피 탭
-                    context.read<RecipeCubit>().loadRecipes();
-                  } else if (index == 0) {
+                  if (index == 0) {
                     // 재료 탭
                     context.read<IngredientCubit>().loadIngredients();
+                  } else if (index == 1) {
+                    // 재고 탭
+                    context.read<InventoryCubit>().load();
                   } else if (index == 2) {
+                    // 레시피 탭
+                    context.read<RecipeCubit>().loadRecipes();
+                  } else if (index == 3) {
                     // 리포트 탭
                     context.read<ReportCubit>().refresh();
                   }
@@ -529,6 +535,10 @@ class _HomePageState extends State<HomePage> {
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.inventory_2),
                     label: AppStrings.getIngredients(currentLocale),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.warehouse_outlined),
+                    label: AppStrings.getInventory(currentLocale),
                   ),
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.restaurant_menu),
