@@ -83,11 +83,6 @@ class _SummaryCard extends StatelessWidget {
             '${NumberFormatter.formatCurrency(state.todayPurchaseTotal, locale, formatStyle)}',
             style: AppTypography.label1.copyWith(color: tokens.fgStrong),
           ),
-          const Spacer(),
-          Text(
-            AppStrings.getInventoryTodayChanges(locale, state.todayTxCount),
-            style: AppTypography.caption1.copyWith(color: tokens.fgTertiary),
-          ),
         ],
       ),
     );
