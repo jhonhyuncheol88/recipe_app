@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 import 'package:equatable/equatable.dart';
 import 'dart:convert';
+import 'storage_location.dart';
 
 class Ingredient extends Equatable {
   final String id;
@@ -14,6 +15,7 @@ class Ingredient extends Equatable {
   final double? animationX; // 애니메이션 X 위치
   final double? animationY; // 애니메이션 Y 위치
   final bool isAnimationSettled; // 애니메이션 정착 상태
+  final StorageLocation? storageLocation; // 보관 위치 (null = 미분류)
 
   Ingredient({
     required this.id,
@@ -27,6 +29,7 @@ class Ingredient extends Equatable {
     this.animationX,
     this.animationY,
     this.isAnimationSettled = false,
+    this.storageLocation,
   });
 
   // JSON 직렬화
@@ -44,6 +47,7 @@ class Ingredient extends Equatable {
         'animation_x': animationX,
         'animation_y': animationY,
         'is_animation_settled': isAnimationSettled ? 1 : 0,
+        'storage_location': storageLocation?.dbValue,
       };
 
       return json;
@@ -90,6 +94,7 @@ class Ingredient extends Equatable {
         animationX: json['animation_x']?.toDouble(),
         animationY: json['animation_y']?.toDouble(),
         isAnimationSettled: json['is_animation_settled'] == 1,
+        storageLocation: StorageLocation.fromDb(json['storage_location']),
       );
 
       developer.log('Ingredient fromJson 완료', name: 'Ingredient');
@@ -113,6 +118,7 @@ class Ingredient extends Equatable {
     double? animationX,
     double? animationY,
     bool? isAnimationSettled,
+    StorageLocation? storageLocation,
   }) {
     return Ingredient(
       id: id ?? this.id,
@@ -126,6 +132,7 @@ class Ingredient extends Equatable {
       animationX: animationX ?? this.animationX,
       animationY: animationY ?? this.animationY,
       isAnimationSettled: isAnimationSettled ?? this.isAnimationSettled,
+      storageLocation: storageLocation ?? this.storageLocation,
     );
   }
 
@@ -185,6 +192,7 @@ class Ingredient extends Equatable {
     expiryDate,
     createdAt,
     tagIds,
+    storageLocation,
   ];
 }
 

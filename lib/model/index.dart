@@ -12,3 +12,6 @@ export 'tag.dart';
 export 'sauce.dart';
 export 'sauce_ingredient.dart';
 export 'ai_recipe.dart';
+export 'storage_location.dart';
+export 'inventory_item.dart';
+export 'inventory_transaction.dart';
