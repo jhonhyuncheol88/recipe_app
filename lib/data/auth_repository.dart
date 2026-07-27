@@ -1,11 +1,9 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -29,14 +27,13 @@ class AuthRepository {
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
   /// Firebase Console / `google-services.json` 의 Web client ID (`client_type: 3`).
-  /// Android 에서 idToken 발급 및 Auth 연동 시 권장.
+  /// idToken audience 를 web client 로 발급해 Firebase Auth 가 검증할 수 있게 한다.
   static const String _googleWebClientId =
       '584875089226-1a8m5mnol7ap58bqtivd97no1uu5bmj6.apps.googleusercontent.com';
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: const <String>['email', 'profile'],
-    serverClientId: _googleWebClientId,
-  );
+  static const List<String> _googleScopes = <String>['email', 'profile'];
+
+  bool _googleSignInInitialized = false;
 
   AuthRepository({
     FirebaseAuth? firebaseAuth,
@@ -47,55 +44,51 @@ class AuthRepository {
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
   User? get currentUser => _firebaseAuth.currentUser;
 
+  Future<void> _ensureGoogleSignInInitialized() async {
+    if (_googleSignInInitialized) return;
+    await GoogleSignIn.instance.initialize(
+      serverClientId: _googleWebClientId,
+    );
+    _googleSignInInitialized = true;
+  }
+
   /// 매번 계정 선택 화면을 강제로 띄우기 위한 Google 로그인.
   ///
-  /// - iOS: `google_sign_in_ios` (AppAuth 기반) 가 Safari 쿠키를 공유해
-  ///   계정이 1개 캐시돼 있으면 picker 없이 바로 진행되는 이슈가 있어,
-  ///   Firebase Auth `signInWithProvider` + `prompt=select_account` 로 우회.
-  /// - Android: `google_sign_in.signOut()` 으로 캐시된 계정을 비운 뒤
-  ///   `signIn()` 을 호출하면 항상 계정 선택 시트가 뜬다.
+  /// google_sign_in v7 의 `authenticate()` 인터랙티브 플로우를 사용.
+  /// 사전 [signOut] 으로 캐시된 계정을 비우면 다음 호출에서 계정 선택 시트가
+  /// 매번 뜬다. iOS 6.x 의 ASWebAuthenticationSession 백지 이슈를 회피한다.
   /// 사용자가 흐름을 취소하면 [AuthCancelledException] 으로 매핑.
   Future<UserCredential> signInWithGoogle() async {
-    if (!kIsWeb && Platform.isIOS) {
-      final provider = GoogleAuthProvider()
-        ..setCustomParameters({'prompt': 'select_account'})
-        ..addScope('email')
-        ..addScope('profile');
-      final UserCredential userCred;
-      try {
-        userCred = await _firebaseAuth.signInWithProvider(provider);
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'web-context-canceled' ||
-            e.code == 'canceled' ||
-            e.code == 'user-cancelled') {
-          throw const AuthCancelledException();
-        }
-        rethrow;
-      }
-      await _createOrUpdateUserDocument(userCred);
-      return userCred;
-    }
+    await _ensureGoogleSignInInitialized();
 
-    // Android: 캐시된 계정을 비워야 picker 가 매번 나타난다.
     try {
-      await _googleSignIn.signOut();
+      await GoogleSignIn.instance.signOut();
     } catch (e) {
       _log.w('[signInWithGoogle] pre-signOut ignore: $e');
     }
 
-    final account = await _googleSignIn.signIn();
-    if (account == null) {
-      throw const AuthCancelledException();
+    final GoogleSignInAccount account;
+    try {
+      account = await GoogleSignIn.instance.authenticate(
+        scopeHint: _googleScopes,
+      );
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        throw const AuthCancelledException();
+      }
+      rethrow;
     }
 
-    final auth = await account.authentication;
-    final idToken = auth.idToken;
+    final idToken = account.authentication.idToken;
     if (idToken == null) {
       throw StateError('Google sign-in returned no idToken');
     }
 
+    final authorization = await account.authorizationClient
+        .authorizationForScopes(_googleScopes);
+
     final credential = GoogleAuthProvider.credential(
-      accessToken: auth.accessToken,
+      accessToken: authorization?.accessToken,
       idToken: idToken,
     );
 
@@ -151,7 +144,8 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
-      await _googleSignIn.signOut();
+      await _ensureGoogleSignInInitialized();
+      await GoogleSignIn.instance.signOut();
     } catch (e) {
       _log.w('[signOut] google signOut ignore: $e');
     }
@@ -179,7 +173,8 @@ class AuthRepository {
     await user.delete();
 
     try {
-      await _googleSignIn.signOut();
+      await _ensureGoogleSignInInitialized();
+      await GoogleSignIn.instance.signOut();
     } catch (_) {
       // 무시 — user.delete() 후 google session 정리는 best-effort
     }

@@ -2,7 +2,7 @@ name: recipe_app
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.18+41
+version: 1.0.18+43
 
 environment:
   sdk: ^3.7.0
@@ -71,10 +71,11 @@ dependencies:
   change_app_package_name: ^1.5.0
   
   # ============================================
-  # Google 인증 (7.x → 6.x 다운그레이드)
-  # API 안정성 + Firebase 3.x 호환
+  # Google 인증
+  # iOS 시뮬레이터에서 6.x ASWebAuthenticationSession 백지 이슈 회피 위해 v7 사용.
+  # Firebase Auth 5.x / Firebase Core 3.x 와 호환.
   # ============================================
-  google_sign_in: ^6.2.2
+  google_sign_in: ^7.2.0
   
   # Apple 로그인 (SPM 충돌 회피용 7.0.1 핀 유지)
   sign_in_with_apple: 6.1.4

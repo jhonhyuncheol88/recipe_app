@@ -1,4 +1,6 @@
+import 'dart:developer' as developer;
 import 'dart:io' show Platform;
+
 import 'package:permission_handler/permission_handler.dart' as ph;
 
 class PermissionService {
@@ -6,41 +8,68 @@ class PermissionService {
 
   // 갤러리 접근 권한 요청
   static Future<bool> requestGalleryPermission() async {
-    print('📸 갤러리 권한 요청 시작');
+    if (Platform.isAndroid) {
+      developer.log(
+        'Android uses system photo picker for one-time image selection.',
+        name: 'PermissionService',
+      );
+      return true;
+    }
 
-    // iOS와 Android에서 적절한 권한 사용
-    final permission =
-        Platform.isIOS ? ph.Permission.photos : ph.Permission.photos;
+    developer.log(
+      'Gallery permission request started',
+      name: 'PermissionService',
+    );
+
+    final permission = ph.Permission.photos;
 
     // 현재 권한 상태 확인
     final currentStatus = await permission.status;
-    print('📸 현재 갤러리 권한 상태: $currentStatus');
+    developer.log(
+      'Current gallery permission status: $currentStatus',
+      name: 'PermissionService',
+    );
 
     if (currentStatus.isGranted) {
-      print('✅ 갤러리 권한 이미 허용됨');
+      developer.log(
+        'Gallery permission already granted',
+        name: 'PermissionService',
+      );
       return true;
     }
 
     // 권한이 제한적으로 허용된 경우 (iOS 14+)
     if (currentStatus.isLimited) {
-      print('✅ 갤러리 권한 제한적으로 허용됨');
+      developer.log('Gallery permission limited', name: 'PermissionService');
       return true;
     }
 
     // 권한 요청
-    print('📸 갤러리 권한 시스템 다이얼로그 표시');
+    developer.log(
+      'Showing gallery permission dialog',
+      name: 'PermissionService',
+    );
     final status = await permission.request();
-    print('📸 갤러리 권한 요청 결과: $status');
+    developer.log(
+      'Gallery permission request result: $status',
+      name: 'PermissionService',
+    );
 
     final result = status.isGranted || status.isLimited || status.isProvisional;
-    print(result ? '✅ 갤러리 권한 허용됨' : '❌ 갤러리 권한 거부됨');
+    developer.log(
+      result ? 'Gallery permission granted' : 'Gallery permission denied',
+      name: 'PermissionService',
+    );
     return result;
   }
 
   // 갤러리 권한 상태 확인
   static Future<bool> isGalleryPermissionGranted() async {
-    final permission =
-        Platform.isIOS ? ph.Permission.photos : ph.Permission.photos;
+    if (Platform.isAndroid) {
+      return true;
+    }
+
+    final permission = ph.Permission.photos;
 
     // 최신 상태 확인
     final status = await permission.status;

@@ -51,11 +51,12 @@ CSS 변수 매핑(필요 시): `--primary` ↔ `tokens.primary`, `--bg-elev-2` �
 
 | 워크스트림 | 상태 | 문서 |
 |---|---|---|
+| **Auth 안정화 (Google v7 / Apple credential 거절 / settings 위젯 일시 주석)** | **진행 중** — Google v7 마이그레이션 완료, 시뮬레이터 풀 빌드 검증 필요. Apple 은 `FirebaseAuthException` 코드 미확정. | [`docs/handoff-auth-stabilization.md`](docs/handoff-auth-stabilization.md) |
 | 광고 제거 일회성 결제 (RevenueCat) | **Phase 1~8 완료**. Phase 9 (외부 등록 + sandbox QA) 만 남음 | [`docs/handoff-revenuecat.md`](docs/handoff-revenuecat.md) |
 | 미진행 기능 (A 배너 광고만 남음) | C/D/E 완료. A 는 plan only | [`docs/handoff-future-features.md`](docs/handoff-future-features.md) |
 | 종료된 라운드 (레시피·소스 / 후속 안정화 / 리포트) | 종료 — 컨텍스트 참고용 | [`docs/history-2026-05.md`](docs/history-2026-05.md) |
 | 종료된 라운드 (리포트 후속 / App Open 광고 / 부팅 시퀀스 / 리뷰 정책) — 2026-05-05 | 종료 — 컨텍스트 참고용 | [`docs/history-2026-05-05.md`](docs/history-2026-05-05.md) |
-| 종료된 라운드 (레시피 공유 배수 포함 / 온보딩 광고·프리미엄 유도 / iOS Google 로그인 picker) — 2026-05-07 | 종료 — 컨텍스트 참고용 | [`docs/history-2026-05-07.md`](docs/history-2026-05-07.md) |
+| 종료된 라운드 (레시피 공유 배수 포함 / 온보딩 광고·프리미엄 유도 / iOS Google 로그인 picker) — 2026-05-07 | 종료 — 컨텍스트 참고용. 단 picker 강제 구현이 시뮬레이터 백지를 유발해 2026-05-08 라운드에서 재작업됨 | [`docs/history-2026-05-07.md`](docs/history-2026-05-07.md) |
 | 디자인 시스템 마이그레이션 | (별도 문서) | [`docs/design-system-migration.md`](docs/design-system-migration.md) |
 | iOS 시뮬레이터 빌드 이슈 | Pods_Runner / MLImage / destination 오류 참고 | [`docs/ios-simulator-build-troubleshooting.md`](docs/ios-simulator-build-troubleshooting.md) |
 
@@ -72,8 +73,9 @@ C 로그인 ✅ Phase 1 ──→ D 유저 페이지 ✅ ──→ E 광고 제�
 ```
 
 남은 작업:
-1. **RevenueCat Phase 9** — RC 대시보드 webhook 등록 + 스토어 콘솔 product 등록 + `.env` API key 채우기 + 실기기 sandbox QA (자세히는 handoff-revenuecat.md 의 외부 작업 체크리스트)
-2. **A 배너 광고 (선택)** — 현재 전면 광고만 게이팅됨. 배너 추가 시 `BlocBuilder<PremiumCubit>` 로 isPremium 분기
+1. **Auth 안정화 (2026-05-08 진행 중)** — `handoff-auth-stabilization.md`. Google v7 빌드 검증, Apple `FirebaseAuthException` 코드 수집·해결, settings 위젯 재활성화.
+2. **RevenueCat Phase 9** — RC 대시보드 webhook 등록 + 스토어 콘솔 product 등록 + `.env` API key 채우기 + 실기기 sandbox QA (자세히는 handoff-revenuecat.md 의 외부 작업 체크리스트)
+3. **A 배너 광고 (선택)** — 현재 전면 광고만 게이팅됨. 배너 추가 시 `BlocBuilder<PremiumCubit>` 로 isPremium 분기
 
 각 워크스트림 완료 시:
 - 진행 중 워크스트림 → 해당 `docs/handoff-*.md` 에 결과·검증 결과 추가

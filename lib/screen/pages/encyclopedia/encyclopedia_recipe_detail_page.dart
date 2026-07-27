@@ -74,8 +74,9 @@ class _EncyclopediaRecipeDetailPageState
               _isTranslated && _translatedRecipeName != null
                   ? _translatedRecipeName!
                   : widget.recipe.menuName,
-              style: AppTextStyles.headline4
-                  .copyWith(color: colorScheme.onSurface),
+              style: AppTextStyles.headline4.copyWith(
+                color: colorScheme.onSurface,
+              ),
             ),
             backgroundColor: colorScheme.surface,
             elevation: 0,
@@ -85,24 +86,29 @@ class _EncyclopediaRecipeDetailPageState
                 Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: TextButton.icon(
-                    onPressed: _isTranslating
-                        ? null
-                        : () => _handleTranslateToggle(currentLocale),
-                    icon: _isTranslating
-                        ? SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: colorScheme.primary,
+                    onPressed:
+                        _isTranslating
+                            ? null
+                            : () => _handleTranslateToggle(currentLocale),
+                    icon:
+                        _isTranslating
+                            ? SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.primary,
+                              ),
+                            )
+                            : Icon(
+                              _isTranslated
+                                  ? Icons.visibility
+                                  : Icons.translate,
+                              color:
+                                  _isTranslating
+                                      ? colorScheme.onSurface.withAlpha(102)
+                                      : colorScheme.primary,
                             ),
-                          )
-                        : Icon(
-                            _isTranslated ? Icons.visibility : Icons.translate,
-                            color: _isTranslating
-                                ? colorScheme.onSurface.withAlpha(102)
-                                : colorScheme.primary,
-                          ),
                     label: Text(
                       _isTranslating
                           ? AppStrings.getTranslating(currentLocale)
@@ -110,9 +116,10 @@ class _EncyclopediaRecipeDetailPageState
                               ? AppStrings.getShowOriginal(currentLocale)
                               : AppStrings.getTranslate(currentLocale)),
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: _isTranslating
-                            ? colorScheme.onSurface.withAlpha(102)
-                            : colorScheme.primary,
+                        color:
+                            _isTranslating
+                                ? colorScheme.onSurface.withAlpha(102)
+                                : colorScheme.primary,
                       ),
                     ),
                   ),
@@ -322,7 +329,9 @@ class _EncyclopediaRecipeDetailPageState
   }
 
   Widget _buildIngredientsSection(
-      BuildContext context, AppLocale currentLocale) {
+    BuildContext context,
+    AppLocale currentLocale,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Card(
       color: colorScheme.surface,
@@ -355,8 +364,8 @@ class _EncyclopediaRecipeDetailPageState
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: ElevatedButton.icon(
-                      onPressed: () =>
-                          _addIngredientsToApp(context, currentLocale),
+                      onPressed:
+                          () => _addIngredientsToApp(context, currentLocale),
                       icon: const Icon(Icons.add_circle_outline, size: 20),
                       label: Text(
                         AppStrings.getAddIngredients(currentLocale),
@@ -385,10 +394,13 @@ class _EncyclopediaRecipeDetailPageState
               ...widget.recipe.ingredients.asMap().entries.map((entry) {
                 final index = entry.key;
                 final ingredient = entry.value;
-                final displayName = _isTranslated &&
-                        _translatedIngredientNames.containsKey(ingredient.name)
-                    ? _translatedIngredientNames[ingredient.name]!
-                    : ingredient.name;
+                final displayName =
+                    _isTranslated &&
+                            _translatedIngredientNames.containsKey(
+                              ingredient.name,
+                            )
+                        ? _translatedIngredientNames[ingredient.name]!
+                        : ingredient.name;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
@@ -422,8 +434,9 @@ class _EncyclopediaRecipeDetailPageState
                       ),
                       Text(
                         _isTranslated &&
-                                _translatedUnits
-                                    .containsKey(ingredient.normalizedUnit)
+                                _translatedUnits.containsKey(
+                                  ingredient.normalizedUnit,
+                                )
                             ? '${ingredient.amount}${_translatedUnits[ingredient.normalizedUnit]!}'
                             : '${ingredient.amount}${ingredient.unit}',
                         style: AppTextStyles.bodyMedium.copyWith(
@@ -438,17 +451,21 @@ class _EncyclopediaRecipeDetailPageState
                           color: colorScheme.primary,
                         ),
                         onPressed: () {
-                          final name = _isTranslated &&
-                                  _translatedIngredientNames
-                                      .containsKey(ingredient.name)
-                              ? _translatedIngredientNames[ingredient.name]!
-                              : ingredient.name;
+                          final name =
+                              _isTranslated &&
+                                      _translatedIngredientNames.containsKey(
+                                        ingredient.name,
+                                      )
+                                  ? _translatedIngredientNames[ingredient.name]!
+                                  : ingredient.name;
 
-                          final unit = _isTranslated &&
-                                  _translatedUnits
-                                      .containsKey(ingredient.normalizedUnit)
-                              ? _translatedUnits[ingredient.normalizedUnit]!
-                              : ingredient.normalizedUnit;
+                          final unit =
+                              _isTranslated &&
+                                      _translatedUnits.containsKey(
+                                        ingredient.normalizedUnit,
+                                      )
+                                  ? _translatedUnits[ingredient.normalizedUnit]!
+                                  : ingredient.normalizedUnit;
 
                           _addIndividualIngredient(
                             context,
@@ -531,10 +548,11 @@ class _EncyclopediaRecipeDetailPageState
               ...widget.recipe.sauces.asMap().entries.map((entry) {
                 final index = entry.key;
                 final sauce = entry.value;
-                final displayName = _isTranslated &&
-                        _translatedSauceNames.containsKey(sauce.name)
-                    ? _translatedSauceNames[sauce.name]!
-                    : sauce.name;
+                final displayName =
+                    _isTranslated &&
+                            _translatedSauceNames.containsKey(sauce.name)
+                        ? _translatedSauceNames[sauce.name]!
+                        : sauce.name;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
@@ -568,8 +586,9 @@ class _EncyclopediaRecipeDetailPageState
                       ),
                       Text(
                         _isTranslated &&
-                                _translatedUnits
-                                    .containsKey(sauce.normalizedUnit)
+                                _translatedUnits.containsKey(
+                                  sauce.normalizedUnit,
+                                )
                             ? '${sauce.amount}${_translatedUnits[sauce.normalizedUnit]!}'
                             : '${sauce.amount}${sauce.unit}',
                         style: AppTextStyles.bodyMedium.copyWith(
@@ -584,16 +603,21 @@ class _EncyclopediaRecipeDetailPageState
                           color: colorScheme.primary,
                         ),
                         onPressed: () {
-                          final name = _isTranslated &&
-                                  _translatedSauceNames.containsKey(sauce.name)
-                              ? _translatedSauceNames[sauce.name]!
-                              : sauce.name;
+                          final name =
+                              _isTranslated &&
+                                      _translatedSauceNames.containsKey(
+                                        sauce.name,
+                                      )
+                                  ? _translatedSauceNames[sauce.name]!
+                                  : sauce.name;
 
-                          final unit = _isTranslated &&
-                                  _translatedUnits
-                                      .containsKey(sauce.normalizedUnit)
-                              ? _translatedUnits[sauce.normalizedUnit]!
-                              : sauce.normalizedUnit;
+                          final unit =
+                              _isTranslated &&
+                                      _translatedUnits.containsKey(
+                                        sauce.normalizedUnit,
+                                      )
+                                  ? _translatedUnits[sauce.normalizedUnit]!
+                                  : sauce.normalizedUnit;
 
                           _addIndividualIngredient(
                             context,
@@ -616,15 +640,17 @@ class _EncyclopediaRecipeDetailPageState
 
   Widget _buildCookingMethodSection(AppLocale currentLocale) {
     final colorScheme = Theme.of(context).colorScheme;
-    final cookingMethodText = _isTranslated && _translatedCookingMethod != null
-        ? _translatedCookingMethod!
-        : widget.recipe.cookingMethod;
+    final cookingMethodText =
+        _isTranslated && _translatedCookingMethod != null
+            ? _translatedCookingMethod!
+            : widget.recipe.cookingMethod;
 
-    final steps = cookingMethodText
-        .split('\n')
-        .map((step) => step.trim())
-        .where((step) => step.isNotEmpty)
-        .toList();
+    final steps =
+        cookingMethodText
+            .split('\n')
+            .map((step) => step.trim())
+            .where((step) => step.isNotEmpty)
+            .toList();
 
     return Card(
       color: colorScheme.surface,
@@ -658,10 +684,7 @@ class _EncyclopediaRecipeDetailPageState
                 final step = entry.value;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildCookingStep(
-                    index + 1,
-                    step,
-                  ),
+                  child: _buildCookingStep(index + 1, step),
                 );
               }),
           ],
@@ -683,10 +706,7 @@ class _EncyclopediaRecipeDetailPageState
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-          width: 1,
-        ),
+        border: Border.all(color: colorScheme.outlineVariant, width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -724,77 +744,72 @@ class _EncyclopediaRecipeDetailPageState
   }
 
   void _addIngredientsToApp(BuildContext context, AppLocale currentLocale) {
-    final ingredients = widget.recipe.ingredients.map((ingredient) {
-      final name = _isTranslated &&
-              _translatedIngredientNames.containsKey(ingredient.name)
-          ? _translatedIngredientNames[ingredient.name]!
-          : ingredient.name;
+    final ingredients =
+        widget.recipe.ingredients.map((ingredient) {
+          final name =
+              _isTranslated &&
+                      _translatedIngredientNames.containsKey(ingredient.name)
+                  ? _translatedIngredientNames[ingredient.name]!
+                  : ingredient.name;
 
-      final unit = _isTranslated &&
-              _translatedUnits.containsKey(ingredient.normalizedUnit)
-          ? _translatedUnits[ingredient.normalizedUnit]!
-          : ingredient.normalizedUnit;
+          final unit =
+              _isTranslated &&
+                      _translatedUnits.containsKey(ingredient.normalizedUnit)
+                  ? _translatedUnits[ingredient.normalizedUnit]!
+                  : ingredient.normalizedUnit;
 
-      return {
-        'name': name.trim(),
-        'amount': ingredient.amount,
-        'unit': unit,
-      };
-    }).toList();
+          return {
+            'name': name.trim(),
+            'amount': ingredient.amount,
+            'unit': unit,
+          };
+        }).toList();
 
     context.push(
       AppRouter.ingredientBulkAdd,
-      extra: {
-        'prefilledIngredients': ingredients,
-      },
+      extra: {'prefilledIngredients': ingredients},
     );
   }
 
   void _addSaucesToApp(BuildContext context, AppLocale currentLocale) {
-    final sauces = widget.recipe.sauces.map((sauce) {
-      final name =
-          _isTranslated && _translatedSauceNames.containsKey(sauce.name)
-              ? _translatedSauceNames[sauce.name]!
-              : sauce.name;
+    final sauces =
+        widget.recipe.sauces.map((sauce) {
+          final name =
+              _isTranslated && _translatedSauceNames.containsKey(sauce.name)
+                  ? _translatedSauceNames[sauce.name]!
+                  : sauce.name;
 
-      final unit =
-          _isTranslated && _translatedUnits.containsKey(sauce.normalizedUnit)
-              ? _translatedUnits[sauce.normalizedUnit]!
-              : sauce.normalizedUnit;
+          final unit =
+              _isTranslated &&
+                      _translatedUnits.containsKey(sauce.normalizedUnit)
+                  ? _translatedUnits[sauce.normalizedUnit]!
+                  : sauce.normalizedUnit;
 
-      return {
-        'name': name.trim(),
-        'amount': sauce.amount,
-        'unit': unit,
-      };
-    }).toList();
+          return {'name': name.trim(), 'amount': sauce.amount, 'unit': unit};
+        }).toList();
 
     context.push(
       AppRouter.ingredientBulkAdd,
-      extra: {
-        'prefilledIngredients': sauces,
-      },
+      extra: {'prefilledIngredients': sauces},
     );
   }
 
   void _addAllToApp(BuildContext context, AppLocale currentLocale) {
     final allItems = [
       ...widget.recipe.ingredients.map((ingredient) {
-        final name = _isTranslated &&
-                _translatedIngredientNames.containsKey(ingredient.name)
-            ? _translatedIngredientNames[ingredient.name]!
-            : ingredient.name;
+        final name =
+            _isTranslated &&
+                    _translatedIngredientNames.containsKey(ingredient.name)
+                ? _translatedIngredientNames[ingredient.name]!
+                : ingredient.name;
 
-        final unit = _isTranslated &&
-                _translatedUnits.containsKey(ingredient.normalizedUnit)
-            ? _translatedUnits[ingredient.normalizedUnit]!
-            : ingredient.normalizedUnit;
+        final unit =
+            _isTranslated &&
+                    _translatedUnits.containsKey(ingredient.normalizedUnit)
+                ? _translatedUnits[ingredient.normalizedUnit]!
+                : ingredient.normalizedUnit;
 
-        return {
-          'name': name.trim(),
-          'amount': ingredient.amount,
-          'unit': unit,
-        };
+        return {'name': name.trim(), 'amount': ingredient.amount, 'unit': unit};
       }),
       ...widget.recipe.sauces.map((sauce) {
         final name =
@@ -807,24 +822,22 @@ class _EncyclopediaRecipeDetailPageState
                 ? _translatedUnits[sauce.normalizedUnit]!
                 : sauce.normalizedUnit;
 
-        return {
-          'name': name.trim(),
-          'amount': sauce.amount,
-          'unit': unit,
-        };
+        return {'name': name.trim(), 'amount': sauce.amount, 'unit': unit};
       }),
     ];
 
     context.push(
       AppRouter.ingredientBulkAdd,
-      extra: {
-        'prefilledIngredients': allItems,
-      },
+      extra: {'prefilledIngredients': allItems},
     );
   }
 
-  void _addIndividualIngredient(BuildContext context, String name,
-      {required String amount, required String unit}) {
+  void _addIndividualIngredient(
+    BuildContext context,
+    String name, {
+    required String amount,
+    required String unit,
+  }) {
     RouterHelper.goToIngredientAddWithName(
       context,
       name,

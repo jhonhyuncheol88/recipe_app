@@ -14,16 +14,23 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ko</string>
+		<string>en</string>
+		<string>ja</string>
+		<string>zh-Hans</string>
+		<string>zh-Hant</string>
+		<string>vi</string>
+	</array>
 	<key>CFBundleName</key>
 	<string>recipe_app</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.17</string>
+	<string>1.0.18</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>14</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -35,20 +42,22 @@
 			</array>
 		</dict>
 	</array>
-	<key>GIDClientID</key>
-	<string>584875089226-am72kd6m7nme89mbled5meoif605r35f.apps.googleusercontent.com</string>
+	<key>CFBundleVersion</key>
+	<string>15</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>GIDClientID</key>
+	<string>584875089226-am72kd6m7nme89mbled5meoif605r35f.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_dartobservatory._tcp</string>
 	</array>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>앱 디버깅 및 핫 리로드를 위해 로컬 네트워크 권한이 필요합니다.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>식자재 사진을 촬영하기 위해 카메라 권한이 필요합니다.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>앱 디버깅 및 핫 리로드를 위해 로컬 네트워크 권한이 필요합니다.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>음성 명령을 위해 마이크 권한이 필요합니다.</string>
 	<key>NSMotionUsageDescription</key>
@@ -77,10 +86,10 @@
 				<dict>
 					<key>UISceneClassName</key>
 					<string>UIWindowScene</string>
-					<key>UISceneDelegateClassName</key>
-					<string>FlutterSceneDelegate</string>
 					<key>UISceneConfigurationName</key>
 					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
 					<key>UISceneStoryboardFile</key>
 					<string>Main</string>
 				</dict>
@@ -96,15 +105,6 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>CFBundleLocalizations</key>
-	<array>
-		<string>ko</string>
-		<string>en</string>
-		<string>ja</string>
-		<string>zh-Hans</string>
-		<string>zh-Hant</string>
-		<string>vi</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
