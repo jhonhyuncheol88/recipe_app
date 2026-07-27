@@ -501,26 +501,32 @@ class _BottomActions extends StatelessWidget {
         await ImagePicker().pickImage(source: source, imageQuality: 85);
     if (picked == null || !context.mounted) return;
 
-    // 3) 분석 진행 다이얼로그
+    // 3) 분석 진행 다이얼로그.
+    // PopScope(canPop: false) 로 Android 뒤로가기 dismiss 차단 —
+    // 뒤로가기로 다이얼로그가 먼저 닫히면 이후의 pop 이 페이지 자체를
+    // 닫는 이중 pop 이 되기 때문.
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => Center(
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.s24),
-          decoration: BoxDecoration(
-            color: tokens.bgElev1,
-            borderRadius: AppRadius.brR16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: AppSpacing.s12),
-              Text(AppStrings.getInventoryAnalyzing(locale),
-                  style: AppTypography.body2
-                      .copyWith(color: tokens.fgSecondary)),
-            ],
+      builder: (_) => PopScope(
+        canPop: false,
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.s24),
+            decoration: BoxDecoration(
+              color: tokens.bgElev1,
+              borderRadius: AppRadius.brR16,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: AppSpacing.s12),
+                Text(AppStrings.getInventoryAnalyzing(locale),
+                    style: AppTypography.body2
+                        .copyWith(color: tokens.fgSecondary)),
+              ],
+            ),
           ),
         ),
       ),

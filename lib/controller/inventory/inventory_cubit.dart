@@ -262,6 +262,9 @@ class InventoryCubit extends Cubit<InventoryState> {
       }
       await load();
     } catch (e) {
+      // 부분 실패 시에도 DB 에 이미 쓰인 반영분을 상태에 노출.
+      // load() 는 error 를 클리어하므로 반드시 load 이후에 error emit.
+      await load();
       emit(state.copyWith(error: () => e.toString()));
     }
   }

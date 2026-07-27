@@ -25,6 +25,7 @@ class InventoryAiPreviewPage extends StatefulWidget {
 
 class _InventoryAiPreviewPageState extends State<InventoryAiPreviewPage> {
   late final List<bool> _checked;
+  bool _applying = false; // 반영 진행 중 — double-tap 으로 인한 중복 생성 방지
 
   @override
   void initState() {
@@ -43,23 +44,40 @@ class _InventoryAiPreviewPageState extends State<InventoryAiPreviewPage> {
   }
 
   Future<void> _apply() async {
-    final cubit = context.read<InventoryCubit>();
-    final state = cubit.state;
-    final items = <InventoryAiApplyItem>[];
-    for (var i = 0; i < widget.rows.length; i++) {
-      if (!_checked[i]) continue;
-      final row = widget.rows[i];
-      final matched = _match(state, row.name);
-      items.add(InventoryAiApplyItem(
-        ingredientId: matched?.id,
-        name: row.name,
-        qty: row.qty,
-        unitName: row.unit,
-      ));
+    if (_applying) return;
+    setState(() => _applying = true);
+    try {
+      final cubit = context.read<InventoryCubit>();
+      final state = cubit.state;
+      final items = <InventoryAiApplyItem>[];
+      for (var i = 0; i < widget.rows.length; i++) {
+        if (!_checked[i]) continue;
+        final row = widget.rows[i];
+        final matched = _match(state, row.name);
+        items.add(InventoryAiApplyItem(
+          ingredientId: matched?.id,
+          name: row.name,
+          qty: row.qty,
+          unitName: row.unit,
+        ));
+      }
+      await cubit.applyAiAdjustments(items);
+      if (!mounted) return;
+      // 실패 시 스낵바만 띄우고 페이지 유지 — 재시도 가능
+      if (cubit.state.error != null) {
+        final messenger = ScaffoldMessenger.of(context);
+        messenger.showSnackBar(SnackBar(
+          content: Text(AppStrings.getInventoryError(widget.locale)),
+          duration: const Duration(seconds: 3),
+        ));
+        return;
+      }
+      Navigator.of(context).pop();
+    } finally {
+      if (mounted) {
+        setState(() => _applying = false);
+      }
     }
-    await cubit.applyAiAdjustments(items);
-    if (!mounted) return;
-    Navigator.of(context).pop();
   }
 
   @override
@@ -158,7 +176,7 @@ class _InventoryAiPreviewPageState extends State<InventoryAiPreviewPage> {
               padding:
                   const EdgeInsets.symmetric(vertical: AppSpacing.s12),
             ),
-            onPressed: widget.rows.isEmpty ? null : _apply,
+            onPressed: (widget.rows.isEmpty || _applying) ? null : _apply,
             child: Text(AppStrings.getInventoryApply(locale),
                 style: AppTypography.label1),
           ),
