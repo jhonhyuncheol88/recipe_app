@@ -1,8 +1,24 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uuid/uuid.dart';
 import '../../data/index.dart';
 import '../../model/index.dart';
 import '../../util/inventory_step.dart';
+
+/// AI 미리보기에서 반영할 1건. ingredientId null = 새 재료 생성.
+class InventoryAiApplyItem {
+  final String? ingredientId;
+  final String name;
+  final double qty;
+  final String unitName;
+
+  const InventoryAiApplyItem({
+    this.ingredientId,
+    required this.name,
+    required this.qty,
+    required this.unitName,
+  });
+}
 
 class InventoryState extends Equatable {
   final bool isLoading;
@@ -81,6 +97,7 @@ class InventoryCubit extends Cubit<InventoryState> {
   final InventoryRepository _inventoryRepository;
   final IngredientRepository _ingredientRepository;
   final UnitRepository _unitRepository;
+  final Uuid _uuid = const Uuid();
 
   InventoryCubit({
     required InventoryRepository inventoryRepository,
@@ -196,6 +213,51 @@ class InventoryCubit extends Cubit<InventoryState> {
           ingredientId: ingredientId,
           newQty: 0,
           type: InventoryTxType.adjust,
+        );
+      }
+      await load();
+    } catch (e) {
+      emit(state.copyWith(error: () => e.toString()));
+    }
+  }
+
+  /// AI 미리보기에서 체크된 항목 일괄 반영.
+  /// - 기존 재료: 잔량을 추측값으로 설정 (ai_adjust)
+  /// - 새 재료: 재료 마스터 생성 (구매가 0, 위치 shelf) 후 잔량 설정
+  Future<void> applyAiAdjustments(List<InventoryAiApplyItem> items) async {
+    try {
+      for (final item in items) {
+        String ingredientId;
+        if (item.ingredientId != null) {
+          ingredientId = item.ingredientId!;
+        } else {
+          // 단위 이름 매칭 (대소문자 무시), 실패 시 첫 단위
+          final units = await _unitRepository.getAllUnits();
+          final matched = units
+              .where((u) =>
+                  u.name.toLowerCase() == item.unitName.toLowerCase())
+              .firstOrNull;
+          final unitId =
+              matched?.id ?? (units.isNotEmpty ? units.first.id : '');
+
+          final newIngredient = Ingredient(
+            id: _uuid.v4(),
+            name: item.name,
+            purchasePrice: 0,
+            purchaseAmount: item.qty > 0 ? item.qty : 1,
+            purchaseUnitId: unitId,
+            createdAt: DateTime.now(),
+            tagIds: const [],
+            storageLocation: StorageLocation.shelf,
+          );
+          await _ingredientRepository.insertIngredient(newIngredient);
+          ingredientId = newIngredient.id;
+        }
+
+        await _inventoryRepository.setQuantity(
+          ingredientId: ingredientId,
+          newQty: item.qty,
+          type: InventoryTxType.aiAdjust,
         );
       }
       await load();

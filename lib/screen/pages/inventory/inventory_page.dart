@@ -1,11 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../controller/index.dart';
 import '../../../model/index.dart';
+import '../../../service/ocr_service.dart';
+import '../../../service/inventory_gemini_service.dart';
 import '../../../theme/tokens/tokens.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/app_strings.dart';
 import '../../../util/number_formatter.dart';
+import 'inventory_ai_preview_page.dart';
 import 'purchase_record_sheet.dart';
 
 /// 재고 탭 메인. 위치 세그먼트 + 인라인 스테퍼 목록 + 하단 액션.
@@ -461,8 +466,92 @@ class _BottomActions extends StatelessWidget {
     );
   }
 
-  /// Task 9 에서 실제 흐름으로 교체. 이 Task 에서는 no-op.
-  void onAiScanPressed(BuildContext context, AppLocale locale) {}
+  /// AI 재고 스캔: 카메라/갤러리 선택 → OCR → Gemini 재고 추측 → 미리보기 push.
+  Future<void> onAiScanPressed(BuildContext context, AppLocale locale) async {
+    final cubit = context.read<InventoryCubit>();
+    final tokens = AppColorTokens.of(context);
+
+    // 1) 카메라/갤러리 선택
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: Text(AppStrings.getInventoryTakePhoto(locale)),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(AppStrings.getInventoryPickImage(locale)),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null || !context.mounted) return;
+
+    // 2) 이미지 선택
+    final picked =
+        await ImagePicker().pickImage(source: source, imageQuality: 85);
+    if (picked == null || !context.mounted) return;
+
+    // 3) 분석 진행 다이얼로그
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.s24),
+          decoration: BoxDecoration(
+            color: tokens.bgElev1,
+            borderRadius: AppRadius.brR16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: AppSpacing.s12),
+              Text(AppStrings.getInventoryAnalyzing(locale),
+                  style: AppTypography.body2
+                      .copyWith(color: tokens.fgSecondary)),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      // 4) 기존 OCR (ML Kit) → 텍스트 → Gemini 재고 추측
+      final ocrText =
+          await OcrService().recognizeTextAuto(File(picked.path));
+      final rows =
+          await InventoryGeminiService().analyzeInventoryText(ocrText);
+
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // 진행 다이얼로그 닫기
+
+      // 5) 미리보기 페이지
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: cubit,
+          child: InventoryAiPreviewPage(rows: rows, locale: locale),
+        ),
+      ));
+    } catch (e) {
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // 진행 다이얼로그 닫기
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppStrings.getInventoryError(locale)),
+        duration: const Duration(seconds: 3),
+      ));
+    }
+  }
 
   /// Task 7: 구매 기록 바텀시트 열기.
   void onPurchasePressed(BuildContext context, AppLocale locale) {

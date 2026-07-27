@@ -83,6 +83,23 @@ void main() {
     expect(cubit.state.items['ing1'], isNotNull); // lazy 생성됨
   });
 
+  test('applyAiAdjustments: 기존 재료 조정 + 새 재료 생성', () async {
+    await cubit.load();
+    await cubit.applyAiAdjustments([
+      const InventoryAiApplyItem(
+          ingredientId: 'ing1', name: '양파', qty: 4, unitName: 'kg'),
+      const InventoryAiApplyItem(
+          ingredientId: null, name: '감자', qty: 3, unitName: 'kg'),
+    ]);
+
+    expect(cubit.state.items['ing1']!.currentQty, 4.0);
+    final potato =
+        cubit.state.ingredients.where((i) => i.name == '감자').firstOrNull;
+    expect(potato, isNotNull);
+    expect(potato!.storageLocation, StorageLocation.shelf);
+    expect(cubit.state.items[potato.id]!.currentQty, 3.0);
+  });
+
   test('filteredIngredients: 위치 필터', () async {
     await cubit.load();
     cubit.selectLocation(StorageLocation.fridge);
