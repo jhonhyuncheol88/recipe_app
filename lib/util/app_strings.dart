@@ -1,5 +1,6 @@
 import 'app_strings/app_strings_base.dart';
 import 'app_strings/app_strings_ingredient.dart';
+import 'app_strings/app_strings_inventory.dart';
 import 'app_strings/app_strings_recipe.dart';
 import 'app_strings/app_strings_sauce.dart';
 import 'app_strings/app_strings_ocr.dart';
@@ -521,6 +522,56 @@ class AppStrings {
       AppStringsOcr.getIngredientsSaved(locale);
   static String getIngredientsToBeSaved(AppLocale locale, int count) =>
       AppStringsSettings.getIngredientsToBeSaved(locale, count);
+  static String getInventory(AppLocale locale) =>
+      AppStringsInventory.getInventory(locale);
+  static String getInventoryAiGuess(AppLocale locale) =>
+      AppStringsInventory.getInventoryAiGuess(locale);
+  static String getInventoryAiPreviewTitle(AppLocale locale) =>
+      AppStringsInventory.getInventoryAiPreviewTitle(locale);
+  static String getInventoryAiScan(AppLocale locale) =>
+      AppStringsInventory.getInventoryAiScan(locale);
+  static String getInventoryAnalyzing(AppLocale locale) =>
+      AppStringsInventory.getInventoryAnalyzing(locale);
+  static String getInventoryApply(AppLocale locale) =>
+      AppStringsInventory.getInventoryApply(locale);
+  static String getInventoryCurrent(AppLocale locale) =>
+      AppStringsInventory.getInventoryCurrent(locale);
+  static String getInventoryEmpty(AppLocale locale) =>
+      AppStringsInventory.getInventoryEmpty(locale);
+  static String getInventoryEnterQty(AppLocale locale) =>
+      AppStringsInventory.getInventoryEnterQty(locale);
+  static String getInventoryError(AppLocale locale) =>
+      AppStringsInventory.getInventoryError(locale);
+  static String getInventoryFreezer(AppLocale locale) =>
+      AppStringsInventory.getInventoryFreezer(locale);
+  static String getInventoryFridge(AppLocale locale) =>
+      AppStringsInventory.getInventoryFridge(locale);
+  static String getInventoryNewIngredient(AppLocale locale) =>
+      AppStringsInventory.getInventoryNewIngredient(locale);
+  static String getInventoryNoAiResults(AppLocale locale) =>
+      AppStringsInventory.getInventoryNoAiResults(locale);
+  static String getInventoryPickImage(AppLocale locale) =>
+      AppStringsInventory.getInventoryPickImage(locale);
+  static String getInventoryPurchaseSaved(AppLocale locale) =>
+      AppStringsInventory.getInventoryPurchaseSaved(locale);
+  static String getInventoryQtyUpdated(AppLocale locale) =>
+      AppStringsInventory.getInventoryQtyUpdated(locale);
+  static String getInventoryRecordPurchase(AppLocale locale) =>
+      AppStringsInventory.getInventoryRecordPurchase(locale);
+  static String getInventorySelectIngredient(AppLocale locale) =>
+      AppStringsInventory.getInventorySelectIngredient(locale);
+  static String getInventoryShelf(AppLocale locale) =>
+      AppStringsInventory.getInventoryShelf(locale);
+  static String getInventoryStorageLocation(AppLocale locale) =>
+      AppStringsInventory.getInventoryStorageLocation(locale);
+  static String getInventoryTakePhoto(AppLocale locale) =>
+      AppStringsInventory.getInventoryTakePhoto(locale);
+  static String getInventoryTodayChanges(AppLocale locale, int count) =>
+      AppStringsInventory.getInventoryTodayChanges(locale, count);
+  static String getInventoryTodayPurchase(AppLocale locale) =>
+      AppStringsInventory.getInventoryTodayPurchase(locale);
+  static String getInventoryUnsorted(AppLocale locale) =>
+      AppStringsInventory.getInventoryUnsorted(locale);
   static String getInputAmount(AppLocale locale) =>
       AppStringsCommon.getInputAmount(locale);
   static String getInvalidFileFormat(AppLocale locale) =>
@@ -1253,6 +1304,8 @@ class AppStrings {
       AppStringsReport.getInventorySubtitle(locale);
   static String getTotalInventory(AppLocale locale) =>
       AppStringsReport.getTotalInventory(locale);
+  static String getUndo(AppLocale locale) =>
+      AppStringsInventory.getUndo(locale);
   static String getUncategorized(AppLocale locale) =>
       AppStringsReport.getUncategorized(locale);
   static String getOtherCategories(AppLocale locale) =>
