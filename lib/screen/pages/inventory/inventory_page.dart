@@ -466,42 +466,22 @@ class _BottomActions extends StatelessWidget {
     );
   }
 
-  /// AI 재고 스캔: 카메라/갤러리 선택 → OCR → Gemini 재고 추측 → 미리보기 push.
+  /// AI 재고 스캔: 갤러리 이미지 선택 → OCR → Gemini 재고 추측 → 미리보기 push.
   Future<void> onAiScanPressed(BuildContext context, AppLocale locale) async {
     final cubit = context.read<InventoryCubit>();
     final tokens = AppColorTokens.of(context);
 
-    // 1) 카메라/갤러리 선택
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined),
-              title: Text(AppStrings.getInventoryTakePhoto(locale)),
-              onTap: () =>
-                  Navigator.of(sheetContext).pop(ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: Text(AppStrings.getInventoryPickImage(locale)),
-              onTap: () =>
-                  Navigator.of(sheetContext).pop(ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
+    // 1) 갤러리에서 이미지 선택 (영수증 OCR 과 동일 정책 — 촬영은 카메라 앱에서
+    //    하고, 여기서는 촬영된 이미지만 받아온다)
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
     );
-    if (source == null || !context.mounted) return;
-
-    // 2) 이미지 선택
-    final picked =
-        await ImagePicker().pickImage(source: source, imageQuality: 85);
     if (picked == null || !context.mounted) return;
 
-    // 3) 분석 진행 다이얼로그.
+    // 2) 분석 진행 다이얼로그.
     // PopScope(canPop: false) 로 Android 뒤로가기 dismiss 차단 —
     // 뒤로가기로 다이얼로그가 먼저 닫히면 이후의 pop 이 페이지 자체를
     // 닫는 이중 pop 이 되기 때문.
@@ -533,7 +513,7 @@ class _BottomActions extends StatelessWidget {
     );
 
     try {
-      // 4) 기존 OCR (ML Kit) → 텍스트 → Gemini 재고 추측
+      // 3) 기존 OCR (ML Kit) → 텍스트 → Gemini 재고 추측
       final ocrText =
           await OcrService().recognizeTextAuto(File(picked.path));
       final rows =
@@ -542,7 +522,7 @@ class _BottomActions extends StatelessWidget {
       if (!context.mounted) return;
       Navigator.of(context).pop(); // 진행 다이얼로그 닫기
 
-      // 5) 미리보기 페이지
+      // 4) 미리보기 페이지
       await Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: cubit,
