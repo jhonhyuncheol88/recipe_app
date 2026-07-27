@@ -3,6 +3,9 @@ import 'package:equatable/equatable.dart';
 import 'dart:convert';
 import 'storage_location.dart';
 
+/// `Ingredient.copyWith` 에서 storageLocation 미전달과 null 전달을 구분하기 위한 sentinel.
+const Object _unsetStorageLocation = Object();
+
 class Ingredient extends Equatable {
   final String id;
   final String name;
@@ -106,6 +109,8 @@ class Ingredient extends Equatable {
   }
 
   // 복사본 생성 (수정 시 사용)
+  // storageLocation 은 null 로 명시적으로 지정(미분류로 되돌리기)해야 하는
+  // 케이스가 있어 sentinel(_unsetStorageLocation) 로 "미전달"과 "null 전달"을 구분한다.
   Ingredient copyWith({
     String? id,
     String? name,
@@ -118,7 +123,7 @@ class Ingredient extends Equatable {
     double? animationX,
     double? animationY,
     bool? isAnimationSettled,
-    StorageLocation? storageLocation,
+    Object? storageLocation = _unsetStorageLocation,
   }) {
     return Ingredient(
       id: id ?? this.id,
@@ -132,7 +137,9 @@ class Ingredient extends Equatable {
       animationX: animationX ?? this.animationX,
       animationY: animationY ?? this.animationY,
       isAnimationSettled: isAnimationSettled ?? this.isAnimationSettled,
-      storageLocation: storageLocation ?? this.storageLocation,
+      storageLocation: identical(storageLocation, _unsetStorageLocation)
+          ? this.storageLocation
+          : storageLocation as StorageLocation?,
     );
   }
 

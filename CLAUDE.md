@@ -52,6 +52,7 @@ CSS 변수 매핑(필요 시): `--primary` ↔ `tokens.primary`, `--bg-elev-2` �
 | 워크스트림 | 상태 | 문서 |
 |---|---|---|
 | **Auth 안정화 (Google v7 / Apple credential 거절 / settings 위젯 일시 주석)** | **진행 중** — Google v7 마이그레이션 완료, 시뮬레이터 풀 빌드 검증 필요. Apple 은 `FirebaseAuthException` 코드 미확정. | [`docs/handoff-auth-stabilization.md`](docs/handoff-auth-stabilization.md) |
+| 재고조사 탭 (위치별 재고/구매 기록/AI 스캔) | **구현 완료 — 검증 중** | `docs/superpowers/specs/2026-07-27-inventory-design.md` |
 | 광고 제거 일회성 결제 (RevenueCat) | **Phase 1~8 완료**. Phase 9 (외부 등록 + sandbox QA) 만 남음 | [`docs/handoff-revenuecat.md`](docs/handoff-revenuecat.md) |
 | 미진행 기능 (A 배너 광고만 남음) | C/D/E 완료. A 는 plan only | [`docs/handoff-future-features.md`](docs/handoff-future-features.md) |
 | 종료된 라운드 (레시피·소스 / 후속 안정화 / 리포트) | 종료 — 컨텍스트 참고용 | [`docs/history-2026-05.md`](docs/history-2026-05.md) |

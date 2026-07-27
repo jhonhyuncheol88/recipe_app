@@ -6,6 +6,7 @@ import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
 import '../../../model/ingredient.dart';
+import '../../../model/storage_location.dart';
 import '../../../theme/tokens/tokens.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/app_strings.dart';
@@ -32,6 +33,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
   late String _selectedTagId;
   late String _selectedUnitId;
   DateTime? _expiryDate;
+  StorageLocation? _storageLocation;
   bool _isSaving = false;
   bool _priceInitialized = false;
 
@@ -59,6 +61,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         ? widget.ingredient.tagIds.first
         : '';
     _expiryDate = widget.ingredient.expiryDate;
+    _storageLocation = widget.ingredient.storageLocation;
   }
 
   @override
@@ -98,6 +101,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
         purchaseUnitId: _selectedUnitId,
         expiryDate: _expiryDate,
         tagIds: _selectedTagId.isEmpty ? const [] : [_selectedTagId],
+        storageLocation: _storageLocation,
       );
       await context.read<IngredientCubit>().updateIngredient(updated);
       if (!mounted) return;
@@ -225,6 +229,7 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
                     selectedUnitId: _selectedUnitId,
                     availableUnits: _availableUnits,
                     expiryDate: _expiryDate,
+                    storageLocation: _storageLocation,
                     locale: locale,
                     formatStyle: formatStyle,
                     onTagChanged: (id) =>
@@ -233,6 +238,8 @@ class _IngredientEditPageState extends State<IngredientEditPage> {
                         setState(() => _selectedUnitId = id),
                     onPickExpiry: _selectExpiry,
                     onClearExpiry: () => setState(() => _expiryDate = null),
+                    onStorageLocationChanged: (loc) =>
+                        setState(() => _storageLocation = loc),
                   ),
                 ),
               ),

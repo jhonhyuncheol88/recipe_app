@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../model/storage_location.dart';
 import '../../../theme/tokens/tokens.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/app_strings.dart';
@@ -19,12 +20,14 @@ class IngredientFormCard extends StatelessWidget {
   final String selectedUnitId;
   final List<String> availableUnits;
   final DateTime? expiryDate;
+  final StorageLocation? storageLocation;
   final AppLocale locale;
   final NumberFormatStyle formatStyle;
   final ValueChanged<String> onTagChanged;
   final ValueChanged<String> onUnitChanged;
   final VoidCallback onPickExpiry;
   final VoidCallback onClearExpiry;
+  final ValueChanged<StorageLocation?> onStorageLocationChanged;
 
   const IngredientFormCard({
     super.key,
@@ -35,12 +38,14 @@ class IngredientFormCard extends StatelessWidget {
     required this.selectedUnitId,
     required this.availableUnits,
     required this.expiryDate,
+    required this.storageLocation,
     required this.locale,
     required this.formatStyle,
     required this.onTagChanged,
     required this.onUnitChanged,
     required this.onPickExpiry,
     required this.onClearExpiry,
+    required this.onStorageLocationChanged,
   });
 
   String _baseUnitSymbol() {
@@ -183,6 +188,12 @@ class IngredientFormCard extends StatelessWidget {
             locale: locale,
             onPick: onPickExpiry,
             onClear: onClearExpiry,
+          ),
+          const SizedBox(height: AppSpacing.s20),
+          _StorageLocationField(
+            storageLocation: storageLocation,
+            locale: locale,
+            onChanged: onStorageLocationChanged,
           ),
         ],
       ),
@@ -388,6 +399,78 @@ class _ExpiryDateField extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _StorageLocationField extends StatelessWidget {
+  final StorageLocation? storageLocation;
+  final AppLocale locale;
+  final ValueChanged<StorageLocation?> onChanged;
+
+  const _StorageLocationField({
+    required this.storageLocation,
+    required this.locale,
+    required this.onChanged,
+  });
+
+  Widget _chip(
+    BuildContext context, {
+    required String label,
+    required StorageLocation value,
+  }) {
+    final tokens = AppColorTokens.of(context);
+    final selected = storageLocation == value;
+    return GestureDetector(
+      onTap: () => onChanged(selected ? null : value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s12,
+          vertical: AppSpacing.s6,
+        ),
+        decoration: BoxDecoration(
+          color: selected ? tokens.primary : tokens.bgMuted,
+          borderRadius: AppRadius.brPill,
+        ),
+        child: Text(
+          label,
+          style: AppTypography.label2.copyWith(
+            color: selected ? Colors.white : tokens.fgSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _FieldLabel(text: AppStrings.getInventoryStorageLocation(locale)),
+        const SizedBox(height: AppSpacing.s8),
+        Row(
+          children: [
+            _chip(
+              context,
+              label: AppStrings.getInventoryShelf(locale),
+              value: StorageLocation.shelf,
+            ),
+            const SizedBox(width: AppSpacing.s6),
+            _chip(
+              context,
+              label: AppStrings.getInventoryFridge(locale),
+              value: StorageLocation.fridge,
+            ),
+            const SizedBox(width: AppSpacing.s6),
+            _chip(
+              context,
+              label: AppStrings.getInventoryFreezer(locale),
+              value: StorageLocation.freezer,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
+import '../../../model/storage_location.dart';
 import '../../../router/router_helper.dart';
 import '../../../theme/tokens/tokens.dart';
 import '../../../util/app_locale.dart';
@@ -37,6 +38,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
   String _selectedTagId = '';
   String _selectedUnitId = 'g';
   DateTime? _expiryDate;
+  StorageLocation? _storageLocation;
   bool _isSaving = false;
 
   static const _availableUnits = <String>[
@@ -97,6 +99,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
             purchaseUnitId: _selectedUnitId,
             expiryDate: _expiryDate,
             tagIds: _selectedTagId.isEmpty ? const [] : [_selectedTagId],
+            storageLocation: _storageLocation,
           );
       if (!mounted) return;
       context.pop(true);
@@ -182,6 +185,7 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
                     selectedUnitId: _selectedUnitId,
                     availableUnits: _availableUnits,
                     expiryDate: _expiryDate,
+                    storageLocation: _storageLocation,
                     locale: locale,
                     formatStyle: formatStyle,
                     onTagChanged: (id) =>
@@ -190,6 +194,8 @@ class _IngredientAddPageState extends State<IngredientAddPage> {
                         setState(() => _selectedUnitId = id),
                     onPickExpiry: () => _selectExpiryDate(locale),
                     onClearExpiry: () => setState(() => _expiryDate = null),
+                    onStorageLocationChanged: (loc) =>
+                        setState(() => _storageLocation = loc),
                   ),
                 ),
               ),

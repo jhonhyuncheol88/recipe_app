@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
+import '../../../model/storage_location.dart';
 import '../../../theme/tokens/tokens.dart';
 import '../../../util/app_locale.dart';
 import '../../../util/app_strings.dart';
@@ -139,6 +140,7 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
             purchaseUnitId: row.selectedUnitId,
             expiryDate: row.expiryDate,
             tagIds: row.selectedTagId.isEmpty ? const [] : [row.selectedTagId],
+            storageLocation: row.storageLocation,
           );
           success++;
         } catch (_) {
@@ -227,6 +229,8 @@ class _IngredientBulkAddPageState extends State<IngredientBulkAddPage> {
                           onPickExpiry: () => _selectExpiryDate(i),
                           onClearExpiry: () =>
                               setState(() => _rows[i].expiryDate = null),
+                          onStorageLocationChanged: (loc) =>
+                              setState(() => _rows[i].storageLocation = loc),
                           onRemove: () => _removeRow(i),
                         ),
                         const SizedBox(height: AppSpacing.s12),
@@ -261,6 +265,7 @@ class _BulkRow {
   String selectedTagId = '';
   String selectedUnitId = 'g';
   DateTime? expiryDate;
+  StorageLocation? storageLocation;
 
   void dispose() {
     nameController.dispose();
@@ -299,6 +304,7 @@ class _BulkItem extends StatelessWidget {
   final ValueChanged<String> onUnitChanged;
   final VoidCallback onPickExpiry;
   final VoidCallback onClearExpiry;
+  final ValueChanged<StorageLocation?> onStorageLocationChanged;
   final VoidCallback onRemove;
 
   const _BulkItem({
@@ -312,6 +318,7 @@ class _BulkItem extends StatelessWidget {
     required this.onUnitChanged,
     required this.onPickExpiry,
     required this.onClearExpiry,
+    required this.onStorageLocationChanged,
     required this.onRemove,
   });
 
@@ -380,12 +387,14 @@ class _BulkItem extends StatelessWidget {
           selectedUnitId: row.selectedUnitId,
           availableUnits: availableUnits,
           expiryDate: row.expiryDate,
+          storageLocation: row.storageLocation,
           locale: locale,
           formatStyle: formatStyle,
           onTagChanged: onTagChanged,
           onUnitChanged: onUnitChanged,
           onPickExpiry: onPickExpiry,
           onClearExpiry: onClearExpiry,
+          onStorageLocationChanged: onStorageLocationChanged,
         ),
       ],
     );

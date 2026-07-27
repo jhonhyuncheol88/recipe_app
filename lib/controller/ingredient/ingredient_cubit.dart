@@ -66,6 +66,7 @@ class IngredientCubit extends Cubit<IngredientState> {
     required String purchaseUnitId,
     DateTime? expiryDate,
     List<String> tagIds = const [],
+    StorageLocation? storageLocation,
   }) async {
     try {
       developer.log('재료 추가 시작', name: 'IngredientCubit');
@@ -85,6 +86,7 @@ class IngredientCubit extends Cubit<IngredientState> {
         expiryDate: expiryDate,
         createdAt: DateTime.now(),
         tagIds: tagIds,
+        storageLocation: storageLocation,
       );
 
       developer.log(
