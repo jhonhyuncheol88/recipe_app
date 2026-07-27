@@ -16,14 +16,14 @@ platform :ios do
   desc "App Store Connect 에서 인앱 상품 등록 상태 확인"
   lane :check_iap do
     key_id = ENV["ASC_KEY_ID"]
-    issuer_id = ENV["ASC_ISSUER_ID"]
+    issuer_id = ENV["ASC_ISSUER_ID"] # 팀 키만 필수 — 개인(Individual) 키는 생략 가능
     key_path = ENV["ASC_KEY_PATH"]
-    UI.user_error!("ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_PATH 환경변수를 설정하세요") if key_id.to_s.empty? || issuer_id.to_s.empty? || key_path.to_s.empty?
+    UI.user_error!("ASC_KEY_ID / ASC_KEY_PATH 환경변수를 설정하세요") if key_id.to_s.empty? || key_path.to_s.empty?
 
     require "spaceship"
     token = Spaceship::ConnectAPI::Token.create(
       key_id: key_id,
-      issuer_id: issuer_id,
+      issuer_id: issuer_id.to_s.empty? ? nil : issuer_id,
       filepath: File.expand_path(key_path),
     )
     Spaceship::ConnectAPI.token = token
@@ -32,16 +32,25 @@ platform :ios do
     UI.user_error!("앱을 찾을 수 없음: #{IOS_BUNDLE_ID}") if app.nil?
     UI.success("앱 확인: #{app.name} (#{IOS_BUNDLE_ID})")
 
-    # In-App Purchases (v2) 조회
-    iaps = Spaceship::ConnectAPI.get_in_app_purchases(app_id: app.id).all_pages.flat_map(&:to_models)
+    # spaceship 에 IAP 래퍼가 없어 REST API 직접 호출 (JWT 는 spaceship 토큰 재사용)
+    require "net/http"
+    require "json"
+    uri = URI("https://api.appstoreconnect.apple.com/v1/apps/#{app.id}/inAppPurchasesV2?limit=50")
+    req = Net::HTTP::Get.new(uri)
+    req["Authorization"] = "Bearer #{token.text}"
+    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+    UI.user_error!("ASC API 오류 #{res.code}: #{res.body}") unless res.code == "200"
+
+    iaps = JSON.parse(res.body)["data"] || []
     if iaps.empty?
       UI.important("등록된 인앱 상품이 없습니다 — Phase 9 미진행")
     else
       iaps.each do |iap|
-        marker = iap.product_id == EXPECTED_IOS_PRODUCT ? "★" : " "
-        UI.message("#{marker} #{iap.product_id} | #{iap.name} | type=#{iap.in_app_purchase_type} | state=#{iap.state}")
+        attrs = iap["attributes"] || {}
+        marker = attrs["productId"] == EXPECTED_IOS_PRODUCT ? "★" : " "
+        UI.message("#{marker} #{attrs["productId"]} | #{attrs["name"]} | type=#{attrs["inAppPurchaseType"]} | state=#{attrs["state"]}")
       end
-      found = iaps.any? { |i| i.product_id == EXPECTED_IOS_PRODUCT }
+      found = iaps.any? { |i| i.dig("attributes", "productId") == EXPECTED_IOS_PRODUCT }
       found ? UI.success("기대 product '#{EXPECTED_IOS_PRODUCT}' 등록됨") : UI.important("기대 product '#{EXPECTED_IOS_PRODUCT}' 미등록")
     end
   end
