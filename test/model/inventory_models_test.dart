@@ -55,5 +55,8 @@ void main() {
 
     final moved = ing.copyWith(storageLocation: StorageLocation.freezer);
     expect(moved.storageLocation, StorageLocation.freezer);
+
+    // 명시적 null 로 해제 (sentinel copyWith 규약)
+    expect(ing.copyWith(storageLocation: null).storageLocation, isNull);
   });
 }

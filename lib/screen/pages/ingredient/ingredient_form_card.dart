@@ -435,7 +435,7 @@ class _StorageLocationField extends StatelessWidget {
         child: Text(
           label,
           style: AppTypography.label2.copyWith(
-            color: selected ? Colors.white : tokens.fgSecondary,
+            color: selected ? tokens.fgOnPrimary : tokens.fgSecondary,
           ),
         ),
       ),
