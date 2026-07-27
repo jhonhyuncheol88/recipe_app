@@ -19,6 +19,7 @@ import 'service/sauce_expiry_service.dart';
 import 'service/admob_forward.dart';
 import 'service/app_open_ad_service.dart';
 import 'service/banner_ad_service.dart';
+import 'service/rewarded_ad_service.dart';
 import 'service/startup_app_open_ad.dart';
 import 'service/initial_data_service.dart';
 import 'service/purchase_history_service.dart';
@@ -33,7 +34,6 @@ import 'controller/encyclopedia/encyclopedia_cubit.dart';
 import 'service/encyclopedia_service.dart';
 import 'package:logger/logger.dart';
 import 'controller/setting/theme_cubit.dart';
-import 'controller/report/report_cubit.dart';
 import 'firebase_options.dart';
 
 /// 알림 권한 단계가 끝났음을 부팅 시퀀서에 알리기 위한 게이트.
@@ -416,6 +416,8 @@ class MyApp extends StatelessWidget {
                 .setPremiumGate(() => cubit.state.isPremium);
             BannerAdService.instance
                 .setPremiumGate(() => cubit.state.isPremium);
+            RewardedAdService.instance
+                .setPremiumGate(() => cubit.state.isPremium);
             return cubit;
           },
         ),
@@ -521,7 +523,7 @@ class _PermissionRequesterState extends State<PermissionRequester> {
       final service = context.read<NotificationService>();
 
       // iOS: 네이티브 권한 팝업, Android 13+: POST_NOTIFICATIONS 런타임 요청
-      print('🔔 알림 서비스 초기화 및 권한 요청');
+      debugPrint('🔔 알림 서비스 초기화 및 권한 요청');
       await service.initialize(requestIOSPermission: true);
 
       if (!mounted) return;

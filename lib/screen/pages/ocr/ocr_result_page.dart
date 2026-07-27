@@ -6,6 +6,7 @@ import '../../../controller/ocr/ocr_cubit.dart';
 import '../../../controller/ingredient/ingredient_cubit.dart';
 import '../../../controller/setting/locale_cubit.dart';
 import '../../../controller/setting/number_format_cubit.dart';
+import '../../../service/rewarded_ad_service.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../util/number_formatter.dart';
 import '../../../util/date_formatter.dart';
@@ -49,6 +50,10 @@ class _OcrResultPageState extends State<OcrResultPage> {
   List<Tag> _availableTags = <Tag>[];
   List<Unit> _availableUnits = <Unit>[];
   bool _isLoading = false;
+
+  /// OCR(AI 분석) 완료 직후 보상형 광고를 1회만 노출하기 위한 가드.
+  /// BlocConsumer listener 가 rebuild 마다 재호출되어도 중복 노출을 막는다.
+  bool _rewardedAdShown = false;
 
   @override
   void initState() {
@@ -434,7 +439,19 @@ class _OcrResultPageState extends State<OcrResultPage> {
 
   Widget _buildGeminiResult(BuildContext context, AppLocale locale) {
     final colorScheme = Theme.of(context).colorScheme;
-    return BlocBuilder<OcrCubit, OcrState>(
+    return BlocConsumer<OcrCubit, OcrState>(
+      listener: (context, state) {
+        // 분석 시작 시 미리 로드해두면 완료 시 대기 없이 자연스럽게 노출된다.
+        if (state is OcrGeminiAnalyzing) {
+          RewardedAdService.instance.preload();
+        }
+        // OCR(AI 재료 분석) 완료 직후 보상형 광고를 1회 노출.
+        // Premium 사용자는 서비스 내부 gate 에서 자동 스킵된다.
+        else if (state is OcrGeminiCompleted && !_rewardedAdShown) {
+          _rewardedAdShown = true;
+          RewardedAdService.instance.showIfAvailable();
+        }
+      },
       builder: (context, state) {
         if (state is OcrProcessing) {
           return AppCard(
