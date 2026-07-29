@@ -767,7 +767,8 @@ class _PremiumHeroBanner extends StatelessWidget {
   }
 }
 
-/// 유저 프로필 카드 — 항상 노출. 탭하면 계정 정보 페이지(프리미엄 관리 포함).
+/// 유저 프로필 카드 — 로그인 상태에서만 노출 (계정 정보/프리미엄 관리 진입점).
+/// 비로그인 로그인 진입은 프리미엄 배너 흐름이 담당하므로 숨긴다 (중복 방지).
 class _UserProfileCard extends StatelessWidget {
   const _UserProfileCard();
 
@@ -779,7 +780,8 @@ class _UserProfileCard extends StatelessWidget {
     final tokens = AppColorTokens.of(context);
 
     final isAuthed = auth is Authenticated;
-    final user = isAuthed ? auth.user : null;
+    if (!isAuthed) return const SizedBox.shrink();
+    final user = auth.user;
 
     return Material(
       color: tokens.bgElev1,
@@ -808,10 +810,7 @@ class _UserProfileCard extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            isAuthed
-                                ? (user?.displayName ??
-                                    AppStrings.getUser(locale))
-                                : AppStrings.getNotSignedIn(locale),
+                            user.displayName ?? AppStrings.getUser(locale),
                             style: AppTypography.headline2.copyWith(
                               color: tokens.fgStrong,
                               fontWeight: FontWeight.w700,
@@ -827,9 +826,7 @@ class _UserProfileCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.s2),
                     Text(
-                      isAuthed
-                          ? (user?.email ?? '')
-                          : AppStrings.getSignInRequiredForFeature(locale),
+                      user.email ?? '',
                       style: AppTypography.body2.copyWith(
                         color: tokens.fgTertiary,
                       ),
