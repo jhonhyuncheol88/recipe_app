@@ -39,11 +39,8 @@ class _PremiumPageState extends State<PremiumPage> {
     if (!mounted) return;
     final auth = context.read<AuthBloc>().state;
     if (auth is! Authenticated) {
+      // 로그인 화면으로 전환 자체가 안내 — 별도 스낵바 없음 (전역 스낵바 최소화 정책)
       setState(() => _redirecting = true);
-      final locale = context.read<LocaleCubit>().state;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.getPremiumLoginRequired(locale))),
-      );
       context.go(AppRouter.login, extra: AppRouter.premium);
       return;
     }
