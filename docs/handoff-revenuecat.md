@@ -305,3 +305,10 @@ Bearer 07b99eb4ca857881be0c21e873747f6e2df9d41a1af48e9cb3ff292e805c32a0
 - inappproducts.list 가 계속 403 — 신규 서비스 계정 권한 전파 지연(최대 24~48h 사례 흔함).
   촉진: Play Console 에서 아무 변경 저장(인앱 상품 생성 등) 시 반영되는 사례 다수
 - 재시도: `PLAY_JSON_KEY_PATH=~/Downloads/recipeapp-eec6c-3c73aa25c43e.json fastlane android check_iap`
+
+### 2026-07-30 확정 — Google Play 상품 존재 확인 (콘솔 스크린샷)
+- **신형 일회성 제품 모델**로 이미 등록·활성: 상품명 "평생 광고 제거!", **제품 ID `wonkka_noad_22000`**, 구매 옵션 `wonkka22000` (buy)
+- 국가별 가격 자동 환산 적용됨. 판매자 계정 정상 (가격 활성 = 판매자 계정 존재 증거)
+- inappproducts API 403 원인 판명: 신형 모델 상품이라 **레거시 API가 거부** — 권한/전파 문제 아님 (Users API 로 wonkka 권한 완전 확인). 검증은 콘솔 확인으로 갈음, 종결
+- "개발자 제공 결제 시스템" 프로필 미설정 안내는 제3자 결제용 — 표준 Play 결제만 쓰므로 무시
+- 남은 것: ① ASC 비소모성 상품 생성 ② RC 대시보드 (Products: `wonkka_noad_22000` + iOS 상품 → Entitlement `premium` → Offering `default`/Lifetime 패키지) ③ `.env` SDK 키 2개
