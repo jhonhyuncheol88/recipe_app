@@ -58,10 +58,10 @@ class _SettingsPageState extends State<SettingsPage> {
         body: ListView(
           padding: const EdgeInsets.all(AppSpacing.s16),
           children: [
-            // TODO: 로그인/프리미엄 흐름 안정화 후 다시 활성화
-            // const _PremiumHeroBanner(),
-            // const _UserProfileCard(),
-            // const SizedBox(height: AppSpacing.s24),
+            // 결제(RevenueCat Phase 9) 진행을 위해 재활성화 (2026-07-30)
+            const _PremiumHeroBanner(),
+            const _UserProfileCard(),
+            const SizedBox(height: AppSpacing.s24),
 
             _SettingsSection(
               title: AppStrings.getNotificationSettings(currentLocale),
@@ -672,8 +672,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
 /// 프리미엄 가입 유도 히어로 배너.
 /// `PremiumActive` 상태에서는 자기 자신을 숨김(SizedBox.shrink).
-// 현재 settings_page 본문에서 일시 주석 처리됨 — 추후 재활성화 예정.
-// ignore: unused_element
 class _PremiumHeroBanner extends StatelessWidget {
   const _PremiumHeroBanner();
 
@@ -770,8 +768,6 @@ class _PremiumHeroBanner extends StatelessWidget {
 }
 
 /// 유저 프로필 카드 — 항상 노출. 탭하면 계정 정보 페이지(프리미엄 관리 포함).
-// 현재 settings_page 본문에서 일시 주석 처리됨 — 추후 재활성화 예정.
-// ignore: unused_element
 class _UserProfileCard extends StatelessWidget {
   const _UserProfileCard();
 
