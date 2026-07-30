@@ -508,16 +508,44 @@ class PermissionRequester extends StatefulWidget {
   State<PermissionRequester> createState() => _PermissionRequesterState();
 }
 
-class _PermissionRequesterState extends State<PermissionRequester> {
+class _PermissionRequesterState extends State<PermissionRequester>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // OnboardingCubit 초기화를 위해 더 긴 지연 시간 설정
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // OnboardingCubit 초기화 완료 대기
       await Future.delayed(const Duration(milliseconds: 500));
       _initializeNotificationService();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _rescheduleIfTimezoneChanged();
+    }
+  }
+
+  // 여행 등으로 기기 타임존이 바뀐 채 앱에 돌아오면 알람이 이전 타임존
+  // 시각에 잡혀 있으므로 감지 즉시 현지 시간 기준으로 재스케줄한다.
+  Future<void> _rescheduleIfTimezoneChanged() async {
+    if (!mounted) return;
+    final service = context.read<NotificationService>();
+    final changed = await service.refreshTimezoneIfChanged();
+    if (!changed || !mounted) return;
+    final notifCubit = context.read<ExpiryNotificationCubit>();
+    if (notifCubit.notificationsEnabled) {
+      await notifCubit.loadExpiryNotifications();
+    }
   }
 
   // NotificationService.initialize()에서 Android POST_NOTIFICATIONS, iOS 알림 권한 요청
