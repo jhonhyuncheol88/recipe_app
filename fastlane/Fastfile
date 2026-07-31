@@ -9,7 +9,7 @@
 
 IOS_BUNDLE_ID = "com.jalam.recipeapp".freeze
 ANDROID_PACKAGE = "com.jalam.recipeapp".freeze
-EXPECTED_IOS_PRODUCT = "com.recipeapp.adfree.lifetime".freeze
+EXPECTED_IOS_PRODUCT = "wonkka22000_2".freeze
 EXPECTED_ANDROID_PRODUCT = "wonkka_noad_22000".freeze
 
 platform :ios do

@@ -32,8 +32,8 @@
 
 ### 결제 (Phase 2~9 관련)
 - [ ] **RevenueCat 계정**: 프로젝트 생성 + iOS / Android App 등록
-- [ ] **App Store Connect**: in-app product `com.recipeapp.adfree.lifetime` (Non-Consumable) + Banking/Tax + Sandbox 테스터
-- [ ] **Google Play Console**: in-app product `adfree_lifetime` (Managed product) + Internal testing track 빌드 + License testers
+- [x] **App Store Connect**: in-app product **`wonkka22000_2`** (Non-Consumable, 2026-08-01 사용자 생성 — 당초 권장 ID `com.recipeapp.adfree.lifetime` 대신 이 ID 로 확정) + Banking/Tax. Sandbox 테스터는 미확인
+- [x] **Google Play Console**: in-app product `wonkka_noad_22000` (신형 일회성 제품 모델, 활성 확인 2026-07-30). Internal testing track 빌드 + License testers 는 미확인
 - [ ] **RevenueCat 대시보드**: Entitlement `premium` + Offering `default` + Package `lifetime` 생성, 두 스토어 product 연결
 - [ ] **`.env` 채우기**: `REVENUECAT_IOS_KEY` / `REVENUECAT_ANDROID_KEY` 에 RevenueCat → Project Settings → API Keys 의 **Public SDK Keys** (Secret Key 아님)
 - [ ] **RevenueCat 대시보드 → Project Settings → Integrations → Webhooks → Add new** (Phase 7 배포 결과 등록):
@@ -296,6 +296,7 @@ Bearer 07b99eb4ca857881be0c21e873747f6e2df9d41a1af48e9cb3ff292e805c32a0
 - 앱: 원가 계산기 원까 (com.jalam.recipeapp) ✅
 - 기존 인앱 상품: `wonkka22000` — **CONSUMABLE + MISSING_METADATA** → 타입이 잘못됨(소모성), 재활용 불가. 삭제 권장
 - `com.recipeapp.adfree.lifetime` (Non-Consumable) **미등록** → 신규 생성 필요
+  - → 2026-08-01 갱신: 사용자가 **`wonkka22000_2`** ID 로 비소모성 상품 생성 (Fastfile EXPECTED_IOS_PRODUCT 도 동일하게 변경)
 - 인증: ASC API Team Key (Key ID H48AA6AMDG, ~/Downloads/AuthKey_H48AA6AMDG.p8, Issuer bc479708-d6d3-4360-93ae-2834799fdcc0)
 
 ### Android (Play Console) — 권한 전파 대기
