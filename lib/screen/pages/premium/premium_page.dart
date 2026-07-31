@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -35,8 +36,24 @@ class _PremiumPageState extends State<PremiumPage> {
     });
   }
 
+  /// 스토어/RC 등록 전 스크린샷·데모용 표시 모드.
+  /// debug 빌드에서 RevenueCat 키가 비어 있을 때만 활성 — 키를 채우거나
+  /// release 빌드가 되면 자동으로 꺼진다.
+  bool get _demoMode => kDebugMode && !RevenueCatService.instance.isReady;
+
+  String _demoPriceFor(AppLocale locale) =>
+      locale == AppLocale.korea ? '₩22,000' : 'US\$15.99';
+
   Future<void> _checkAuthAndLoad() async {
     if (!mounted) return;
+    if (_demoMode) {
+      // 로그인 리다이렉트 없이 데모 가격 표시
+      setState(() {
+        _offeringLoading = false;
+        _offeringFailed = false;
+      });
+      return;
+    }
     final auth = context.read<AuthBloc>().state;
     if (auth is! Authenticated) {
       // 로그인 화면으로 전환 자체가 안내 — 별도 스낵바 없음 (전역 스낵바 최소화 정책)
@@ -196,6 +213,7 @@ class _PremiumPageState extends State<PremiumPage> {
           offering: _offering,
           offeringLoading: _offeringLoading,
           offeringFailed: _offeringFailed,
+          demoPriceText: _demoMode ? _demoPriceFor(locale) : null,
           busy: busy,
           onPurchase: () {
             final pkg = _offering?.lifetime ?? _offering?.availablePackages.firstOrNull;
@@ -333,6 +351,7 @@ class _PurchaseView extends StatelessWidget {
   final Offering? offering;
   final bool offeringLoading;
   final bool offeringFailed;
+  final String? demoPriceText;
   final bool busy;
   final VoidCallback onPurchase;
   final VoidCallback onRestore;
@@ -344,6 +363,7 @@ class _PurchaseView extends StatelessWidget {
     required this.offering,
     required this.offeringLoading,
     required this.offeringFailed,
+    this.demoPriceText,
     required this.busy,
     required this.onPurchase,
     required this.onRestore,
@@ -353,7 +373,7 @@ class _PurchaseView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pkg = offering?.lifetime ?? offering?.availablePackages.firstOrNull;
-    final priceText = pkg?.storeProduct.priceString;
+    final priceText = pkg?.storeProduct.priceString ?? demoPriceText;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.s24),
@@ -374,7 +394,10 @@ class _PurchaseView extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s24),
           ElevatedButton(
-            onPressed: (busy || pkg == null) ? null : onPurchase,
+            // 데모 모드에서는 버튼을 활성 모양으로 표시 (탭은 no-op — 스크린샷용)
+            onPressed: (busy || (pkg == null && demoPriceText == null))
+                ? null
+                : onPurchase,
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(52),
               backgroundColor: tokens.primary,
