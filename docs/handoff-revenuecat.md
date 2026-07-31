@@ -31,11 +31,11 @@
 - [ ] **Android**: Firebase Console 에 SHA-1 + SHA-256 fingerprint 등록 (debug + release). `cd android && ./gradlew signingReport`
 
 ### 결제 (Phase 2~9 관련)
-- [ ] **RevenueCat 계정**: 프로젝트 생성 + iOS / Android App 등록
+- [x] **RevenueCat 계정**: 프로젝트 생성 + iOS / Android App 등록 (2026-08-01 완료)
 - [x] **App Store Connect**: in-app product **`wonkka22000_2`** (Non-Consumable, 2026-08-01 사용자 생성 — 당초 권장 ID `com.recipeapp.adfree.lifetime` 대신 이 ID 로 확정) + Banking/Tax. Sandbox 테스터는 미확인
 - [x] **Google Play Console**: in-app product `wonkka_noad_22000` (신형 일회성 제품 모델, 활성 확인 2026-07-30). Internal testing track 빌드 + License testers 는 미확인
-- [ ] **RevenueCat 대시보드**: Entitlement `premium` + Offering `default` + Package `lifetime` 생성, 두 스토어 product 연결
-- [ ] **`.env` 채우기**: `REVENUECAT_IOS_KEY` / `REVENUECAT_ANDROID_KEY` 에 RevenueCat → Project Settings → API Keys 의 **Public SDK Keys** (Secret Key 아님)
+- [x] **RevenueCat 대시보드**: Entitlement `premium` + Offering `default`($rc_lifetime 패키지) + 두 스토어 product 연결 (2026-08-01 완료 — REST API 로 current_offering_id=default·상품 매핑 검증됨. 잉여 offering `wonkka_22000` 은 삭제 권장)
+- [x] **`.env` 채우기**: `REVENUECAT_IOS_KEY` / `REVENUECAT_ANDROID_KEY` 입력 완료 (2026-08-01 — 시뮬레이터 debug 부팅에서 `[RevenueCat] configured` + `logIn uid=...` 확인)
 - [ ] **RevenueCat 대시보드 → Project Settings → Integrations → Webhooks → Add new** (Phase 7 배포 결과 등록):
   - **URL**: `https://revenuecatwebhook-l2v44foqua-du.a.run.app`
   - **Authorization header**: `Bearer 07b99eb4ca857881be0c21e873747f6e2df9d41a1af48e9cb3ff292e805c32a0`
