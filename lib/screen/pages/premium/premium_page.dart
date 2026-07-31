@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -36,9 +37,9 @@ class _PremiumPageState extends State<PremiumPage> {
   }
 
   /// 스토어/RC 등록 전 스크린샷·데모용 표시 모드.
-  // TODO(스크린샷 후 원복): 아래 하드코딩을 원래 조건으로 되돌릴 것
-  //   => kDebugMode && !RevenueCatService.instance.isReady;
-  bool get _demoMode => true;
+  /// debug 빌드에서 RevenueCat 키가 비어 있을 때만 활성 — 키를 채우거나
+  /// release 빌드가 되면 자동으로 꺼진다.
+  bool get _demoMode => kDebugMode && !RevenueCatService.instance.isReady;
 
   String _demoPriceFor(AppLocale locale) =>
       locale == AppLocale.korea ? '₩22,000' : 'US\$15.99';
