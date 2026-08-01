@@ -58,3 +58,9 @@ key.properties
 .env.local
 .env.development
 .env.production
+
+# 마케팅 스크린샷 작업용 로컬 프로젝트 (463MB, node_modules 포함)
+marketing-screenshots/
+
+# fastlane 실행 아티팩트
+fastlane/report.xml
