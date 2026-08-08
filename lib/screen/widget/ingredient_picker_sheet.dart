@@ -10,6 +10,7 @@ import '../../theme/tokens/tokens.dart';
 import '../../util/app_strings.dart';
 import '../../util/number_formatter.dart';
 import '../../util/unit_converter.dart' as uc;
+import 'segment_control.dart';
 
 /// 재료 선택 바텀 시트.
 ///
@@ -32,10 +33,17 @@ Future<Ingredient?> showIngredientPickerSheet(
   );
 }
 
-class _IngredientPickerSheet extends StatelessWidget {
+class _IngredientPickerSheet extends StatefulWidget {
   final List<String> excludeIds;
 
   const _IngredientPickerSheet({required this.excludeIds});
+
+  @override
+  State<_IngredientPickerSheet> createState() => _IngredientPickerSheetState();
+}
+
+class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
+  bool _favoritesOnly = false;
 
   List<Ingredient> _ingredientsOf(IngredientState state) {
     if (state is IngredientLoaded) return state.ingredients;
@@ -119,6 +127,29 @@ class _IngredientPickerSheet extends StatelessWidget {
                     ],
                   ),
                 ),
+                // 전체 / 즐겨찾기 탭
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.s20,
+                    0,
+                    AppSpacing.s20,
+                    AppSpacing.s8,
+                  ),
+                  child: SegmentControl<bool>(
+                    items: [
+                      SegmentItem(
+                        value: false,
+                        label: AppStrings.getAll(locale),
+                      ),
+                      SegmentItem(
+                        value: true,
+                        label: AppStrings.getFavorites(locale),
+                      ),
+                    ],
+                    selected: _favoritesOnly,
+                    onChanged: (v) => setState(() => _favoritesOnly = v),
+                  ),
+                ),
                 Expanded(
                   child: BlocBuilder<IngredientCubit, IngredientState>(
                     builder: (ctx, state) {
@@ -129,7 +160,8 @@ class _IngredientPickerSheet extends StatelessWidget {
                       }
                       final all = _ingredientsOf(state);
                       final visible = all
-                          .where((i) => !excludeIds.contains(i.id))
+                          .where((i) => !widget.excludeIds.contains(i.id))
+                          .where((i) => !_favoritesOnly || i.isFavorite)
                           .toList();
 
                       if (visible.isEmpty) {
@@ -137,7 +169,9 @@ class _IngredientPickerSheet extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(AppSpacing.s24),
                             child: Text(
-                              '추가할 재료가 없습니다',
+                              _favoritesOnly
+                                  ? AppStrings.getNoFavoriteIngredients(locale)
+                                  : '추가할 재료가 없습니다',
                               style: AppTypography.body2.copyWith(
                                 color: tokens.fgTertiary,
                               ),

@@ -14,15 +14,31 @@ class FavoriteStar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppColorTokens.of(context);
-    return InkResponse(
-      onTap: onTap,
-      radius: 22,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.s4),
-        child: Icon(
-          isFavorite ? Icons.star : Icons.star_border,
-          color: isFavorite ? tokens.primary : tokens.fgTertiary,
-          size: 22,
+    final bgColor = isFavorite ? tokens.primarySoft : tokens.bgMuted;
+    final borderColor = isFavorite ? tokens.primary : tokens.borderSubtle;
+    final iconColor = isFavorite ? tokens.primary : tokens.fgTertiary;
+
+    // 별을 감싸는 사각 탭 구역. 자체 Material 로 잉크를 그려 카드 배경과 분리되고,
+    // 카드 본문 탭과는 별개로 이 영역만 탭하면 즐겨찾기가 토글된다.
+    return Material(
+      color: bgColor,
+      borderRadius: AppRadius.brR10,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brR10,
+        child: Container(
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.brR10,
+            border: Border.all(color: borderColor, width: 1),
+          ),
+          child: Icon(
+            isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+            color: iconColor,
+            size: 20,
+          ),
         ),
       ),
     );

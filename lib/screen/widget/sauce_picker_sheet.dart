@@ -9,6 +9,7 @@ import '../../model/sauce.dart';
 import '../../theme/tokens/tokens.dart';
 import '../../util/app_strings.dart';
 import '../../util/number_formatter.dart';
+import 'segment_control.dart';
 
 /// 소스 선택 바텀 시트.
 ///
@@ -31,10 +32,17 @@ Future<Sauce?> showSaucePickerSheet(
   );
 }
 
-class _SaucePickerSheet extends StatelessWidget {
+class _SaucePickerSheet extends StatefulWidget {
   final List<String> excludeIds;
 
   const _SaucePickerSheet({required this.excludeIds});
+
+  @override
+  State<_SaucePickerSheet> createState() => _SaucePickerSheetState();
+}
+
+class _SaucePickerSheetState extends State<_SaucePickerSheet> {
+  bool _favoritesOnly = false;
 
   List<Sauce> _saucesOf(SauceState state) {
     if (state is SauceLoaded) return state.sauces;
@@ -106,6 +114,29 @@ class _SaucePickerSheet extends StatelessWidget {
                     ],
                   ),
                 ),
+                // 전체 / 즐겨찾기 탭
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.s20,
+                    0,
+                    AppSpacing.s20,
+                    AppSpacing.s8,
+                  ),
+                  child: SegmentControl<bool>(
+                    items: [
+                      SegmentItem(
+                        value: false,
+                        label: AppStrings.getAll(locale),
+                      ),
+                      SegmentItem(
+                        value: true,
+                        label: AppStrings.getFavorites(locale),
+                      ),
+                    ],
+                    selected: _favoritesOnly,
+                    onChanged: (v) => setState(() => _favoritesOnly = v),
+                  ),
+                ),
                 Expanded(
                   child: BlocBuilder<SauceCubit, SauceState>(
                     builder: (ctx, state) {
@@ -116,7 +147,8 @@ class _SaucePickerSheet extends StatelessWidget {
                       }
                       final all = _saucesOf(state);
                       final visible = all
-                          .where((s) => !excludeIds.contains(s.id))
+                          .where((s) => !widget.excludeIds.contains(s.id))
+                          .where((s) => !_favoritesOnly || s.isFavorite)
                           .toList();
 
                       if (visible.isEmpty) {
@@ -124,7 +156,9 @@ class _SaucePickerSheet extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(AppSpacing.s24),
                             child: Text(
-                              '추가할 소스가 없습니다',
+                              _favoritesOnly
+                                  ? AppStrings.getNoFavoriteSauces(locale)
+                                  : '추가할 소스가 없습니다',
                               style: AppTypography.body2.copyWith(
                                 color: tokens.fgTertiary,
                               ),

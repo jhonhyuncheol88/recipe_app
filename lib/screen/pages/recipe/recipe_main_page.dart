@@ -22,7 +22,14 @@ import '../../widget/segment_control.dart';
 enum _Tab { recipe, sauce }
 
 /// 레시피 정렬 모드 — 판매가/원가 각각 지원.
-enum _RecipeSort { newest, sellPriceHigh, sellPriceLow, costHigh, costLow, nameAsc }
+enum _RecipeSort {
+  newest,
+  sellPriceHigh,
+  sellPriceLow,
+  costHigh,
+  costLow,
+  nameAsc,
+}
 
 /// 소스 정렬 모드 — 소스는 원가만 존재.
 enum _SauceSort { newest, costHigh, costLow, nameAsc }
@@ -65,8 +72,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       _tab = t;
       final q = t == _Tab.recipe ? _recipeQuery : _sauceQuery;
       _searchController.text = q;
-      _searchController.selection =
-          TextSelection.collapsed(offset: q.length);
+      _searchController.selection = TextSelection.collapsed(offset: q.length);
     });
   }
 
@@ -175,13 +181,15 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
     }
   }
 
-  String _currentSortLabel(AppLocale locale) => _tab == _Tab.recipe
-      ? _recipeSortLabel(_recipeSort, locale)
-      : _sauceSortLabel(_sauceSort, locale);
+  String _currentSortLabel(AppLocale locale) =>
+      _tab == _Tab.recipe
+          ? _recipeSortLabel(_recipeSort, locale)
+          : _sauceSortLabel(_sauceSort, locale);
 
-  String _searchHint(AppLocale locale) => _tab == _Tab.recipe
-      ? AppStrings.getSearchRecipeHint(locale)
-      : AppStrings.getSearchSauceHint(locale);
+  String _searchHint(AppLocale locale) =>
+      _tab == _Tab.recipe
+          ? AppStrings.getSearchRecipeHint(locale)
+          : AppStrings.getSearchSauceHint(locale);
 
   List<Recipe> _recipesOf(RecipeState state) {
     if (state is RecipeLoaded) return state.recipes;
@@ -217,8 +225,9 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
       context: context,
       backgroundColor: tokens.bgBase,
       shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppRadius.r20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.r20),
+        ),
       ),
       builder: (sheetCtx) {
         final options = <(String, bool, VoidCallback)>[
@@ -244,33 +253,35 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
               ),
         ];
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.s20,
-                    AppSpacing.s4,
-                    AppSpacing.s20,
-                    AppSpacing.s12,
-                  ),
-                  child: Text(
-                    AppStrings.getSortBy(locale),
-                    style: AppTypography.heading2.copyWith(
-                      color: tokens.fgStrong,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.s20,
+                      AppSpacing.s4,
+                      AppSpacing.s20,
+                      AppSpacing.s12,
+                    ),
+                    child: Text(
+                      AppStrings.getSortBy(locale),
+                      style: AppTypography.heading2.copyWith(
+                        color: tokens.fgStrong,
+                      ),
                     ),
                   ),
-                ),
-                for (final option in options)
-                  _SortOptionTile(
-                    label: option.$1,
-                    selected: option.$2,
-                    onTap: option.$3,
-                  ),
-              ],
+                  for (final option in options)
+                    _SortOptionTile(
+                      label: option.$1,
+                      selected: option.$2,
+                      onTap: option.$3,
+                    ),
+                ],
+              ),
             ),
           ),
         );
@@ -346,35 +357,41 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
                               ),
                             ),
                           Expanded(
-                            child: _tab == _Tab.recipe
-                                ? _RecipeList(
-                                    recipes: visibleRecipes,
-                                    allCount: recipes.length,
-                                    isLoading:
-                                        recipeLoading && recipes.isEmpty,
-                                    locale: locale,
-                                    formatStyle: formatStyle,
-                                    onTap: (r) => context.push(
-                                      AppRouter.recipeDetail,
-                                      extra: r,
+                            child:
+                                _tab == _Tab.recipe
+                                    ? _RecipeList(
+                                      recipes: visibleRecipes,
+                                      allCount: recipes.length,
+                                      isLoading:
+                                          recipeLoading && recipes.isEmpty,
+                                      locale: locale,
+                                      formatStyle: formatStyle,
+                                      onTap:
+                                          (r) => context.push(
+                                            AppRouter.recipeDetail,
+                                            extra: r,
+                                          ),
+                                      onAdd:
+                                          () => context.push(
+                                            AppRouter.recipeCreate,
+                                          ),
+                                    )
+                                    : _SauceList(
+                                      sauces: visibleSauces,
+                                      allCount: sauces.length,
+                                      isLoading: sauceLoading && sauces.isEmpty,
+                                      locale: locale,
+                                      formatStyle: formatStyle,
+                                      onTap:
+                                          (s) => context.push(
+                                            AppRouter.sauceEdit,
+                                            extra: s,
+                                          ),
+                                      onAdd:
+                                          () => context.push(
+                                            AppRouter.sauceCreate,
+                                          ),
                                     ),
-                                    onAdd: () =>
-                                        context.push(AppRouter.recipeCreate),
-                                  )
-                                : _SauceList(
-                                    sauces: visibleSauces,
-                                    allCount: sauces.length,
-                                    isLoading:
-                                        sauceLoading && sauces.isEmpty,
-                                    locale: locale,
-                                    formatStyle: formatStyle,
-                                    onTap: (s) => context.push(
-                                      AppRouter.sauceEdit,
-                                      extra: s,
-                                    ),
-                                    onAdd: () =>
-                                        context.push(AppRouter.sauceCreate),
-                                  ),
                           ),
                         ],
                       ),
@@ -412,9 +429,10 @@ class _StickyHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppColorTokens.of(context);
-    final actionLabel = tab == _Tab.recipe
-        ? AppStrings.getRecipes(locale)
-        : AppStrings.getSauces(locale);
+    final actionLabel =
+        tab == _Tab.recipe
+            ? AppStrings.getRecipes(locale)
+            : AppStrings.getSauces(locale);
 
     return Container(
       color: tokens.bgBase,
@@ -587,8 +605,7 @@ class _RecipeList extends StatelessWidget {
           locale: locale,
           formatStyle: formatStyle,
           onTap: () => onTap(r),
-          onToggleFavorite: () =>
-              context.read<RecipeCubit>().toggleFavorite(r),
+          onToggleFavorite: () => context.read<RecipeCubit>().toggleFavorite(r),
         );
       },
     );
@@ -646,8 +663,7 @@ class _SauceList extends StatelessWidget {
           locale: locale,
           formatStyle: formatStyle,
           onTap: () => onTap(s),
-          onToggleFavorite: () =>
-              context.read<SauceCubit>().toggleFavorite(s),
+          onToggleFavorite: () => context.read<SauceCubit>().toggleFavorite(s),
         );
       },
     );
@@ -678,12 +694,13 @@ class _SearchField extends StatelessWidget {
         hintText: hint,
         hintStyle: AppTypography.body1.copyWith(color: tokens.fgTertiary),
         prefixIcon: Icon(Icons.search, color: tokens.fgTertiary, size: 20),
-        suffixIcon: controller.text.isEmpty
-            ? null
-            : IconButton(
-                icon: Icon(Icons.close, color: tokens.fgTertiary, size: 20),
-                onPressed: onClear,
-              ),
+        suffixIcon:
+            controller.text.isEmpty
+                ? null
+                : IconButton(
+                  icon: Icon(Icons.close, color: tokens.fgTertiary, size: 20),
+                  onPressed: onClear,
+                ),
         filled: true,
         fillColor: tokens.bgElev2,
         contentPadding: const EdgeInsets.symmetric(
@@ -849,8 +866,7 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: AppSpacing.s12),
             Text(
               title,
-              style:
-                  AppTypography.heading2.copyWith(color: tokens.fgStrong),
+              style: AppTypography.heading2.copyWith(color: tokens.fgStrong),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.s20),
