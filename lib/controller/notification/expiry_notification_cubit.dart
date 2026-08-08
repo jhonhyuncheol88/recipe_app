@@ -120,6 +120,10 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
   Future<void> loadExpiryNotifications() async {
     _logger.i('[ExpiryNotif] loadExpiryNotifications() start');
     final List<ExpiryNotification> list = [];
+    // 스케줄 대상은 UI 임박목록(list)과 분리한다. list 는 72h 이내 임박 항목만
+    // 담으므로, 그것만 스케줄하면 만료가 더 남은 재료의 사전 알림(3일전/1일전)이
+    // 영영 예약되지 않는다. 만료일이 있는 모든 항목을 스케줄 대상으로 모은다.
+    final List<({String name, DateTime expiryAt})> schedulable = [];
 
     if (!notificationsEnabled) {
       _logger.i('[ExpiryNotif] Skipped: notifications disabled');
@@ -133,6 +137,7 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
     _logger.i('[ExpiryNotif] Fetched ingredients: ${ingredients.length}');
     for (final ing in ingredients) {
       if (ing.expiryDate == null) continue;
+      schedulable.add((name: ing.name, expiryAt: ing.expiryDate!));
       final remaining = ing.expiryDate!.difference(now);
       NotificationType? type;
       if (remaining.isNegative) {
@@ -162,6 +167,7 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
     for (final sauce in sauces) {
       final expiry = await sauceExpiryService.getSauceExpiryDate(sauce.id);
       if (expiry == null) continue;
+      schedulable.add((name: '[소스] ${sauce.name}', expiryAt: expiry));
       final remaining = expiry.difference(now);
       NotificationType? type;
       if (remaining.isNegative) {
@@ -198,44 +204,44 @@ class ExpiryNotificationCubit extends Cubit<ExpiryNotificationState> {
       final grouped = <String, List<({String name, DateTime expiryAt})>>{};
       final now = DateTime.now();
 
-      for (final n in list) {
+      for (final n in schedulable) {
         if (warningEnabled) {
           final at = DateTime(
-            n.expiryDate.year,
-            n.expiryDate.month,
-            n.expiryDate.day - 3,
+            n.expiryAt.year,
+            n.expiryAt.month,
+            n.expiryAt.day - 3,
             notificationTime.hour,
             notificationTime.minute,
           );
           if (at.isAfter(now)) {
             final key = '${at.millisecondsSinceEpoch}';
-            grouped.putIfAbsent(key, () => []).add((name: n.ingredientName, expiryAt: n.expiryDate));
+            grouped.putIfAbsent(key, () => []).add((name: n.name, expiryAt: n.expiryAt));
           }
         }
         if (dangerEnabled) {
           final at = DateTime(
-            n.expiryDate.year,
-            n.expiryDate.month,
-            n.expiryDate.day - 1,
+            n.expiryAt.year,
+            n.expiryAt.month,
+            n.expiryAt.day - 1,
             notificationTime.hour,
             notificationTime.minute,
           );
           if (at.isAfter(now)) {
             final key = '${at.millisecondsSinceEpoch}';
-            grouped.putIfAbsent(key, () => []).add((name: n.ingredientName, expiryAt: n.expiryDate));
+            grouped.putIfAbsent(key, () => []).add((name: n.name, expiryAt: n.expiryAt));
           }
         }
         if (expiredEnabled) {
           final at = DateTime(
-            n.expiryDate.year,
-            n.expiryDate.month,
-            n.expiryDate.day,
+            n.expiryAt.year,
+            n.expiryAt.month,
+            n.expiryAt.day,
             notificationTime.hour,
             notificationTime.minute,
           );
           if (at.isAfter(now)) {
             final key = '${at.millisecondsSinceEpoch}';
-            grouped.putIfAbsent(key, () => []).add((name: n.ingredientName, expiryAt: n.expiryDate));
+            grouped.putIfAbsent(key, () => []).add((name: n.name, expiryAt: n.expiryAt));
           }
         }
       }
