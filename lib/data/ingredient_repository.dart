@@ -118,6 +118,17 @@ class IngredientRepository {
     );
   }
 
+  // 즐겨찾기 토글 (단일 컬럼 갱신)
+  Future<void> setFavorite(String id, bool value) async {
+    final db = await _databaseHelper.database;
+    await db.update(
+      'ingredients',
+      {'is_favorite': value ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // 재료 삭제
   Future<void> deleteIngredient(String id) async {
     final db = await _databaseHelper.database;

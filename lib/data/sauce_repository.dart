@@ -26,6 +26,17 @@ class SauceRepository {
     );
   }
 
+  // 즐겨찾기 토글 (단일 컬럼 갱신)
+  Future<void> setFavorite(String id, bool value) async {
+    final db = await _databaseHelper.database;
+    await db.update(
+      'sauces',
+      {'is_favorite': value ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // 소스 삭제 (구성 재료도 함께 삭제)
   Future<void> deleteSauce(String sauceId) async {
     final db = await _databaseHelper.database;

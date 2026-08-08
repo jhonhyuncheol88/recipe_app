@@ -224,6 +224,17 @@ class RecipeRepository {
     });
   }
 
+  // 즐겨찾기 토글 (단일 컬럼 갱신)
+  Future<void> setFavorite(String id, bool value) async {
+    final db = await _databaseHelper.database;
+    await db.update(
+      'recipes',
+      {'is_favorite': value ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // 레시피 삭제
   Future<void> deleteRecipe(String id) async {
     _log.d('[deleteRecipe] id=$id');
