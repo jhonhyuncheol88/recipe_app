@@ -10,7 +10,8 @@ class DatabaseHelper {
   /// 현재 스키마 버전. openDatabase 와 BackupService 가 함께 참조 —
   /// 마이그레이션 추가 시 여기만 올리면 된다.
   /// v9: 재고조사 (inventory_items/transactions + ingredients.storage_location)
-  static const int schemaVersion = 9;
+  /// v10: 즐겨찾기 (ingredients/recipes/sauces.is_favorite)
+  static const int schemaVersion = 10;
 
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
@@ -90,7 +91,8 @@ class DatabaseHelper {
           animation_x REAL,
           animation_y REAL,
           is_animation_settled INTEGER DEFAULT 0,
-          storage_location TEXT
+          storage_location TEXT,
+          is_favorite INTEGER NOT NULL DEFAULT 0
         )
       ''');
 
@@ -108,7 +110,8 @@ class DatabaseHelper {
           image_path TEXT,
           created_at TEXT NOT NULL,
           updated_at TEXT NOT NULL,
-          tag_ids TEXT DEFAULT '[]'
+          tag_ids TEXT DEFAULT '[]',
+          is_favorite INTEGER NOT NULL DEFAULT 0
         )
       ''');
 
@@ -138,7 +141,8 @@ class DatabaseHelper {
           total_weight REAL NOT NULL,
           total_cost REAL NOT NULL,
           image_path TEXT,
-          created_at TEXT NOT NULL
+          created_at TEXT NOT NULL,
+          is_favorite INTEGER NOT NULL DEFAULT 0
         )
       ''');
 
@@ -581,6 +585,21 @@ class DatabaseHelper {
         );
 
         developer.log('재고조사 테이블 추가 완료', name: 'DatabaseHelper');
+      }
+
+      if (oldVersion < 10) {
+        // 버전 10: 즐겨찾기 — ingredients/recipes/sauces.is_favorite 컬럼 추가
+        developer.log('즐겨찾기 컬럼 추가 시작', name: 'DatabaseHelper');
+        await db.execute(
+          'ALTER TABLE ingredients ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0',
+        );
+        await db.execute(
+          'ALTER TABLE recipes ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0',
+        );
+        await db.execute(
+          'ALTER TABLE sauces ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0',
+        );
+        developer.log('즐겨찾기 컬럼 추가 완료', name: 'DatabaseHelper');
       }
     } catch (e) {
       developer.log('데이터베이스 업그레이드 실패: $e', name: 'DatabaseHelper');
