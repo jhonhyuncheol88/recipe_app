@@ -984,6 +984,14 @@ class AppStrings {
       AppStringsCommon.getSortPriceLow(locale);
   static String getSortNameAsc(AppLocale locale) =>
       AppStringsCommon.getSortNameAsc(locale);
+  static String getSortSellPriceHigh(AppLocale locale) =>
+      AppStringsCommon.getSortSellPriceHigh(locale);
+  static String getSortSellPriceLow(AppLocale locale) =>
+      AppStringsCommon.getSortSellPriceLow(locale);
+  static String getSortCostHigh(AppLocale locale) =>
+      AppStringsCommon.getSortCostHigh(locale);
+  static String getSortCostLow(AppLocale locale) =>
+      AppStringsCommon.getSortCostLow(locale);
   static String getNoSearchResults(AppLocale locale) =>
       AppStringsCommon.getNoSearchResults(locale);
   static String getTryDifferentKeyword(AppLocale locale) =>
@@ -1103,6 +1111,8 @@ class AppStrings {
       AppStringsRecipe.getSearchRecipe(locale);
   static String getSearchRecipeHint(AppLocale locale) =>
       AppStringsIngredient.getSearchRecipeHint(locale);
+  static String getSearchSauceHint(AppLocale locale) =>
+      AppStringsSauce.getSearchSauceHint(locale);
   static String formatDate(DateTime date, AppLocale locale) =>
       AppStringsCommon.formatDate(date, locale);
   static String getSelectExpiryDate(AppLocale locale) =>

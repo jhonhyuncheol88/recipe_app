@@ -25,6 +25,23 @@ mixin AppStringsSauce {
     }
   }
 
+  static String getSearchSauceHint(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '소스 검색...';
+      case AppLocale.japan:
+        return 'ソースを検索...';
+      case AppLocale.china:
+        return '搜索酱料...';
+      case AppLocale.usa:
+        return 'Search sauce...';
+      case AppLocale.chinaTraditional:
+        return 'Search sauce...';
+      case AppLocale.vietnam:
+        return 'Tìm kiếm nước sốt...';
+    }
+  }
+
   static String getEnterSauceName(AppLocale locale) {
     switch (locale) {
       case AppLocale.korea:

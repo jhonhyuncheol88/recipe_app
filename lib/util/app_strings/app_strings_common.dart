@@ -1409,6 +1409,78 @@ mixin AppStringsCommon {
     }
   }
 
+  /// 판매가 높은순
+  static String getSortSellPriceHigh(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '판매가 높은순';
+      case AppLocale.japan:
+        return '販売価格が高い順';
+      case AppLocale.china:
+        return '售价从高到低';
+      case AppLocale.usa:
+        return 'Sell Price High to Low';
+      case AppLocale.chinaTraditional:
+        return 'Sell Price High to Low';
+      case AppLocale.vietnam:
+        return 'Giá bán cao nhất';
+    }
+  }
+
+  /// 판매가 낮은순
+  static String getSortSellPriceLow(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '판매가 낮은순';
+      case AppLocale.japan:
+        return '販売価格が安い順';
+      case AppLocale.china:
+        return '售价从低到高';
+      case AppLocale.usa:
+        return 'Sell Price Low to High';
+      case AppLocale.chinaTraditional:
+        return 'Sell Price Low to High';
+      case AppLocale.vietnam:
+        return 'Giá bán thấp nhất';
+    }
+  }
+
+  /// 원가 높은순
+  static String getSortCostHigh(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '원가 높은순';
+      case AppLocale.japan:
+        return '原価が高い順';
+      case AppLocale.china:
+        return '成本从高到低';
+      case AppLocale.usa:
+        return 'Cost High to Low';
+      case AppLocale.chinaTraditional:
+        return 'Cost High to Low';
+      case AppLocale.vietnam:
+        return 'Giá vốn cao nhất';
+    }
+  }
+
+  /// 원가 낮은순
+  static String getSortCostLow(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '원가 낮은순';
+      case AppLocale.japan:
+        return '原価が安い順';
+      case AppLocale.china:
+        return '成本从低到高';
+      case AppLocale.usa:
+        return 'Cost Low to High';
+      case AppLocale.chinaTraditional:
+        return 'Cost Low to High';
+      case AppLocale.vietnam:
+        return 'Giá vốn thấp nhất';
+    }
+  }
+
   /// 검색 결과 없음
   static String getNoSearchResults(AppLocale locale) {
     switch (locale) {
