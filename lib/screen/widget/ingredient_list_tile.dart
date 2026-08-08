@@ -7,6 +7,7 @@ import '../../util/app_strings.dart';
 import '../../util/number_format_style.dart';
 import '../../util/number_formatter.dart';
 import '../../util/unit_converter.dart' as uc;
+import 'favorite_star.dart';
 import 'ingredient_tag_chip.dart';
 
 /// 재료 메인 페이지의 카드 디자인.
@@ -154,37 +155,13 @@ class IngredientListTile extends StatelessWidget {
               ),
               if (onToggleFavorite != null) ...[
                 const SizedBox(width: AppSpacing.s4),
-                _FavoriteStar(
+                FavoriteStar(
                   isFavorite: ingredient.isFavorite,
                   onTap: onToggleFavorite!,
                 ),
               ],
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FavoriteStar extends StatelessWidget {
-  final bool isFavorite;
-  final VoidCallback onTap;
-
-  const _FavoriteStar({required this.isFavorite, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppColorTokens.of(context);
-    return InkResponse(
-      onTap: onTap,
-      radius: 22,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.s4),
-        child: Icon(
-          isFavorite ? Icons.star : Icons.star_border,
-          color: isFavorite ? tokens.primary : tokens.fgTertiary,
-          size: 22,
         ),
       ),
     );
