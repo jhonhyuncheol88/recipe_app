@@ -239,6 +239,17 @@ class RecipeCubit extends Cubit<RecipeState> {
     }
   }
 
+  Future<void> toggleFavorite(Recipe recipe) async {
+    try {
+      await _recipeRepository.setFavorite(recipe.id, !recipe.isFavorite);
+      final recipes = await _recipeRepository.getAllRecipes();
+      final stats = await _recipeRepository.getRecipeStats();
+      emit(RecipeLoaded(recipes: recipes, stats: stats));
+    } catch (e) {
+      emit(RecipeError('즐겨찾기 변경에 실패했습니다: $e'));
+    }
+  }
+
   // 레시피 삭제
   Future<void> deleteRecipe(String id) async {
     try {

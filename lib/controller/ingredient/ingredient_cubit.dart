@@ -194,6 +194,19 @@ class IngredientCubit extends Cubit<IngredientState> {
     }
   }
 
+  Future<void> toggleFavorite(Ingredient ingredient) async {
+    try {
+      await _ingredientRepository.setFavorite(
+        ingredient.id,
+        !ingredient.isFavorite,
+      );
+      final ingredients = await _ingredientRepository.getAllIngredients();
+      emit(IngredientLoaded(ingredients: ingredients));
+    } catch (e) {
+      emit(IngredientError('즐겨찾기 변경에 실패했습니다: $e'));
+    }
+  }
+
   // 재료 삭제
   Future<void> deleteIngredient(String id) async {
     try {

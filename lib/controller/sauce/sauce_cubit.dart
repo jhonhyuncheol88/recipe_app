@@ -94,6 +94,16 @@ class SauceCubit extends Cubit<SauceState> {
     }
   }
 
+  Future<void> toggleFavorite(Sauce sauce) async {
+    try {
+      await _sauceRepository.setFavorite(sauce.id, !sauce.isFavorite);
+      final sauces = await _sauceRepository.getAllSauces();
+      emit(SauceLoaded(sauces: sauces));
+    } catch (e) {
+      emit(SauceError('즐겨찾기 변경에 실패했습니다: $e'));
+    }
+  }
+
   Future<void> deleteSauce(String sauceId) async {
     try {
       emit(const SauceLoading());
