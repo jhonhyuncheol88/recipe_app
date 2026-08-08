@@ -17,6 +17,7 @@ class IngredientListTile extends StatelessWidget {
   final AppLocale locale;
   final NumberFormatStyle formatStyle;
   final VoidCallback onTap;
+  final VoidCallback? onToggleFavorite;
 
   const IngredientListTile({
     super.key,
@@ -24,6 +25,7 @@ class IngredientListTile extends StatelessWidget {
     required this.locale,
     required this.formatStyle,
     required this.onTap,
+    this.onToggleFavorite,
   });
 
   int? get _daysLeft {
@@ -150,8 +152,39 @@ class IngredientListTile extends StatelessWidget {
                   ],
                 ],
               ),
+              if (onToggleFavorite != null) ...[
+                const SizedBox(width: AppSpacing.s4),
+                _FavoriteStar(
+                  isFavorite: ingredient.isFavorite,
+                  onTap: onToggleFavorite!,
+                ),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FavoriteStar extends StatelessWidget {
+  final bool isFavorite;
+  final VoidCallback onTap;
+
+  const _FavoriteStar({required this.isFavorite, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppColorTokens.of(context);
+    return InkResponse(
+      onTap: onTap,
+      radius: 22,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.s4),
+        child: Icon(
+          isFavorite ? Icons.star : Icons.star_border,
+          color: isFavorite ? tokens.primary : tokens.fgTertiary,
+          size: 22,
         ),
       ),
     );

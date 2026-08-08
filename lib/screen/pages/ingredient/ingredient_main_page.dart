@@ -225,6 +225,9 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
                           locale: locale,
                           formatStyle: formatStyle,
                           onTapIngredient: _openDetail,
+                          onToggleFavorite: (ing) => context
+                              .read<IngredientCubit>()
+                              .toggleFavorite(ing),
                           onAdd: () =>
                               context.push(AppRouter.ingredientAdd),
                           onRetry: () => context
@@ -586,6 +589,7 @@ class _Body extends StatelessWidget {
   final AppLocale locale;
   final NumberFormatStyle formatStyle;
   final ValueChanged<Ingredient> onTapIngredient;
+  final ValueChanged<Ingredient> onToggleFavorite;
   final VoidCallback onAdd;
   final VoidCallback onRetry;
 
@@ -600,6 +604,7 @@ class _Body extends StatelessWidget {
     required this.locale,
     required this.formatStyle,
     required this.onTapIngredient,
+    required this.onToggleFavorite,
     required this.onAdd,
     required this.onRetry,
   });
@@ -707,6 +712,7 @@ class _Body extends StatelessWidget {
           locale: locale,
           formatStyle: formatStyle,
           onTap: () => onTapIngredient(ingredient),
+          onToggleFavorite: () => onToggleFavorite(ingredient),
         );
       },
     );
