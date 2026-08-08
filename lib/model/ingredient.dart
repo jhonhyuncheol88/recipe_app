@@ -19,6 +19,7 @@ class Ingredient extends Equatable {
   final double? animationY; // 애니메이션 Y 위치
   final bool isAnimationSettled; // 애니메이션 정착 상태
   final StorageLocation? storageLocation; // 보관 위치 (null = 미분류)
+  final bool isFavorite;
 
   Ingredient({
     required this.id,
@@ -33,6 +34,7 @@ class Ingredient extends Equatable {
     this.animationY,
     this.isAnimationSettled = false,
     this.storageLocation,
+    this.isFavorite = false,
   });
 
   // JSON 직렬화
@@ -51,6 +53,7 @@ class Ingredient extends Equatable {
         'animation_y': animationY,
         'is_animation_settled': isAnimationSettled ? 1 : 0,
         'storage_location': storageLocation?.dbValue,
+        'is_favorite': isFavorite ? 1 : 0,
       };
 
       return json;
@@ -98,6 +101,7 @@ class Ingredient extends Equatable {
         animationY: json['animation_y']?.toDouble(),
         isAnimationSettled: json['is_animation_settled'] == 1,
         storageLocation: StorageLocation.fromDb(json['storage_location']),
+        isFavorite: (json['is_favorite'] ?? 0) == 1,
       );
 
       developer.log('Ingredient fromJson 완료', name: 'Ingredient');
@@ -124,6 +128,7 @@ class Ingredient extends Equatable {
     double? animationY,
     bool? isAnimationSettled,
     Object? storageLocation = _unsetStorageLocation,
+    bool? isFavorite,
   }) {
     return Ingredient(
       id: id ?? this.id,
@@ -140,6 +145,7 @@ class Ingredient extends Equatable {
       storageLocation: identical(storageLocation, _unsetStorageLocation)
           ? this.storageLocation
           : storageLocation as StorageLocation?,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
@@ -200,6 +206,7 @@ class Ingredient extends Equatable {
     createdAt,
     tagIds,
     storageLocation,
+    isFavorite,
   ];
 }
 

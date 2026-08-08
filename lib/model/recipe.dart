@@ -16,6 +16,7 @@ class Recipe extends Equatable {
   final List<RecipeIngredient> ingredients;
   final List<RecipeSauce> sauces;
   final List<String> tagIds; // 태그 ID 목록
+  final bool isFavorite;
 
   Recipe({
     required this.id,
@@ -30,6 +31,7 @@ class Recipe extends Equatable {
     this.ingredients = const [],
     this.sauces = const [],
     this.tagIds = const [],
+    this.isFavorite = false,
   });
 
   // JSON 직렬화
@@ -45,6 +47,7 @@ class Recipe extends Equatable {
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'tag_ids': jsonEncode(tagIds), // List<String>을 JSON 문자열로 변환
+      'is_favorite': isFavorite ? 1 : 0,
     };
   }
 
@@ -99,6 +102,7 @@ class Recipe extends Equatable {
       updatedAt: DateTime.parse(json['updated_at']),
       tagIds: tagIds,
       sauces: [], // Initially empty, will be populated by Repository if needed
+      isFavorite: (json['is_favorite'] ?? 0) == 1,
     );
   }
 
@@ -116,6 +120,7 @@ class Recipe extends Equatable {
     List<RecipeIngredient>? ingredients,
     List<RecipeSauce>? sauces,
     List<String>? tagIds,
+    bool? isFavorite,
   }) {
     return Recipe(
       id: id ?? this.id,
@@ -130,6 +135,7 @@ class Recipe extends Equatable {
       ingredients: ingredients ?? this.ingredients,
       sauces: sauces ?? this.sauces,
       tagIds: tagIds ?? this.tagIds,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
@@ -227,5 +233,6 @@ class Recipe extends Equatable {
         ingredients,
         sauces,
         tagIds,
+        isFavorite,
       ];
 }

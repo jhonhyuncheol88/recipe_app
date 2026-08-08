@@ -8,6 +8,7 @@ class Sauce extends Equatable {
   final double totalCost; // 총 원가 (₩)
   final String? imagePath;
   final DateTime createdAt;
+  final bool isFavorite;
 
   const Sauce({
     required this.id,
@@ -17,6 +18,7 @@ class Sauce extends Equatable {
     required this.totalCost,
     this.imagePath,
     required this.createdAt,
+    this.isFavorite = false,
   });
 
   // JSON 직렬화 (DB 컬럼명 스키마에 맞춤)
@@ -29,6 +31,7 @@ class Sauce extends Equatable {
       'total_cost': totalCost,
       'image_path': imagePath,
       'created_at': createdAt.toIso8601String(),
+      'is_favorite': isFavorite ? 1 : 0,
     };
   }
 
@@ -46,6 +49,7 @@ class Sauce extends Equatable {
           : json['total_cost'].toDouble(),
       imagePath: json['image_path'],
       createdAt: DateTime.parse(json['created_at']),
+      isFavorite: (json['is_favorite'] ?? 0) == 1,
     );
   }
 
@@ -58,6 +62,7 @@ class Sauce extends Equatable {
     double? totalCost,
     String? imagePath,
     DateTime? createdAt,
+    bool? isFavorite,
   }) {
     return Sauce(
       id: id ?? this.id,
@@ -67,6 +72,7 @@ class Sauce extends Equatable {
       totalCost: totalCost ?? this.totalCost,
       imagePath: imagePath ?? this.imagePath,
       createdAt: createdAt ?? this.createdAt,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
@@ -85,5 +91,6 @@ class Sauce extends Equatable {
     totalCost,
     imagePath,
     createdAt,
+    isFavorite,
   ];
 }
