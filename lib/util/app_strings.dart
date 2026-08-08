@@ -992,6 +992,14 @@ class AppStrings {
       AppStringsCommon.getSortCostHigh(locale);
   static String getSortCostLow(AppLocale locale) =>
       AppStringsCommon.getSortCostLow(locale);
+  static String getFavorites(AppLocale locale) =>
+      AppStringsCommon.getFavorites(locale);
+  static String getNoFavoriteIngredients(AppLocale locale) =>
+      AppStringsCommon.getNoFavoriteIngredients(locale);
+  static String getNoFavoriteRecipes(AppLocale locale) =>
+      AppStringsCommon.getNoFavoriteRecipes(locale);
+  static String getNoFavoriteSauces(AppLocale locale) =>
+      AppStringsCommon.getNoFavoriteSauces(locale);
   static String getNoSearchResults(AppLocale locale) =>
       AppStringsCommon.getNoSearchResults(locale);
   static String getTryDifferentKeyword(AppLocale locale) =>

@@ -1481,6 +1481,75 @@ mixin AppStringsCommon {
     }
   }
 
+  /// 즐겨찾기
+  static String getFavorites(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '즐겨찾기';
+      case AppLocale.japan:
+        return 'お気に入り';
+      case AppLocale.china:
+        return '收藏';
+      case AppLocale.usa:
+        return 'Favorites';
+      case AppLocale.chinaTraditional:
+        return 'Favorites';
+      case AppLocale.vietnam:
+        return 'Yêu thích';
+    }
+  }
+
+  static String getNoFavoriteIngredients(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '즐겨찾기한 재료가 없어요';
+      case AppLocale.japan:
+        return 'お気に入りの材料がありません';
+      case AppLocale.china:
+        return '没有收藏的材料';
+      case AppLocale.usa:
+        return 'No favorite ingredients';
+      case AppLocale.chinaTraditional:
+        return 'No favorite ingredients';
+      case AppLocale.vietnam:
+        return 'Chưa có nguyên liệu yêu thích';
+    }
+  }
+
+  static String getNoFavoriteRecipes(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '즐겨찾기한 레시피가 없어요';
+      case AppLocale.japan:
+        return 'お気に入りのレシピがありません';
+      case AppLocale.china:
+        return '没有收藏的食谱';
+      case AppLocale.usa:
+        return 'No favorite recipes';
+      case AppLocale.chinaTraditional:
+        return 'No favorite recipes';
+      case AppLocale.vietnam:
+        return 'Chưa có công thức yêu thích';
+    }
+  }
+
+  static String getNoFavoriteSauces(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.korea:
+        return '즐겨찾기한 소스가 없어요';
+      case AppLocale.japan:
+        return 'お気に入りのソースがありません';
+      case AppLocale.china:
+        return '没有收藏的酱料';
+      case AppLocale.usa:
+        return 'No favorite sauces';
+      case AppLocale.chinaTraditional:
+        return 'No favorite sauces';
+      case AppLocale.vietnam:
+        return 'Chưa có nước sốt yêu thích';
+    }
+  }
+
   /// 검색 결과 없음
   static String getNoSearchResults(AppLocale locale) {
     switch (locale) {
