@@ -134,6 +134,11 @@ class _IngredientMainPageState extends State<IngredientMainPage> {
         title: const SizedBox.shrink(),
         actions: [
           IconButton(
+            onPressed: () => context.push(AppRouter.favorites),
+            icon: Icon(Icons.star_border, color: tokens.fgStrong),
+            tooltip: AppStrings.getFavorites(locale),
+          ),
+          IconButton(
             onPressed: () => RouterHelper.goToOcrMain(context),
             icon: Icon(Icons.receipt_long_outlined, color: tokens.fgStrong),
             tooltip: AppStrings.getScanReceipt(locale),

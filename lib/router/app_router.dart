@@ -40,6 +40,7 @@ import '../presentation/pages/batch_edit/batch_edit_page.dart';
 import '../screen/pages/settings/recipe_tag_management_page.dart';
 import '../screen/pages/report/report_page.dart';
 import '../screen/pages/premium/premium_page.dart';
+import '../screen/pages/favorites/favorites_page.dart';
 import '../screen/widget/adaptive_banner_ad_widget.dart';
 import '../controller/report/report_cubit.dart';
 
@@ -83,6 +84,7 @@ class AppRouter {
   static const String encyclopedia = '/encyclopedia';
   static const String encyclopediaRecipeDetail = '/encyclopedia/recipe/:number';
   static const String premium = '/premium';
+  static const String favorites = '/favorites';
 
   /// 부팅 시 결정된 시작 경로.
   /// main() 의 prefs 동기 로드 직후 [bootstrapInitialLocation] 로 1회 설정한다.
@@ -350,6 +352,12 @@ class AppRouter {
           GoRoute(
             path: premium,
             builder: (context, state) => const PremiumPage(),
+          ),
+
+          // 즐겨찾기 페이지
+          GoRoute(
+            path: favorites,
+            builder: (context, state) => const FavoritesPage(),
           ),
 
           // AI 페이지 (탭바 페이지)

@@ -311,6 +311,7 @@ class _RecipeMainPageState extends State<RecipeMainPage> {
                       locale: locale,
                       onTabChanged: _onTabChanged,
                       onAdd: () => _openCreate(locale),
+                      onOpenFavorites: () => context.push(AppRouter.favorites),
                     ),
                     Container(
                       color: tokens.bgBase,
@@ -396,6 +397,7 @@ class _StickyHeader extends StatelessWidget {
   final AppLocale locale;
   final ValueChanged<_Tab> onTabChanged;
   final VoidCallback onAdd;
+  final VoidCallback onOpenFavorites;
 
   const _StickyHeader({
     required this.recipeCount,
@@ -404,6 +406,7 @@ class _StickyHeader extends StatelessWidget {
     required this.locale,
     required this.onTabChanged,
     required this.onAdd,
+    required this.onOpenFavorites,
   });
 
   @override
@@ -448,6 +451,11 @@ class _StickyHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.s8),
+              IconButton(
+                onPressed: onOpenFavorites,
+                icon: Icon(Icons.star_border, color: tokens.fgStrong),
+                tooltip: AppStrings.getFavorites(locale),
+              ),
               _AddPillButton(label: actionLabel, onPressed: onAdd),
             ],
           ),
