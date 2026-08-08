@@ -64,3 +64,8 @@ marketing-screenshots/
 
 # fastlane 실행 아티팩트
 fastlane/report.xml
+
+# Google Play / GCP 서비스 계정 키 (비밀 — 절대 커밋 금지)
+recipeapp-eec6c-*.json
+*-service-account*.json
+play-*.json

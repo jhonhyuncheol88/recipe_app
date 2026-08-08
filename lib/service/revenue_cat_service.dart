@@ -101,7 +101,9 @@ class RevenueCatService {
   /// 호출자(PremiumCubit) 가 [PurchasesErrorHelper.getErrorCode] 로 분류한다.
   Future<CustomerInfo> purchasePackage(Package package) async {
     _ensureReady();
-    return Purchases.purchasePackage(package);
+    // RC 9.x: purchasePackage/purchase 는 PurchaseResult 를 반환 (CustomerInfo 래핑).
+    final result = await Purchases.purchase(PurchaseParams.package(package));
+    return result.customerInfo;
   }
 
   Future<CustomerInfo> restorePurchases() {

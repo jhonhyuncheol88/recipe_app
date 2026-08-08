@@ -110,9 +110,9 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     
-    // Google Play Billing 라이브러리 (최신 버전)
-    implementation("com.android.billingclient:billing:6.1.0")
-    
+    // Google Play Billing 은 RevenueCat(purchases_flutter 9.x, billing 8)이 관리한다.
+    // 직접 선언(구 billing 6.1.0)은 제거 — Play 의 billing 8.0.0+ 요구사항 충족.
+
     // AdMob 라이브러리
     implementation("com.google.android.gms:play-services-ads:22.6.0")
     
