@@ -4,12 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../controller/ingredient/ingredient_cubit.dart';
 import '../../controller/ingredient/ingredient_state.dart';
 import '../../controller/setting/locale_cubit.dart';
-import '../../controller/setting/number_format_cubit.dart';
 import '../../model/ingredient.dart';
 import '../../theme/tokens/tokens.dart';
 import '../../util/app_strings.dart';
-import '../../util/number_formatter.dart';
-import '../../util/unit_converter.dart' as uc;
 import 'segment_control.dart';
 
 /// 재료 선택 바텀 시트.
@@ -44,6 +41,14 @@ class _IngredientPickerSheet extends StatefulWidget {
 
 class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
   bool _favoritesOnly = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   List<Ingredient> _ingredientsOf(IngredientState state) {
     if (state is IngredientLoaded) return state.ingredients;
@@ -57,19 +62,10 @@ class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
     return const [];
   }
 
-  double _pricePerBaseUnit(Ingredient ing) {
-    final unit = uc.UnitConverter.getUnit(ing.purchaseUnitId);
-    final factor = unit?.conversionFactor ?? 1.0;
-    final denom = ing.purchaseAmount * factor;
-    if (denom == 0) return 0;
-    return ing.purchasePrice / denom;
-  }
-
   @override
   Widget build(BuildContext context) {
     final tokens = AppColorTokens.of(context);
     final locale = context.read<LocaleCubit>().state;
-    final formatStyle = context.read<NumberFormatCubit>().state;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
@@ -127,7 +123,7 @@ class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
                     ],
                   ),
                 ),
-                // 전체 / 즐겨찾기 탭
+                // 검색 필드 + 전체 / 즐겨찾기 탭
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.s20,
@@ -135,19 +131,84 @@ class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
                     AppSpacing.s20,
                     AppSpacing.s8,
                   ),
-                  child: SegmentControl<bool>(
-                    items: [
-                      SegmentItem(
-                        value: false,
-                        label: AppStrings.getAll(locale),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: tokens.bgMuted,
+                            borderRadius: AppRadius.brR12,
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (v) =>
+                                setState(() => _query = v.trim()),
+                            style: AppTypography.label1.copyWith(
+                              color: tokens.fgStrong,
+                            ),
+                            decoration: InputDecoration(
+                              hintText:
+                                  AppStrings.getSearchIngredientHint(locale),
+                              hintStyle: AppTypography.label1.copyWith(
+                                color: tokens.fgTertiary,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                size: 18,
+                                color: tokens.fgTertiary,
+                              ),
+                              prefixIconConstraints: const BoxConstraints(
+                                minWidth: 38,
+                                minHeight: 38,
+                              ),
+                              suffixIcon: _query.isEmpty
+                                  ? null
+                                  : GestureDetector(
+                                      onTap: () {
+                                        _searchController.clear();
+                                        setState(() => _query = '');
+                                      },
+                                      child: Icon(
+                                        Icons.cancel,
+                                        size: 16,
+                                        color: tokens.fgTertiary,
+                                      ),
+                                    ),
+                              suffixIconConstraints: const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 38,
+                              ),
+                              isDense: true,
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: AppSpacing.s12,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      SegmentItem(
-                        value: true,
-                        label: AppStrings.getFavorites(locale),
+                      const SizedBox(width: AppSpacing.s8),
+                      IntrinsicWidth(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minWidth: 132),
+                          child: SegmentControl<bool>(
+                            items: [
+                              SegmentItem(
+                                value: false,
+                                label: AppStrings.getAll(locale),
+                              ),
+                              SegmentItem(
+                                value: true,
+                                label: AppStrings.getFavorites(locale),
+                              ),
+                            ],
+                            selected: _favoritesOnly,
+                            onChanged: (v) =>
+                                setState(() => _favoritesOnly = v),
+                          ),
+                        ),
                       ),
                     ],
-                    selected: _favoritesOnly,
-                    onChanged: (v) => setState(() => _favoritesOnly = v),
                   ),
                 ),
                 Expanded(
@@ -159,9 +220,13 @@ class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
                         );
                       }
                       final all = _ingredientsOf(state);
+                      final query = _query.toLowerCase();
                       final visible = all
                           .where((i) => !widget.excludeIds.contains(i.id))
                           .where((i) => !_favoritesOnly || i.isFavorite)
+                          .where((i) =>
+                              query.isEmpty ||
+                              i.name.toLowerCase().contains(query))
                           .toList();
 
                       if (visible.isEmpty) {
@@ -169,9 +234,12 @@ class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
                           child: Padding(
                             padding: const EdgeInsets.all(AppSpacing.s24),
                             child: Text(
-                              _favoritesOnly
-                                  ? AppStrings.getNoFavoriteIngredients(locale)
-                                  : '추가할 재료가 없습니다',
+                              query.isNotEmpty
+                                  ? AppStrings.getNoSearchResults(locale)
+                                  : _favoritesOnly
+                                      ? AppStrings
+                                          .getNoFavoriteIngredients(locale)
+                                      : '추가할 재료가 없습니다',
                               style: AppTypography.body2.copyWith(
                                 color: tokens.fgTertiary,
                               ),
@@ -180,7 +248,7 @@ class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
                         );
                       }
 
-                      return ListView.separated(
+                      return GridView.builder(
                         controller: scrollController,
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.s20,
@@ -188,21 +256,18 @@ class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
                           AppSpacing.s20,
                           AppSpacing.s24,
                         ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 6,
+                          crossAxisSpacing: 6,
+                          mainAxisExtent: 44,
+                        ),
                         itemCount: visible.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 6),
                         itemBuilder: (_, index) {
                           final ing = visible[index];
-                          final perUnit = NumberFormatter
-                              .formatPerBaseUnitPrice(
-                            _pricePerBaseUnit(ing),
-                            ing.purchaseUnitId,
-                            locale,
-                            formatStyle,
-                          );
-                          return _IngredientRow(
+                          return _IngredientCell(
                             name: ing.name,
-                            subtitle: perUnit,
                             onTap: () => Navigator.of(context).pop(ing),
                           );
                         },
@@ -219,14 +284,12 @@ class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
   }
 }
 
-class _IngredientRow extends StatelessWidget {
+class _IngredientCell extends StatelessWidget {
   final String name;
-  final String subtitle;
   final VoidCallback onTap;
 
-  const _IngredientRow({
+  const _IngredientCell({
     required this.name,
-    required this.subtitle,
     required this.onTap,
   });
 
@@ -240,42 +303,23 @@ class _IngredientRow extends StatelessWidget {
         onTap: onTap,
         borderRadius: AppRadius.brR12,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: AppSpacing.s12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12),
           child: Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      name,
-                      style: AppTypography.headline2.copyWith(
-                        color: tokens.fgStrong,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: AppTypography.label2.copyWith(
-                        color: tokens.fgTertiary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                child: Text(
+                  name,
+                  style: AppTypography.headline2.copyWith(
+                    color: tokens.fgStrong,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: AppSpacing.s8),
-              Icon(Icons.add, color: tokens.primary, size: 18),
+              const SizedBox(width: AppSpacing.s4),
+              Icon(Icons.add, color: tokens.primary, size: 16),
             ],
           ),
         ),
