@@ -1,0 +1,2 @@
+• Search ingredients instantly when adding them to a recipe or sauce
+• The ingredient picker now uses a two-column grid so you can see more at a glance
