@@ -1,0 +1,2 @@
+• Quét hóa đơn giờ đọc trực tiếp ảnh để lấy mặt hàng, giá và số lượng chính xác hơn
+• Tăng cường bảo mật và độ ổn định của các tính năng AI

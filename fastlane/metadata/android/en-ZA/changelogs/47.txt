@@ -1,0 +1,2 @@
+• Receipt scanning now reads the photo directly for more accurate items, prices and quantities
+• Improved security and reliability of AI features
