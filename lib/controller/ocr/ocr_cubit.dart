@@ -238,6 +238,7 @@ class OcrCubit extends Cubit<OcrState> {
       // Gemini로 OCR 텍스트 분석
       final geminiResult = await _ocrGeminiService.processOcrTextForIngredients(
         currentState.ocrResult.originalText,
+        imageFile: currentState.imageFile,
       );
 
       if (geminiResult['success'] == true) {
