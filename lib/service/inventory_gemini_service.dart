@@ -1,5 +1,5 @@
-import 'package:recipe_app/config/env.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:firebase_ai/firebase_ai.dart';
+import 'gemini_model.dart';
 
 /// AI 재고 스캔 결과 1행.
 class InventoryAiRow {
@@ -19,25 +19,14 @@ class InventoryAiRow {
 /// 사진 속 텍스트(OCR 결과)를 분석해 재고 수량을 추측하는 서비스.
 /// [OcrGeminiService] 와 같은 패턴 — 별도 프롬프트/파서를 가진 독립 클래스.
 class InventoryGeminiService {
-  static const String _modelName = 'gemini-3-flash-preview';
-  late final GenerativeModel _model;
-
-  InventoryGeminiService() {
-    final apiKey = Env.get('GEMINI_API_KEY');
-    if (apiKey == null || apiKey.isEmpty) {
-      throw Exception('GEMINI_API_KEY가 설정되지 않았습니다.');
-    }
-    _model = GenerativeModel(
-      model: _modelName,
-      apiKey: apiKey,
-      generationConfig: GenerationConfig(
-        temperature: 0.3,
-        topK: 20,
-        topP: 0.8,
-        maxOutputTokens: 2048,
-      ),
-    );
-  }
+  late final GenerativeModel _model = createGeminiModel(
+    generationConfig: GenerationConfig(
+      temperature: 0.3,
+      topK: 20,
+      topP: 0.8,
+      maxOutputTokens: 2048,
+    ),
+  );
 
   /// OCR 텍스트에서 재고 추측 목록 추출
   Future<List<InventoryAiRow>> analyzeInventoryText(String ocrText) async {
@@ -60,12 +49,14 @@ class InventoryGeminiService {
       final qty = double.tryParse(parts[1].replaceAll(',', ''));
       if (qty == null || qty < 0) continue;
 
-      rows.add(InventoryAiRow(
-        name: parts[0],
-        qty: qty,
-        unit: parts.length > 2 ? parts[2] : '',
-        note: parts.length > 3 ? parts[3] : '',
-      ));
+      rows.add(
+        InventoryAiRow(
+          name: parts[0],
+          qty: qty,
+          unit: parts.length > 2 ? parts[2] : '',
+          note: parts.length > 3 ? parts[3] : '',
+        ),
+      );
     }
     return rows;
   }

@@ -13,7 +13,6 @@ class Env {
   Env._();
 
   static const Map<String, String> _values = {
-    'GEMINI_API_KEY': String.fromEnvironment('GEMINI_API_KEY'),
     'APP_ENV': String.fromEnvironment('APP_ENV'),
     'REVENUECAT_IOS_KEY': String.fromEnvironment('REVENUECAT_IOS_KEY'),
     'REVENUECAT_ANDROID_KEY': String.fromEnvironment('REVENUECAT_ANDROID_KEY'),

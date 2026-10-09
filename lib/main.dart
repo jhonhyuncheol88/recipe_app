@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -147,6 +149,21 @@ Future<void> _safePreRunInitialization(Logger logger) async {
     logger.i('✅ Firebase 초기화 완료');
   } catch (e) {
     logger.e('❌ Firebase 초기화 실패(앱은 계속 실행): $e');
+  }
+
+  // App Check — AI Logic(Gemini) 호출을 우리 앱에서 온 요청으로만 제한.
+  // 디버그 빌드는 debug provider: 로그에 찍히는 디버그 토큰을 콘솔 App Check 에 등록해야 한다.
+  try {
+    await FirebaseAppCheck.instance.activate(
+      androidProvider:
+          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      appleProvider: kDebugMode
+          ? AppleProvider.debug
+          : AppleProvider.appAttestWithDeviceCheckFallback,
+    );
+    logger.i('✅ App Check 활성화 완료');
+  } catch (e) {
+    logger.e('⚠️ App Check 활성화 실패(무시): $e');
   }
 
   // Analytics 설정(실패 무시)

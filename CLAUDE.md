@@ -83,10 +83,15 @@ C 로그인 ✅ Phase 1 ──→ D 유저 페이지 ✅ ──→ E 광고 제�
 - 종료된 워크스트림 → `docs/history-*.md` 로 이전, 인덱스 업데이트
 
 ## 환경 변수 (.env)
-`.env` 는 앱 에셋에 넣지 않는다. 빌드·실행 때 **반드시** `--dart-define-from-file=.env` 를 붙인다 (빠뜨리면 Gemini·AdMob·RevenueCat 키가 전부 빈 값).
+`.env` 는 앱 에셋에 넣지 않는다. 빌드·실행 때 **반드시** `--dart-define-from-file=.env` 를 붙인다 (빠뜨리면 AdMob·RevenueCat 키가 전부 빈 값).
 - `flutter run --dart-define-from-file=.env`
 - `flutter build appbundle --release --dart-define-from-file=.env` / `flutter build ipa --release --dart-define-from-file=.env`
 - 코드에서는 `Env.get('KEY')` (`lib/config/env.dart`). 새 키는 `.env` 와 `Env._values` 양쪽에 추가.
+
+## AI (Gemini) — Firebase AI Logic + App Check
+- 모든 Gemini 호출은 `firebase_ai` 로, 모델은 `lib/service/gemini_model.dart` 의 `createGeminiModel()` / `kGeminiModel`(`gemini-3.1-flash-lite`) 한 곳에서 관리. 앱에 Gemini API 키 없음.
+- App Check: `main.dart` 에서 활성화 (릴리즈 = Play Integrity / App Attest→DeviceCheck, 디버그 = debug provider).
+- 디버그 빌드에서 AI 를 쓰려면 실행 로그의 App Check 디버그 토큰을 Firebase 콘솔 → App Check → 앱 → 디버그 토큰 관리에 등록.
 
 ## 작업할 때
 

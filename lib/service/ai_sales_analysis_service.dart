@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:recipe_app/config/env.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:firebase_ai/firebase_ai.dart';
+import 'gemini_model.dart';
 import '../model/recipe.dart';
 import '../model/ingredient.dart';
 
@@ -14,8 +14,14 @@ enum ProfitMargin {
 
 /// AI 기반 판매 분석 서비스
 class AiSalesAnalysisService {
-  static const String _modelName = 'gemini-3-flash-preview';
-  late final GenerativeModel _model;
+  late final GenerativeModel _model = createGeminiModel(
+    generationConfig: GenerationConfig(
+      temperature: 0.7,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 2048,
+    ),
+  );
 
   // 총 매출 대비 원가율 설정 (총 매출 중 원가가 차지하는 비율)
   // 판매가 = 원가 / 원가율
@@ -28,29 +34,6 @@ class AiSalesAnalysisService {
 
   // 기본 원가율 (권장: 25%)
   static const ProfitMargin _defaultProfitMargin = ProfitMargin.medium;
-
-  AiSalesAnalysisService() {
-    _initializeModel();
-  }
-
-  /// Gemini 모델 초기화
-  void _initializeModel() {
-    final apiKey = Env.get('GEMINI_API_KEY');
-    if (apiKey == null || apiKey.isEmpty) {
-      throw Exception('GEMINI_API_KEY가 설정되지 않았습니다.');
-    }
-
-    _model = GenerativeModel(
-      model: _modelName,
-      apiKey: apiKey,
-      generationConfig: GenerationConfig(
-        temperature: 0.7,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 2048,
-      ),
-    );
-  }
 
   /// 레시피 판매 분석 수행
   Future<Map<String, dynamic>> analyzeRecipeSales(

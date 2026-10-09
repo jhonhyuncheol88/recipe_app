@@ -1,35 +1,19 @@
 import 'dart:convert';
-import 'package:recipe_app/config/env.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:firebase_ai/firebase_ai.dart';
+import 'gemini_model.dart';
 import '../model/ingredient.dart';
 import '../util/app_locale.dart';
 
 /// AI 레시피 생성 서비스 (Gemini API 기반)
 class AiRecipeService {
-  static const String _modelName = 'gemini-3-flash-preview';
-  late final GenerativeModel _model;
-
-  AiRecipeService() {
-    _initializeModel();
-  }
-
-  void _initializeModel() {
-    final apiKey = Env.get('GEMINI_API_KEY');
-    if (apiKey == null || apiKey.isEmpty) {
-      throw Exception('GEMINI_API_KEY가 설정되지 않았습니다.');
-    }
-
-    _model = GenerativeModel(
-      model: _modelName,
-      apiKey: apiKey,
-      generationConfig: GenerationConfig(
-        temperature: 0.7,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 4096, // 대량 메뉴 생성을 위해 토큰 제한 확장
-      ),
-    );
-  }
+  late final GenerativeModel _model = createGeminiModel(
+    generationConfig: GenerationConfig(
+      temperature: 0.7,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 4096, // 대량 메뉴 생성을 위해 토큰 제한 확장
+    ),
+  );
 
   /// 식자재 목록을 기반으로 전문가용 레시피 생성
   Future<Map<String, dynamic>> generateRecipeFromIngredients(

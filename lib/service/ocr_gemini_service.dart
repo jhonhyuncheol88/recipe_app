@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:firebase_ai/firebase_ai.dart';
 
+import 'gemini_model.dart';
+
 /// 영수증 분석 AI (Firebase AI Logic — Gemini Developer API).
 ///
 /// 영수증 사진 + ML Kit OCR 텍스트를 함께 Gemini 에 보내고, JSON 스키마로
@@ -11,8 +13,6 @@ import 'package:firebase_ai/firebase_ai.dart';
 /// 결과 형식(`ingredients[*].name/suggested_price/suggested_amount/suggested_unit/category`)은
 /// OcrResultPage 가 그대로 소비한다.
 class OcrGeminiService {
-  static const String _modelName = 'gemini-3.1-flash-lite';
-
   /// 앱 단위 마스터(database_helper 기본 단위 id). 드롭다운에 없는 값이 오면 안 되므로 enum 으로 제한.
   static const List<String> _units = [
     'g',
@@ -41,19 +41,14 @@ class OcrGeminiService {
     '기타',
   ];
 
-  GenerativeModel? _model;
-
-  // Firebase.initializeApp 이후에 만들어야 하므로 첫 호출 때 생성.
-  GenerativeModel get _receiptModel =>
-      _model ??= FirebaseAI.googleAI().generativeModel(
-        model: _modelName,
-        generationConfig: GenerationConfig(
-          temperature: 0.2,
-          maxOutputTokens: 4096,
-          responseMimeType: 'application/json',
-          responseSchema: _responseSchema,
-        ),
-      );
+  late final GenerativeModel _receiptModel = createGeminiModel(
+    generationConfig: GenerationConfig(
+      temperature: 0.2,
+      maxOutputTokens: 4096,
+      responseMimeType: 'application/json',
+      responseSchema: _responseSchema,
+    ),
+  );
 
   static final Schema _responseSchema = Schema.object(
     properties: {
