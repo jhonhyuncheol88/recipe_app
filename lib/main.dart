@@ -5,7 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:recipe_app/config/env.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'router/index.dart';
 import 'theme/app_theme.dart';
@@ -133,13 +133,9 @@ Future<void> _waitUntilOnboardingCompleted() async {
 }
 
 Future<void> _safePreRunInitialization(Logger logger) async {
-  // .env 로드(없어도 앱 실행 계속)
-  try {
-    logger.i('🔧 환경 변수 로드 시작');
-    await dotenv.load();
-    logger.i('✅ 환경 변수 로드 완료');
-  } catch (e) {
-    logger.e('⚠️ .env 로드 실패(무시하고 계속): $e');
+  // 환경 변수는 --dart-define-from-file=.env 로 빌드 시점에 주입된다(없어도 앱 실행 계속).
+  if (!Env.isLoaded) {
+    logger.e('⚠️ 환경 변수 없음 — --dart-define-from-file=.env 로 빌드했는지 확인하세요');
   }
 
   // Firebase 초기화(권장: 플랫폼 옵션 사용)

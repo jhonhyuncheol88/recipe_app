@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:recipe_app/config/env.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logger/logger.dart';
 import '../controller/ad/ad_cubit.dart';
@@ -56,7 +56,7 @@ class AdMobForwardService {
         _logger.d('디버그 모드: 테스트 디바이스 설정 적용');
 
         // 실제 기기 ID를 환경 변수에서 가져오거나 기본값 사용
-        final testDeviceIdFromEnv = dotenv.env['ADMOB_TEST_DEVICE_ID'];
+        final testDeviceIdFromEnv = Env.get('ADMOB_TEST_DEVICE_ID');
         final testDeviceIds = <String>['EMULATOR'];
 
         if (testDeviceIdFromEnv != null && testDeviceIdFromEnv.isNotEmpty) {
@@ -94,7 +94,7 @@ class AdMobForwardService {
     _logger.d('${Platform.operatingSystem} 앱 ID 요청');
     final envKey =
         Platform.isAndroid ? 'ADMOB_ANDROID_APP_ID' : 'ADMOB_IOS_APP_ID';
-    final appId = dotenv.env[envKey];
+    final appId = Env.get(envKey);
     if (appId == null || appId.isEmpty) {
       _logger.e('$envKey가 설정되지 않음');
       throw Exception('$envKey가 설정되지 않았습니다. .env 파일을 확인해주세요.');
@@ -110,14 +110,14 @@ class AdMobForwardService {
     );
 
     // 환경 변수로 실제 광고 ID 강제 사용 여부 확인
-    final forceProduction = dotenv.env['ADMOB_FORCE_PRODUCTION'] == 'true';
+    final forceProduction = Env.get('ADMOB_FORCE_PRODUCTION') == 'true';
 
     // 실제 광고 ID 확인
     final envKey =
         Platform.isAndroid
             ? 'ADMOB_ANDROID_FORWARD_ID'
             : 'ADMOB_IOS_FORWARD_ID';
-    final prodId = dotenv.env[envKey];
+    final prodId = Env.get(envKey);
 
     // 디버그 모드에서는 테스트 광고 ID 사용 (강제 프로덕션 모드가 아닐 때만)
     // HTTP 403 에러 방지를 위해 디버그 모드에서는 기본적으로 테스트 ID 사용

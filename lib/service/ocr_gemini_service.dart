@@ -1,4 +1,4 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:recipe_app/config/env.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 /// OCR 텍스트를 분석하여 재료명만 추출하고 Ingredient 모델에 맞는 JSON으로 변환하는 서비스
@@ -12,7 +12,7 @@ class OcrGeminiService {
 
   /// Gemini 모델 초기화
   void _initializeModel() {
-    final apiKey = dotenv.env['GEMINI_API_KEY'];
+    final apiKey = Env.get('GEMINI_API_KEY');
     if (apiKey == null || apiKey.isEmpty) {
       throw Exception('GEMINI_API_KEY가 설정되지 않았습니다.');
     }

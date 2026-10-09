@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:recipe_app/config/env.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../model/ingredient.dart';
 import '../util/app_locale.dart';
@@ -14,7 +14,7 @@ class AiRecipeService {
   }
 
   void _initializeModel() {
-    final apiKey = dotenv.env['GEMINI_API_KEY'];
+    final apiKey = Env.get('GEMINI_API_KEY');
     if (apiKey == null || apiKey.isEmpty) {
       throw Exception('GEMINI_API_KEY가 설정되지 않았습니다.');
     }

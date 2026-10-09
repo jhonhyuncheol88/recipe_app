@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:recipe_app/config/env.dart';
 import 'package:logger/logger.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
@@ -128,10 +128,10 @@ class RevenueCatService {
   String? _resolveApiKey() {
     if (kIsWeb) return null;
     if (Platform.isIOS || Platform.isMacOS) {
-      return dotenv.env['REVENUECAT_IOS_KEY'];
+      return Env.get('REVENUECAT_IOS_KEY');
     }
     if (Platform.isAndroid) {
-      return dotenv.env['REVENUECAT_ANDROID_KEY'];
+      return Env.get('REVENUECAT_ANDROID_KEY');
     }
     return null;
   }

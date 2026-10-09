@@ -1,6 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:recipe_app/config/env.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logger/logger.dart';
 
@@ -59,7 +59,7 @@ class BannerAdService {
   /// 현재 환경에 맞는 배너 광고 단위 ID. 반환 값이 빈 문자열이면 광고를
   /// 로드하지 않는다 (.env 키가 비어있을 때).
   String resolveBannerAdUnitId() {
-    final forceProduction = dotenv.env['ADMOB_FORCE_PRODUCTION'] == 'true';
+    final forceProduction = Env.get('ADMOB_FORCE_PRODUCTION') == 'true';
 
     final prodKey =
         Platform.isAndroid ? 'ADMOB_ANDROID_BANNER_ID' : 'ADMOB_IOS_BANNER_ID';
@@ -67,8 +67,8 @@ class BannerAdService {
         ? 'ADMOB_ANDROID_BANNER_ID_TEST'
         : 'ADMOB_IOS_BANNER_ID_TEST';
 
-    final prodId = dotenv.env[prodKey] ?? '';
-    final testId = dotenv.env[testKey] ?? '';
+    final prodId = Env.get(prodKey) ?? '';
+    final testId = Env.get(testKey) ?? '';
 
     // 디버그 빌드: 정책 안전을 위해 기본은 테스트 ID.
     if (kDebugMode && !forceProduction) {

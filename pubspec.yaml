@@ -54,7 +54,6 @@ dependencies:
   in_app_review: ^2.0.10
   
   # 환경 변수 관리
-  flutter_dotenv: ^5.1.0
   
   # 라우팅
   go_router: ^14.6.2
@@ -117,7 +116,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - .env
     - assets/png/
     - assets/images/
     - assets/json/korea_recipe.json

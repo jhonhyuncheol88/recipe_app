@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:recipe_app/config/env.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logger/logger.dart';
 
@@ -60,7 +60,7 @@ class RewardedAdService {
       final testKey = Platform.isAndroid
           ? 'ADMOB_ANDROID_REWARDED_ID_TEST'
           : 'ADMOB_IOS_REWARDED_ID_TEST';
-      final testFromEnv = dotenv.env[testKey];
+      final testFromEnv = Env.get(testKey);
       if (testFromEnv != null && testFromEnv.isNotEmpty) {
         _logger.d('[Rewarded] 디버그 — env 테스트 ID 사용: $testFromEnv');
         return testFromEnv;
@@ -72,7 +72,7 @@ class RewardedAdService {
     final prodKey = Platform.isAndroid
         ? 'ADMOB_ANDROID_REWARDED_ID'
         : 'ADMOB_IOS_REWARDED_ID';
-    final prodId = dotenv.env[prodKey];
+    final prodId = Env.get(prodKey);
     if (prodId != null && prodId.isNotEmpty) {
       _logger.i('[Rewarded] 프로덕션 ID 사용: $prodId');
       return prodId;

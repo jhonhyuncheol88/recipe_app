@@ -82,6 +82,12 @@ C 로그인 ✅ Phase 1 ──→ D 유저 페이지 ✅ ──→ E 광고 제�
 - 진행 중 워크스트림 → 해당 `docs/handoff-*.md` 에 결과·검증 결과 추가
 - 종료된 워크스트림 → `docs/history-*.md` 로 이전, 인덱스 업데이트
 
+## 환경 변수 (.env)
+`.env` 는 앱 에셋에 넣지 않는다. 빌드·실행 때 **반드시** `--dart-define-from-file=.env` 를 붙인다 (빠뜨리면 Gemini·AdMob·RevenueCat 키가 전부 빈 값).
+- `flutter run --dart-define-from-file=.env`
+- `flutter build appbundle --release --dart-define-from-file=.env` / `flutter build ipa --release --dart-define-from-file=.env`
+- 코드에서는 `Env.get('KEY')` (`lib/config/env.dart`). 새 키는 `.env` 와 `Env._values` 양쪽에 추가.
+
 ## 작업할 때
 
 새 코드는 디자인 토큰 + 6 로케일 i18n + `flutter analyze` 신규 에러 0 을 기본으로. 큰 기능은 Phase 단위로 끊어서 PR. 외부 인프라 (Firebase Console / 스토어 콘솔) 가 막히는 작업은 코드만 미리 작성하고 사용자 책임 작업을 명시 보고.
