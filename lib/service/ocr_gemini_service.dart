@@ -11,7 +11,7 @@ import 'package:firebase_ai/firebase_ai.dart';
 /// 결과 형식(`ingredients[*].name/suggested_price/suggested_amount/suggested_unit/category`)은
 /// OcrResultPage 가 그대로 소비한다.
 class OcrGeminiService {
-  static const String _modelName = 'gemini-3.1-pro-preview';
+  static const String _modelName = 'gemini-3.1-flash-lite';
 
   /// 앱 단위 마스터(database_helper 기본 단위 id). 드롭다운에 없는 값이 오면 안 되므로 enum 으로 제한.
   static const List<String> _units = [
